@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
-import '../utils.dart';
-import 'chat.dart';
-import 'message_stack.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/message_stack.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/attachment.dart';
+import 'package:reminiscence/features/database/models/attachment_type.dart';
 
 class Message {
   final Map<String, dynamic> data;
@@ -13,9 +15,10 @@ class Message {
   final int index;
 
   late final String id;
+  late final int sentAt;
   late final String senderName;
-  late final DateTime sentAt;
   late final String content;
+  late final List<Attachment> attachments;
 
   Message({
     required this.data,
@@ -30,18 +33,46 @@ class Message {
       }
     }
 
+    sentAt = data["timestamp_ms"] ?? 0;
     senderName = data["sender_name"] ?? "";
-    sentAt = DateTime.fromMillisecondsSinceEpoch(data["timestamp_ms"] ?? 0);
     content = data["content"] ?? "";
     id = _generateUniqueId();
+    attachments = _getAttachments();
 
   }
 
   String _generateUniqueId() {
-    String inputData = '${chat.id}${sentAt.millisecondsSinceEpoch}$senderName$content';
+    String inputData = '${chat.id}$sentAt$senderName$content';
     List<int> bytes = utf8.encode(inputData);
     Digest hash = sha256.convert(bytes);
     return hash.toString();
+  }
+
+  List<Attachment> _getAttachments() {
+    List<Attachment> attachments = [];
+
+    if (data.containsKey("share") && data["share"].containsKey("link")) {
+      String link = data["share"]["link"];
+      attachments.add(Attachment(type: AttachmentType.link, uri: link));
+    }
+
+    Map<String, AttachmentType> attachmentTypes = {
+      "photos": AttachmentType.photo,
+      "videos": AttachmentType.video,
+      "audio_files": AttachmentType.audio,
+      "files": AttachmentType.file
+    };
+
+    for (var entry in attachmentTypes.entries) {
+      String key = entry.key;
+      AttachmentType attachmentType = entry.value;
+
+      for (Map<String, dynamic> item in data[key] ?? []) {
+        attachments.add(Attachment(type: attachmentType, uri: item["uri"]));
+      }
+    }
+
+    return attachments;
   }
 
 }

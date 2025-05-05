@@ -1,8 +1,10 @@
 import 'package:path/path.dart' as path;
 import 'package:archive/archive.dart';
 
-import '../utils.dart';
-import 'message_stack.dart';
+
+import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/message_stack.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/message.dart';
 
 class Chat {
   final Archive archive;
@@ -43,6 +45,14 @@ class Chat {
     }
 
     messageStacks.sort((a, b) => a.stackNum.compareTo(b.stackNum));
+  }
+
+  Iterable<Message> messages() sync* {
+    for (MessageStack messageStack in messageStacks) {
+      for (Message message in messageStack.messages()) {
+        yield message;
+      }
+    }
   }
 
   int get id {

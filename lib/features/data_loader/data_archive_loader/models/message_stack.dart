@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:path/path.dart' as path;
 import 'package:archive/archive.dart';
 
-import '../utils.dart';
-import 'chat.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/models/message.dart';
 
 class MessageStack {
   ArchiveFile archiveFile;
@@ -22,6 +23,19 @@ class MessageStack {
     RegExp regex = RegExp(r"message_(\d+).json");
     int stackNum = int.parse(regex.firstMatch(fileName)!.group(1)!);
     return MessageStack(chat: chat, stackNum: stackNum, archiveFile: archiveFile);
+  }
+
+  Iterable<Message> messages() sync* {
+    Map<String, dynamic> jsonData = _getJsonData();
+
+    List<dynamic> messages = jsonData['messages'];
+
+    for (int i = 0; i < messages.length; i++) {
+      Map<String, dynamic> messageData = messages[i];
+      Message message = Message(data: messageData, chat: chat, messageStack: this, index: i);
+      yield message;
+    }
+
   }
 
   Map<String, dynamic> getMetaData() {
