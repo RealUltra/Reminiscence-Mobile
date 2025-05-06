@@ -33,18 +33,14 @@ Future<AppDatabase> createFreshDatabase(String dbPath) async {
   return db;
 }
 
-Future<String> createFreshMediaFolder() async {
-  final baseDir = await getTemporaryDirectory(); // or getApplicationDocumentsDirectory()
-  final folderPath = '${baseDir.path}/media';
-
+Future<void> createFreshFolder(String folderPath) async {
   final folder = Directory(folderPath);
+
   if (await folder.exists()) {
     await folder.delete(recursive: true);
   }
 
   await folder.create(recursive: true);
-
-  return folder.path;
 }
 
 Future<String> createRemFile(String archivePath) async {
@@ -52,7 +48,7 @@ Future<String> createRemFile(String archivePath) async {
 
   final List<archive_loader.Chat> chats = getChats(archivePath);
 
-  final dbPath = '${tempDir.path}/temp_database.db';
+  final dbPath = '${tempDir.path}/database.db';
   final db = await createFreshDatabase(dbPath);
 
   // Map the media file paths to their equivalent attachment ids.
@@ -66,7 +62,10 @@ Future<String> createRemFile(String archivePath) async {
   await db.close();
 
   // Creating media folder
-  String mediaDir = await createFreshMediaFolder();
+  final baseDir = await getTemporaryDirectory(); // or getApplicationDocumentsDirectory()
+  final mediaDir = '${baseDir.path}/media';
+
+  await createFreshFolder(mediaDir);
 
   if (chats.isNotEmpty) {
     Archive archive = chats[0].archive;
@@ -89,14 +88,15 @@ Future<String> createRemFile(String archivePath) async {
   // Creating .rem file.
   final encoder = ZipFileEncoder();
 
-  String outputPath = path.join(tempDir.path, "output.rem");
+  String fileName = path.basenameWithoutExtension(archivePath);
+  String outputPath = path.join(tempDir.path, "$fileName.rem");
 
   encoder.create(outputPath);
 
-  encoder.addDirectory(Directory(mediaDir), includeDirName: true);
-  encoder.addFile(File(dbPath));
+  await encoder.addDirectory(Directory(mediaDir), includeDirName: true);
+  await encoder.addFile(File(dbPath));
 
-  encoder.close();
+  await encoder.close();
 
   return outputPath;
 }
