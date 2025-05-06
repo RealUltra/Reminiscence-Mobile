@@ -1,34 +1,11 @@
-import 'package:floor/floor.dart';
+import 'package:drift/drift.dart';
 
 import 'package:reminiscence/features/database/models/message.dart';
+import 'package:reminiscence/features/database/models/attachment_type.dart';
 
-@Entity(
-  tableName: 'attachments',
-  foreignKeys: [
-    ForeignKey(
-      childColumns: ['message_id'],
-      parentColumns: ['id'],
-      entity: Message,
-      onDelete: ForeignKeyAction.cascade
-    )
-  ]
-)
-class Attachment {
-  @PrimaryKey(autoGenerate: true)
-  final int? id;
-  
-  @ColumnInfo(name: 'message_id')
-  final String messageId;
-
-  final String type; // Holds one of "photo", "video", "audio", "link", "file"
-
-  final String? link;
-
-  Attachment({
-    this.id,
-    required this.messageId,
-    required this.type,
-    this.link
-  });
-
+class Attachments extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get messageId => text().references(Messages, #id)();
+  TextColumn get type => textEnum<AttachmentType>()();
+  TextColumn get uri => text()();
 }

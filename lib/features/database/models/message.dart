@@ -1,43 +1,15 @@
-import 'package:floor/floor.dart';
+import 'package:drift/drift.dart';
 
 import 'package:reminiscence/features/database/models/chat.dart';
 
-@Entity(
-  tableName: 'messages',
-  foreignKeys: [
-    ForeignKey(
-      childColumns: ['chat_id'],
-      parentColumns: ['id'],
-      entity: Chat,
-      onDelete: ForeignKeyAction.cascade
-    )
-  ]
-)
-class Message {
-  @PrimaryKey()
-  final String id;
+class Messages extends Table {
+  TextColumn get id => text()();
+  IntColumn get chatId => integer().references(Chats, #id)();
+  TextColumn get rawData => text()();
+  IntColumn get sentAt => integer()();
+  TextColumn get senderName => text()();
+  TextColumn get content => text()();
 
-  @ColumnInfo(name: 'chat_id')
-  final int chatId;
-
-  @ColumnInfo(name: 'raw_data')
-  final String rawData;
-
-  @ColumnInfo(name: "sent_at")
-  final int sentAt;
-
-  @ColumnInfo(name: "sender_name")
-  final String senderName;
-
-  final String content;
-
-  Message({
-    required this.id,
-    required this.chatId,
-    required this.rawData,
-    required this.sentAt,
-    required this.senderName,
-    required this.content
-  });
-
+  @override
+  Set<Column<Object>> get primaryKey => {id};
 }

@@ -1,15 +1,9 @@
-import 'package:floor/floor.dart';
+import 'package:drift/drift.dart';
 
-@Entity(tableName: 'chats')
-class Chat {
-  @PrimaryKey()
-  final int id;
+class Chats extends Table {
+  IntColumn get id => integer()();
+  TextColumn get title => text()();
 
-  final String title;
-
-  Chat({
-    required this.id,
-    required this.title,
-  }); 
-
+  @override
+  Set<Column<Object>> get primaryKey => {id};
 }

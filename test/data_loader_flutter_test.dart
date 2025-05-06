@@ -8,9 +8,9 @@ import 'package:path/path.dart' as path;
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'package:reminiscence/features/data_loader/data_loader.dart';
-import 'package:reminiscence/features/data_loader/data_archive_loader/data_archive_loader.dart';
-import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart';
+import 'package:reminiscence/features/data_loader/rem_generator.dart';
+//import 'package:reminiscence/features/data_loader/data_archive_loader/data_archive_loader.dart';
+//import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart';
 //import 'package:reminiscence/features/data_loader/data_archive_loader/models/message_stack.dart';
 //import 'package:reminiscence/features/data_loader/data_archive_loader/models/message.dart';
 //import 'package:reminiscence/features/data_loader/data_archive_loader/models/attachment.dart';
@@ -83,7 +83,6 @@ class Home extends StatelessWidget {
       debugPrint("Duration: ${DateTime.now().difference(start).inMilliseconds}");
 
       await mediaStorePlugin.saveFile(tempFilePath: tempPath, dirType: DirType.download, dirName: DirName.download);
-
     }
   }
 

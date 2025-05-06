@@ -66,5 +66,4 @@ class Chat {
   }
 
   String get dmsDir => getDmsDir(dataDir);
-  String get otherContentDir => getOtherContentDir(dataDir);
 }

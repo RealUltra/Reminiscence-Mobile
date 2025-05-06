@@ -21,10 +21,6 @@ String getDmsDir(String dataDir) {
   return "${dataDir.replaceAll(RegExp(r'^/|/$'), '')}/your_instagram_activity/messages/inbox";
 }
 
-String getOtherContentDir(String dataDir) {
-  return "${dataDir.replaceAll(RegExp(r'^/|/$'), '')}/your_activity_across_facebook/messages/inbox";
-}
-
 String decodeData(dynamic data) {
   try {
     if (data is String) {

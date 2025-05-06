@@ -1,25 +1,37 @@
-import 'dart:async';
-import 'package:floor/floor.dart';
-import 'package:sqflite/sqflite.dart' as sqflite;
+import 'package:drift/drift.dart';
+import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:reminiscence/features/database/models/chat.dart';
 import 'package:reminiscence/features/database/models/participant.dart';
 import 'package:reminiscence/features/database/models/message.dart';
 import 'package:reminiscence/features/database/models/attachment.dart';
+import 'package:reminiscence/features/database/models/attachment_type.dart';
 
-import 'package:reminiscence/features/database/daos/chat_dao.dart';
-import 'package:reminiscence/features/database/daos/participant_dao.dart';
-import 'package:reminiscence/features/database/daos/message_dao.dart';
-import 'package:reminiscence/features/database/daos/attachment_dao.dart';
+import 'dart:io';
+import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 part 'database.g.dart';
 
-// flutter pub run build_runner build --delete-conflicting-outputs
+// dart run build_runner build --delete-conflicting-outputs
 
-@Database(version: 1, entities: [Chat, Participant, Message, Attachment])
-abstract class AppDatabase extends FloorDatabase {
-  ChatDao get chatDao;
-  ParticipantDao get participantDao;
-  MessageDao get messageDao;
-  AttachmentDao get attachmentDao;
+@DriftDatabase(tables: [Chats, Participants, Messages, Attachments])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+
+  @override
+  int get schemaVersion => 1;
+
+  static QueryExecutor _openConnection() {
+    return driftDatabase(
+      name: 'user_data',
+      native: const DriftNativeOptions(
+        databaseDirectory: getApplicationSupportDirectory
+      )
+    );
+  }
 }
