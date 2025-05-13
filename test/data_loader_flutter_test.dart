@@ -19,12 +19,9 @@ final mediaStorePlugin = MediaStore();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   await MediaStore.ensureInitialized();
 
-  List<Permission> permissions = [
-    Permission.storage,
-  ];
+  List<Permission> permissions = [Permission.storage];
 
   if ((await mediaStorePlugin.getPlatformSDKInt()) >= 33) {
     permissions.add(Permission.photos);
@@ -43,10 +40,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Data Loader Test',
-      home: const Home()
-    );
+    return MaterialApp(title: 'Data Loader Test', home: const Home());
   }
 }
 
@@ -62,28 +56,33 @@ class Home extends StatelessWidget {
           onPressed: _pickFile,
           child: Text(
             "Upload your instagram data zip file.",
-            style: TextStyle(
-              color: Colors.white,
-            ),
+            style: TextStyle(color: Colors.white),
           ),
         ),
       ),
     );
   }
 
-
   void _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
-    
+
     if (result != null) {
       String filePath = result.files.single.path!;
 
       final start = DateTime.now();
-      final tempPath = await createRemFile(filePath);
-      debugPrint("Duration: ${DateTime.now().difference(start).inMilliseconds}");
+      final tempPath = await createRemFile(
+        archivePath: filePath,
+        password: "my-example-password",
+      );
+      debugPrint(
+        "Duration: ${DateTime.now().difference(start).inMilliseconds}",
+      );
 
-      await mediaStorePlugin.saveFile(tempFilePath: tempPath, dirType: DirType.download, dirName: DirName.download);
+      await mediaStorePlugin.saveFile(
+        tempFilePath: tempPath,
+        dirType: DirType.download,
+        dirName: DirName.download,
+      );
     }
   }
-
 }

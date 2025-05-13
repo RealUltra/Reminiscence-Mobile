@@ -1,12 +1,14 @@
+import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 
 import 'package:reminiscence/features/database/models/chat.dart';
 import 'package:reminiscence/features/database/models/participant.dart';
 import 'package:reminiscence/features/database/models/message.dart';
 import 'package:reminiscence/features/database/models/attachment.dart';
 import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/sqlcipher.dart';
 
 part 'database.g.dart';
 
@@ -14,17 +16,30 @@ part 'database.g.dart';
 
 @DriftDatabase(tables: [Chats, Participants, Messages, Attachments])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+  AppDatabase({
+    QueryExecutor? executor,
+    required String dbPath,
+    String? password,
+  }) : super(executor ?? _openConnection(dbPath, password));
 
   @override
   int get schemaVersion => 1;
 
-  static QueryExecutor _openConnection() {
-    return driftDatabase(
-      name: 'user_data',
-      native: const DriftNativeOptions(
-        databaseDirectory: getApplicationSupportDirectory
-      )
+  static QueryExecutor _openConnection(String dbPath, String? password) {
+    final token = RootIsolateToken.instance!;
+
+    return NativeDatabase.createInBackground(
+      File(dbPath),
+      isolateSetup: () async {
+        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        await setupSqlCipher();
+      },
+      setup: (rawDb) {
+        if (password != null) {
+          rawDb.execute("PRAGMA key = '$password'");
+        }
+        rawDb.config.doubleQuotedStringLiterals = false;
+      },
     );
   }
 }
