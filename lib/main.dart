@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 
+import 'package:reminiscence/ui/sections/data_loader/data_loader_section.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return MaterialApp(
+      title: "Reminiscence",
+      theme: ThemeData(),
+      initialRoute: "/",
+      routes: {'/': (context) => DataLoaderSection()},
+    );
   }
 }
