@@ -5,7 +5,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(title: Text("Reminiscence"));
+    return AppBar(
+      title: Text("Reminiscence"),
+      scrolledUnderElevation: 0.0,
+      backgroundColor: Colors.transparent,
+    );
   }
 
   @override
