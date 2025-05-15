@@ -13,27 +13,40 @@ class RecentFileCard extends StatelessWidget {
     String fileName = p.basenameWithoutExtension(filePath);
 
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+      padding: EdgeInsets.fromLTRB(24, 12, 4, 12),
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Row(
         children: [
-          Text(
-            fileName,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fileName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  dir,
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
-          Text(
-            dir,
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-            overflow: TextOverflow.ellipsis,
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {},
+            ),
           ),
         ],
       ),
