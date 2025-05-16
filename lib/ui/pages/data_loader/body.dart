@@ -28,13 +28,13 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    recentFiles.clear();
+    //recentFiles.clear();
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(24.0, 0, 24.0, 175.0),
+      padding: EdgeInsets.fromLTRB(24.0, 0, 24.0, 0),
       child: Column(
         children: [
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           const LoadDataButton(),
           SizedBox(height: (recentFiles.isNotEmpty ? 32 : 50)),
           recentFiles.isNotEmpty

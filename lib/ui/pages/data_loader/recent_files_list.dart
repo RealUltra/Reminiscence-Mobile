@@ -23,14 +23,16 @@ class RecentFilesList extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Expanded(
-            child: ListView.separated(
+            child: ListView.builder(
               itemCount: recentFiles.length,
-              itemBuilder:
-                  (BuildContext context, int index) =>
-                      RecentFileCard(filePath: recentFiles[index]),
-              separatorBuilder:
-                  (BuildContext context, int index) =>
-                      const SizedBox(height: 12),
+              itemBuilder: (BuildContext context, int index) {
+                return Column(
+                  children: [
+                    RecentFileCard(filePath: recentFiles[index]),
+                    const SizedBox(height: 12),
+                  ],
+                );
+              },
             ),
           ),
         ],

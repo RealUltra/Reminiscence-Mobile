@@ -14,7 +14,9 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Reminiscence",
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
       initialRoute: "/",
       routes: {'/': (context) => DataLoaderPage()},
     );
