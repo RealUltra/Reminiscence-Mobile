@@ -20,18 +20,23 @@ class AppDatabase extends _$AppDatabase {
     QueryExecutor? executor,
     required String dbPath,
     String? password,
-  }) : super(executor ?? _openConnection(dbPath, password));
+    RootIsolateToken? token,
+  }) : super(executor ?? _openConnection(dbPath, password, token));
 
   @override
   int get schemaVersion => 1;
 
-  static QueryExecutor _openConnection(String dbPath, String? password) {
-    final token = RootIsolateToken.instance!;
-
+  static QueryExecutor _openConnection(
+    String dbPath,
+    String? password,
+    RootIsolateToken? token,
+  ) {
     return NativeDatabase.createInBackground(
       File(dbPath),
       isolateSetup: () async {
-        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        BackgroundIsolateBinaryMessenger.ensureInitialized(
+          token ?? RootIsolateToken.instance!,
+        );
         await setupSqlCipher();
       },
       setup: (rawDb) {

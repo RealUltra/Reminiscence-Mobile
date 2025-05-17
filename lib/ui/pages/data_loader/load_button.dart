@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:reminiscence/ui/pages/data_loader/body.dart';
+
 class LoadDataButton extends StatefulWidget {
-  const LoadDataButton({super.key});
+  final BodyState parent;
+
+  const LoadDataButton({super.key, required this.parent});
 
   @override
   State<LoadDataButton> createState() => _LoadDataButtonState();
@@ -13,7 +17,9 @@ class _LoadDataButtonState extends State<LoadDataButton> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        widget.parent.loadData(context);
+      },
       onTapDown: (_) {
         setState(() {
           _isPressed = true;

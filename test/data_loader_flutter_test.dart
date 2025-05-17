@@ -72,14 +72,14 @@ class Home extends StatelessWidget {
       final start = DateTime.now();
       final tempPath = await createRemFile(
         archivePath: filePath,
-        password: "my-example-password",
+        password: null,
       );
       debugPrint(
         "Duration: ${DateTime.now().difference(start).inMilliseconds}",
       );
 
       await mediaStorePlugin.saveFile(
-        tempFilePath: tempPath,
+        tempFilePath: tempPath!,
         dirType: DirType.download,
         dirName: DirName.download,
       );

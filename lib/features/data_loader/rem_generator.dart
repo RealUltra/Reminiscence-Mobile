@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui';
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +22,13 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/models/att
 import 'package:reminiscence/features/database/models/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
+import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 
-Future<AppDatabase> createFreshDatabase(String dbPath, String? password) async {
+Future<AppDatabase> createFreshDatabase(
+  String dbPath,
+  String? password,
+  RootIsolateToken? rootToken,
+) async {
   // Determine the path of the file based on AppDatabase._openConnection() in database.dart.
   final databaseFile = File(dbPath);
 
@@ -29,7 +36,7 @@ Future<AppDatabase> createFreshDatabase(String dbPath, String? password) async {
     await databaseFile.delete();
   }
 
-  return AppDatabase(dbPath: dbPath, password: password);
+  return AppDatabase(dbPath: dbPath, password: password, token: rootToken);
 }
 
 Future<void> createFreshFolder(String folderPath) async {
@@ -42,20 +49,57 @@ Future<void> createFreshFolder(String folderPath) async {
   await folder.create(recursive: true);
 }
 
-Future<String> createRemFile({
+Future<String?> createRemFile({
   required String archivePath,
   String? password,
+  RootIsolateToken? rootToken,
+  SendPort? sendPort,
 }) async {
+  // Set up receive port and cancellation token
+  ReceivePort? receivePort = sendPort != null ? ReceivePort() : null;
+  bool isCancelled = false;
+
+  if (receivePort != null) {
+    sendPort!.send({"type": "sendPort", "sendPort": receivePort.sendPort});
+  }
+
+  receivePort?.listen((message) {
+    if (message is! Map<String, dynamic>) return;
+
+    if (message["type"] == "cancel") {
+      isCancelled = true;
+    }
+  });
+
   final tempDir = await getTemporaryDirectory();
 
-  final List<archive_loader.Chat> chats = getChats(archivePath);
+  final chats = getChats(archivePath);
+
+  if (isCancelled) return null;
 
   final dbPath = '${tempDir.path}/database.db';
-  final db = await createFreshDatabase(dbPath, password);
+  final db = await createFreshDatabase(dbPath, password, rootToken);
+
+  if (isCancelled) return null;
+
+  int chatsInserted = 0;
+  int totalChats = chats.length;
 
   for (var chat in chats) {
-    debugPrint(chat.title);
+    debugPrint("Chat Title: ${chat.title}");
     await insertArchiveChat(db, chat);
+    chatsInserted++;
+
+    if (isCancelled) return null;
+
+    sendPort?.send({
+      "type": "progress",
+      "progress":
+          Progress(
+            value: chatsInserted / totalChats,
+            label: "Loading your chats...",
+          ).toMap(),
+    });
   }
 
   // Deriving the encryption key from the password.
@@ -87,6 +131,9 @@ Future<String> createRemFile({
         path.normalize(attachment.uri): attachment.id,
     };
 
+    int filesWritten = 0;
+    int totalFiles = mediaFilesAndIds.length;
+
     for (ArchiveFile file in archive) {
       if (!file.isFile) continue;
 
@@ -104,10 +151,29 @@ Future<String> createRemFile({
         final mediaFile = File(mediaPath);
 
         await mediaFile.writeAsBytes(fileData);
+
+        filesWritten++;
+
+        sendPort?.send({
+          "type": "progress",
+          "progress":
+              Progress(
+                value: filesWritten / totalFiles,
+                label: "Loading your media files...",
+              ).toMap(),
+        });
       }
+
+      if (isCancelled) return null;
     }
   }
   //
+
+  sendPort?.send({
+    "type": "progress",
+    "progress":
+        Progress(value: 1.0, label: "Bundling everything up...").toMap(),
+  });
 
   // Save the salt
   final noncePath = path.join(tempDir.path, "nonce.txt");

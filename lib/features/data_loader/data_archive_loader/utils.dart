@@ -51,9 +51,17 @@ String removeNonPrintableCharacters(String inputString) {
 }
 
 List<ArchiveFile> listArchiveDir(Archive archive, String targetDir) {
-  if (targetDir.isEmpty) targetDir = ".";
-  if (targetDir.startsWith("/")) targetDir = targetDir.substring(1);
-  if (targetDir.endsWith("/")) targetDir = targetDir.substring(0, targetDir.length - 1);
+  if (targetDir.isEmpty) {
+    targetDir = ".";
+  }
+
+  if (targetDir.startsWith("/")) {
+    targetDir = targetDir.substring(1);
+  }
+
+  if (targetDir.endsWith("/")) {
+    targetDir = targetDir.substring(0, targetDir.length - 1);
+  }
 
   List<String> filesAdded = [];
   List<ArchiveFile> archiveFiles = [];
@@ -68,4 +76,15 @@ List<ArchiveFile> listArchiveDir(Archive archive, String targetDir) {
   }
 
   return archiveFiles;
+}
+
+bool isValidArchive({String? archivePath, Archive? archive}) {
+  if (archivePath == null && archive == null) return false;
+
+  if (archivePath != null) {
+    InputFileStream stream = InputFileStream(archivePath);
+    archive = ZipDecoder().decodeStream(stream);
+  }
+
+  return getDataDir(archive!) != null;
 }

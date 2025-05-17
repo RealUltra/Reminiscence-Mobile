@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
+import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
 
-void main() {
+Future<void> main() async {
   runApp(const App());
 }
 
