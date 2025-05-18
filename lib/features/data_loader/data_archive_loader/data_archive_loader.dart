@@ -4,9 +4,15 @@ import 'package:archive/archive.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart';
 
-List<Chat> getChats(String archivePath) {
-  InputFileStream stream = InputFileStream(archivePath);
-  Archive archive = ZipDecoder().decodeStream(stream);
+List<Chat> getChats({String? archivePath, Archive? archive}) {
+  if (archivePath != null) {
+    InputFileStream stream = InputFileStream(archivePath);
+    archive = ZipDecoder().decodeStream(stream);
+  }
+
+  if (archive == null) {
+    return [];
+  }
 
   String? dataDir = getDataDir(archive);
 

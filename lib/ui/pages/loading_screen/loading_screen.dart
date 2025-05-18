@@ -76,6 +76,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                           ? (progress.label ?? "Loading, please wait...")
                           : "Completed in $duration seconds.",
                       textAlign: TextAlign.center,
+                      style: TextStyle(height: 1.8),
                     ),
                   ),
                 ],

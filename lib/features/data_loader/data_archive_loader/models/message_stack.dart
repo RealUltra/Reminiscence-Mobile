@@ -15,14 +15,18 @@ class MessageStack {
   MessageStack({
     required this.archiveFile,
     required this.chat,
-    required this.stackNum
+    required this.stackNum,
   });
 
   static MessageStack load(Chat chat, ArchiveFile archiveFile) {
     String fileName = path.basename(archiveFile.name);
     RegExp regex = RegExp(r"message_(\d+).json");
     int stackNum = int.parse(regex.firstMatch(fileName)!.group(1)!);
-    return MessageStack(chat: chat, stackNum: stackNum, archiveFile: archiveFile);
+    return MessageStack(
+      chat: chat,
+      stackNum: stackNum,
+      archiveFile: archiveFile,
+    );
   }
 
   Iterable<Message> messages() sync* {
@@ -32,16 +36,20 @@ class MessageStack {
 
     for (int i = 0; i < messages.length; i++) {
       Map<String, dynamic> messageData = messages[i];
-      Message message = Message(data: messageData, chat: chat, messageStack: this, index: i);
+      Message message = Message(
+        data: messageData,
+        chat: chat,
+        messageStack: this,
+        index: i,
+      );
       yield message;
     }
-
   }
 
   Map<String, dynamic> getMetaData() {
     Map<String, dynamic> metaData = {
       'chatTitle': "",
-      'participants': <String>[]
+      'participants': <String>[],
     };
 
     Map<String, dynamic> jsonData = _getJsonData();
@@ -60,9 +68,10 @@ class MessageStack {
 
   Map<String, dynamic> _getJsonData() {
     InputStream stream = archiveFile.getContent()!;
-    String jsonString = utf8.decode(stream.readBytes(stream.length).toUint8List());
+    String jsonString = utf8.decode(
+      stream.readBytes(stream.length).toUint8List(),
+    );
     Map<String, dynamic> jsonData = jsonDecode(jsonString);
     return jsonData;
   }
-
 }

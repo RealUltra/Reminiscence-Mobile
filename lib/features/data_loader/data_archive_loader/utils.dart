@@ -78,6 +78,16 @@ List<ArchiveFile> listArchiveDir(Archive archive, String targetDir) {
   return archiveFiles;
 }
 
+Map<String, ArchiveFile> getArchiveMap(Archive archive) {
+  Map<String, ArchiveFile> result = {};
+
+  for (ArchiveFile file in archive) {
+    result[path.normalize(file.name)] = file;
+  }
+
+  return result;
+}
+
 bool isValidArchive({String? archivePath, Archive? archive}) {
   if (archivePath == null && archive == null) return false;
 

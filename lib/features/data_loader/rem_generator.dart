@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:reminiscence/features/data_loader/data_archive_loader/data_archive_loader.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/database/database.dart';
 
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart'
@@ -75,15 +76,18 @@ Future<String?> createRemFile({
   //
 
   // Initialize the .rem file encoder.
-  final encoder = ZipFileEncoder();
-
   String fileName = path.basenameWithoutExtension(archivePath);
   String outputPath = path.join(tempDir.path, "$fileName.rem");
 
+  final encoder = ZipFileEncoder();
   encoder.create(outputPath);
 
+  // Open the archive.
+  InputFileStream stream = InputFileStream(archivePath);
+  final archive = ZipDecoder().decodeStream(stream);
+
   // Extract the chats from the archive.
-  final chats = getChats(archivePath);
+  final chats = await getChats(archive: archive);
 
   if (isCancelled) return null;
 
@@ -94,25 +98,43 @@ Future<String?> createRemFile({
   if (isCancelled) return null;
 
   // Insert all the chats from the archive into the database
-  int stacksDone = 0;
+  double stacksDone = 0;
   int totalStacks = chats
       .map((c) => c.messageStacks.length)
       .fold(0, (sum, length) => sum + length);
 
+  final Map<String, ArchiveFile> archiveMap = getArchiveMap(archive);
+
   for (var chat in chats) {
     debugPrint("Chat Title: ${chat.title}");
+
+    final stacksMid = chat.messageStacks.length / 2;
 
     await insertArchiveChat(db, chat, (int increment) async {
       sendPort?.send({
         "type": "progress",
         "progress": {
-          "value": (stacksDone + increment) / totalStacks,
-          "label": 'Loading Chats...\n\n${chat.title}',
+          "value": (stacksDone + increment * 0.5) / totalStacks * 0.99,
+          "label": 'Loading Chat Messages:\n${chat.title}',
         },
       });
     });
 
-    stacksDone += chat.messageStacks.length;
+    stacksDone += stacksMid;
+
+    await insertMediaFiles(db, chat.id, archiveMap, encoder, (
+      double progress,
+    ) async {
+      sendPort?.send({
+        "type": "progress",
+        "progress": {
+          "value": (stacksDone + progress * stacksMid) / totalStacks * 0.99,
+          "label": 'Loading Chat Media:\n${chat.title}',
+        },
+      });
+    });
+
+    stacksDone += stacksMid;
 
     if (isCancelled) return null;
   }
@@ -122,91 +144,28 @@ Future<String?> createRemFile({
   final derivedKey =
       password != null ? (await deriveKey(password: password)) : null;
 
-  // Creating media folder
-  final mediaDir = path.join(tempDir.path, "media");
-  await createFreshFolder(mediaDir);
-
-  if (chats.isNotEmpty) {
-    Archive archive = chats[0].archive;
-
-    // Get all the attachments that are not links i.e files, videos, photos, audios
-    final attachments =
-        await (db.select(db.attachments)
-              ..where(
-                (a) => a.type.isNotExp(
-                  Variable.withString(AttachmentType.link.name),
-                ),
-              )
-              ..addColumns([db.attachments.id, db.attachments.uri]))
-            .get();
-
-    // Create a hash map for quick look up - path to id.
-    final Map<String, int> mediaFilesAndIds = {
-      for (Attachment attachment in attachments)
-        path.normalize(attachment.uri): attachment.id,
-    };
-
-    int filesWritten = 0;
-    int totalFiles = mediaFilesAndIds.length;
-
-    for (ArchiveFile file in archive) {
-      if (!file.isFile) continue;
-
-      String filePath = path.normalize(file.name);
-      int? attachmentId = mediaFilesAndIds[filePath];
-
-      if (attachmentId != null) {
-        List<int> fileData = file.content as List<int>;
-
-        if (derivedKey != null) {
-          fileData = await encrypt(fileData, derivedKey.secretKey);
-        }
-
-        encoder.addArchiveFile(
-          ArchiveFile(
-            path.join("media", "$attachmentId"),
-            fileData.length,
-            fileData,
-          ),
-        );
-
-        filesWritten++;
-
-        sendPort?.send({
-          "type": "progress",
-          "progress":
-              Progress(
-                value: filesWritten / totalFiles,
-                label: "Loading your media files...",
-              ).toMap(),
-        });
-      }
-
-      if (isCancelled) return null;
-    }
-  }
-  //
-
   sendPort?.send({
     "type": "progress",
     "progress":
-        Progress(value: 1.0, label: "Bundling everything up...").toMap(),
+        Progress(value: 0.99, label: "Bundling everything up...").toMap(),
   });
 
-  // Save the salt
-  final noncePath = path.join(tempDir.path, "nonce.txt");
-  final nonceFile = File(noncePath);
-  await nonceFile.writeAsBytes(derivedKey?.nonce ?? []);
-
   // Adding the database and nonce to the rem file.
-  await encoder.addFile(File(dbPath));
-  await encoder.addFile(nonceFile);
+  await encoder.addFile(File(dbPath), "database.db");
+  encoder.addArchiveFile(
+    ArchiveFile.bytes("nonce.txt", derivedKey?.nonce ?? []),
+  );
 
   // Close the rem file
   await encoder.close();
 
   // Close the database
   await db.close();
+
+  sendPort?.send({
+    "type": "progress",
+    "progress": Progress(value: 1.0).toMap(),
+  });
 
   return outputPath;
 }
@@ -239,49 +198,89 @@ Future<void> insertArchiveChat(
   int stacksDone = 0;
 
   for (archive_loader.MessageStack messageStack in archiveChat.messageStacks) {
-    List<MessagesCompanion> messagesToInsert = [];
-    List<AttachmentsCompanion> attachmentsToInsert = [];
-    List<String> usedMessageIds = [];
+    Set<String> usedMessageIds = {};
 
     updateProgress(stacksDone);
 
-    for (archive_loader.Message archiveMessage in messageStack.messages()) {
-      if (usedMessageIds.contains(archiveMessage.id)) {
-        continue;
-      }
-
-      MessagesCompanion message = MessagesCompanion(
-        id: Value(archiveMessage.id),
-        chatId: chat.id,
-        rawData: Value(jsonEncode(archiveMessage.data)),
-        sentAt: Value(archiveMessage.sentAt),
-        senderName: Value(archiveMessage.senderName),
-        content: Value(archiveMessage.content),
-      );
-
-      messagesToInsert.add(message);
-      usedMessageIds.add(message.id.value);
-
-      // Add attachments to database
-      for (archive_loader.Attachment archiveAttachment
-          in archiveMessage.attachments) {
-        AttachmentsCompanion attachment = AttachmentsCompanion(
-          messageId: message.id,
-          type: Value(archiveAttachment.type),
-          uri: Value(archiveAttachment.uri),
-        );
-        attachmentsToInsert.add(attachment);
-      }
-    }
-
-    // Efficiently inserting all the participants, messages and attachments into the database.
+    // Efficiently inserting all the messages and attachments into the database.
     await db.batch((batch) {
-      batch.insertAll(db.messages, messagesToInsert);
-      batch.insertAll(db.attachments, attachmentsToInsert);
+      for (archive_loader.Message archiveMessage in messageStack.messages()) {
+        if (usedMessageIds.contains(archiveMessage.id)) continue;
+
+        MessagesCompanion message = MessagesCompanion(
+          id: Value(archiveMessage.id),
+          chatId: chat.id,
+          rawData: Value(jsonEncode(archiveMessage.data)),
+          sentAt: Value(archiveMessage.sentAt),
+          senderName: Value(archiveMessage.senderName),
+          content: Value(archiveMessage.content),
+        );
+
+        batch.insert(db.messages, message);
+        usedMessageIds.add(message.id.value);
+
+        // Add attachments to database
+        for (archive_loader.Attachment archiveAttachment
+            in archiveMessage.attachments) {
+          AttachmentsCompanion attachment = AttachmentsCompanion(
+            messageId: message.id,
+            type: Value(archiveAttachment.type),
+            uri: Value(archiveAttachment.uri),
+          );
+
+          batch.insert(db.attachments, attachment);
+        }
+      }
     });
 
     stacksDone++;
   }
 
   updateProgress(stacksDone);
+}
+
+Future<void> insertMediaFiles(
+  AppDatabase db,
+  int chatId,
+  Map<String, ArchiveFile> archiveMap,
+  ZipFileEncoder remEncoder,
+  Future<void> Function(double) updateProgress,
+) async {
+  final results =
+      await db
+          .customSelect(
+            'SELECT a.id, a.uri FROM attachments a JOIN messages m ON a.message_id = m.id WHERE m.chat_id = ? AND a.type <> ?',
+            variables: [
+              Variable.withInt(chatId),
+              Variable.withString(AttachmentType.link.name),
+            ],
+          )
+          .get();
+
+  final List<Map<String, dynamic>> attachments = results
+      .map((row) => {'id': row.read<int>('id'), 'uri': row.read<String>('uri')})
+      .toList(growable: false);
+
+  int attachmentsDone = 0;
+
+  for (Map<String, dynamic> attachment in attachments) {
+    final attachmentId = attachment["id"];
+    final uri = attachment["uri"];
+
+    final archiveFile = archiveMap[path.normalize(uri)];
+    final targetPath = path.join("media", "$attachmentId");
+
+    updateProgress(attachmentsDone / attachments.length);
+
+    if (archiveFile != null) {
+      remEncoder.addArchiveFile(
+        ArchiveFile.stream(
+          targetPath,
+          archiveFile.getContent() ?? InputMemoryStream.empty(),
+        ),
+      );
+    }
+
+    attachmentsDone++;
+  }
 }

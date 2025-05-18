@@ -1,7 +1,6 @@
 import 'package:path/path.dart' as path;
 import 'package:archive/archive.dart';
 
-
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/message_stack.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/message.dart';
@@ -20,7 +19,7 @@ class Chat {
   Chat({
     required this.archive,
     required this.dataDir,
-    required this.folderName
+    required this.folderName,
   });
 
   static Chat load(String folderName, Archive archive, String dataDir) {
@@ -58,7 +57,6 @@ class Chat {
   int get id {
     if (!folderName.contains("_")) {
       return int.tryParse(folderName) ?? -1;
-
     } else {
       List<String> parts = folderName.split('_');
       return int.parse(parts[parts.length - 1]);
