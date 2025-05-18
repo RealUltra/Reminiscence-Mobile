@@ -21,7 +21,7 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/models/mes
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/attachment.dart'
     as archive_loader;
 import 'package:reminiscence/features/database/models/attachment_type.dart';
-import 'package:reminiscence/features/encryption/encryption.dart';
+//import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 
