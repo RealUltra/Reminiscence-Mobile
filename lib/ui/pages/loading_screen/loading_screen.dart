@@ -69,10 +69,14 @@ class _LoadingScreenState extends State<LoadingScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    isLoading
-                        ? (progress.label ?? "Loading, please wait...")
-                        : "Completed in $duration seconds!",
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 80),
+                    child: Text(
+                      isLoading
+                          ? (progress.label ?? "Loading, please wait...")
+                          : "Completed in $duration seconds.",
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),
@@ -106,6 +110,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
         if (mounted) {
           setState(() {
             duration = formatDuration(DateTime.now().difference(startTime));
+            debugPrint("Completed in $duration seconds.");
             isLoading = false;
           });
         }

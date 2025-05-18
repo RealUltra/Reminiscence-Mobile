@@ -65,6 +65,10 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
                     borderSide: BorderSide(color: Colors.white),
                   ),
                   labelText: 'Password',
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.pinkAccent),
+                  ),
+                  floatingLabelStyle: TextStyle(color: Colors.pinkAccent),
                 ),
               ),
 

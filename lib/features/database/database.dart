@@ -31,12 +31,14 @@ class AppDatabase extends _$AppDatabase {
     String? password,
     RootIsolateToken? token,
   ) {
+    token ??= RootIsolateToken.instance;
+
     return NativeDatabase.createInBackground(
       File(dbPath),
       isolateSetup: () async {
-        BackgroundIsolateBinaryMessenger.ensureInitialized(
-          token ?? RootIsolateToken.instance!,
-        );
+        if (token != null) {
+          BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        }
         await setupSqlCipher();
       },
       setup: (rawDb) {

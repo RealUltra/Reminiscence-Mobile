@@ -50,7 +50,7 @@ class BodyState extends State<Body> {
       if (extension == "rem") {
         debugPrint("REM FILE!");
       } else if (extension == "zip") {
-        if (isValidArchive(archivePath: filePath)) {
+        if (!isValidArchive(archivePath: filePath)) {
           debugPrint("Invalid archive!");
           return;
         }

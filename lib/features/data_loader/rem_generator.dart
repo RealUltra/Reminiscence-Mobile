@@ -72,35 +72,51 @@ Future<String?> createRemFile({
   });
 
   final tempDir = await getTemporaryDirectory();
+  //
 
+  // Initialize the .rem file encoder.
+  final encoder = ZipFileEncoder();
+
+  String fileName = path.basenameWithoutExtension(archivePath);
+  String outputPath = path.join(tempDir.path, "$fileName.rem");
+
+  encoder.create(outputPath);
+
+  // Extract the chats from the archive.
   final chats = getChats(archivePath);
 
   if (isCancelled) return null;
 
+  // Create an empty database to start loading these chats into.
   final dbPath = '${tempDir.path}/database.db';
   final db = await createFreshDatabase(dbPath, password, rootToken);
 
   if (isCancelled) return null;
 
-  int chatsInserted = 0;
-  int totalChats = chats.length;
+  // Insert all the chats from the archive into the database
+  int stacksDone = 0;
+  int totalStacks = chats
+      .map((c) => c.messageStacks.length)
+      .fold(0, (sum, length) => sum + length);
 
   for (var chat in chats) {
     debugPrint("Chat Title: ${chat.title}");
-    await insertArchiveChat(db, chat);
-    chatsInserted++;
+
+    await insertArchiveChat(db, chat, (int increment) async {
+      sendPort?.send({
+        "type": "progress",
+        "progress": {
+          "value": (stacksDone + increment) / totalStacks,
+          "label": 'Loading Chats...\n\n${chat.title}',
+        },
+      });
+    });
+
+    stacksDone += chat.messageStacks.length;
 
     if (isCancelled) return null;
-
-    sendPort?.send({
-      "type": "progress",
-      "progress":
-          Progress(
-            value: chatsInserted / totalChats,
-            label: "Loading your chats...",
-          ).toMap(),
-    });
   }
+  //
 
   // Deriving the encryption key from the password.
   final derivedKey =
@@ -108,7 +124,6 @@ Future<String?> createRemFile({
 
   // Creating media folder
   final mediaDir = path.join(tempDir.path, "media");
-
   await createFreshFolder(mediaDir);
 
   if (chats.isNotEmpty) {
@@ -147,10 +162,13 @@ Future<String?> createRemFile({
           fileData = await encrypt(fileData, derivedKey.secretKey);
         }
 
-        String mediaPath = path.join(mediaDir, "$attachmentId");
-        final mediaFile = File(mediaPath);
-
-        await mediaFile.writeAsBytes(fileData);
+        encoder.addArchiveFile(
+          ArchiveFile(
+            path.join("media", "$attachmentId"),
+            fileData.length,
+            fileData,
+          ),
+        );
 
         filesWritten++;
 
@@ -180,19 +198,11 @@ Future<String?> createRemFile({
   final nonceFile = File(noncePath);
   await nonceFile.writeAsBytes(derivedKey?.nonce ?? []);
 
-  // Creating .rem file.
-  final encoder = ZipFileEncoder();
-
-  String fileName = path.basenameWithoutExtension(archivePath);
-  String outputPath = path.join(tempDir.path, "$fileName.rem");
-
-  encoder.create(outputPath);
-
-  await encoder.addDirectory(Directory(mediaDir), includeDirName: true);
+  // Adding the database and nonce to the rem file.
   await encoder.addFile(File(dbPath));
   await encoder.addFile(nonceFile);
 
-  // Close the zip file
+  // Close the rem file
   await encoder.close();
 
   // Close the database
@@ -204,15 +214,13 @@ Future<String?> createRemFile({
 Future<void> insertArchiveChat(
   AppDatabase db,
   archive_loader.Chat archiveChat,
+  Future<void> Function(int) updateProgress,
 ) async {
   // Create database chat
   ChatsCompanion chat = ChatsCompanion(
     id: Value(archiveChat.id),
     title: Value(archiveChat.title),
   );
-
-  // Add chat to database
-  db.into(db.chats).insert(chat);
 
   // Preparing participant objects to add to the database later
   final participantsToInsert =
@@ -222,11 +230,20 @@ Future<void> insertArchiveChat(
           )
           .toList();
 
+  await db.batch((batch) {
+    batch.insert(db.chats, chat);
+    batch.insertAll(db.participants, participantsToInsert);
+  });
+
   // Add messages to database
+  int stacksDone = 0;
+
   for (archive_loader.MessageStack messageStack in archiveChat.messageStacks) {
     List<MessagesCompanion> messagesToInsert = [];
     List<AttachmentsCompanion> attachmentsToInsert = [];
     List<String> usedMessageIds = [];
+
+    updateProgress(stacksDone);
 
     for (archive_loader.Message archiveMessage in messageStack.messages()) {
       if (usedMessageIds.contains(archiveMessage.id)) {
@@ -259,9 +276,12 @@ Future<void> insertArchiveChat(
 
     // Efficiently inserting all the participants, messages and attachments into the database.
     await db.batch((batch) {
-      batch.insertAll(db.participants, participantsToInsert);
       batch.insertAll(db.messages, messagesToInsert);
       batch.insertAll(db.attachments, attachmentsToInsert);
     });
+
+    stacksDone++;
   }
+
+  updateProgress(stacksDone);
 }
