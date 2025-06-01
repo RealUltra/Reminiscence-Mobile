@@ -21,6 +21,7 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/models/mes
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/attachment.dart'
     as archive_loader;
 import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/encryption/encryption.dart';
 //import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
@@ -75,6 +76,10 @@ Future<String?> createRemFile({
   final tempDir = await getTemporaryDirectory();
   //
 
+  // Derive the encryption key.
+  final derivedKey =
+      password != null ? await deriveKey(password: password) : null;
+
   // Initialize the .rem file encoder.
   String fileName = path.basenameWithoutExtension(archivePath);
   String outputPath = path.join(tempDir.path, "$fileName.rem");
@@ -87,7 +92,7 @@ Future<String?> createRemFile({
   final archive = ZipDecoder().decodeStream(stream);
 
   // Extract the chats from the archive.
-  final chats = await getChats(archive: archive);
+  final chats = getChats(archive: archive);
 
   if (isCancelled) return null;
 
@@ -122,7 +127,7 @@ Future<String?> createRemFile({
 
     stacksDone += stacksMid;
 
-    await insertMediaFiles(db, chat.id, archiveMap, encoder, (
+    await insertMediaFiles(db, chat.id, archiveMap, encoder, derivedKey, (
       double progress,
     ) async {
       sendPort?.send({
@@ -139,10 +144,6 @@ Future<String?> createRemFile({
     if (isCancelled) return null;
   }
   //
-
-  // Deriving the encryption key from the password.
-  final derivedKey =
-      password != null ? (await deriveKey(password: password)) : null;
 
   sendPort?.send({
     "type": "progress",
@@ -244,6 +245,7 @@ Future<void> insertMediaFiles(
   int chatId,
   Map<String, ArchiveFile> archiveMap,
   ZipFileEncoder remEncoder,
+  DerivedKey? derivedKey,
   Future<void> Function(double) updateProgress,
 ) async {
   final results =
@@ -261,6 +263,8 @@ Future<void> insertMediaFiles(
       .map((row) => {'id': row.read<int>('id'), 'uri': row.read<String>('uri')})
       .toList(growable: false);
 
+  final tempDir = await getTemporaryDirectory();
+
   int attachmentsDone = 0;
 
   for (Map<String, dynamic> attachment in attachments) {
@@ -273,11 +277,18 @@ Future<void> insertMediaFiles(
     updateProgress(attachmentsDone / attachments.length);
 
     if (archiveFile != null) {
+      final encryptedPath = path.join(tempDir.path, "encrypted_attachment.dat");
+
+      if (derivedKey != null) {
+        await encryptStream(
+          inputStream: archiveFile.getContent()!,
+          outputPath: encryptedPath,
+          secretKey: derivedKey.secretKey,
+        );
+      }
+
       remEncoder.addArchiveFile(
-        ArchiveFile.stream(
-          targetPath,
-          archiveFile.getContent() ?? InputMemoryStream.empty(),
-        ),
+        ArchiveFile.stream(targetPath, InputFileStream(encryptedPath)),
       );
     }
 
