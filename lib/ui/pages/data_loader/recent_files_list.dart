@@ -4,8 +4,13 @@ import 'package:reminiscence/ui/pages/data_loader/recent_file_card.dart';
 
 class RecentFilesList extends StatelessWidget {
   final List<String> recentFiles;
+  final void Function(String filePath) onClick;
 
-  const RecentFilesList({super.key, required this.recentFiles});
+  const RecentFilesList({
+    super.key,
+    required this.recentFiles,
+    required this.onClick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +33,10 @@ class RecentFilesList extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
                 return Column(
                   children: [
-                    RecentFileCard(filePath: recentFiles[index]),
+                    RecentFileCard(
+                      filePath: recentFiles[index],
+                      onClick: onClick,
+                    ),
                     const SizedBox(height: 12),
                   ],
                 );

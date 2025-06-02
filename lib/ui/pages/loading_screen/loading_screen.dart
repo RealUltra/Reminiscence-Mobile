@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/components/rotating_image.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 
-class LoadingScreen extends StatefulWidget {
+class LoadingScreen<T> extends StatefulWidget {
   final Function(List<dynamic>) operation;
   final List<dynamic> operationParams;
 
@@ -17,10 +17,10 @@ class LoadingScreen extends StatefulWidget {
   });
 
   @override
-  State<LoadingScreen> createState() => _LoadingScreenState();
+  State<LoadingScreen> createState() => _LoadingScreenState<T>();
 }
 
-class _LoadingScreenState extends State<LoadingScreen> {
+class _LoadingScreenState<T> extends State<LoadingScreen> {
   late Progress progress;
   late final DateTime startTime;
   String? duration;
@@ -102,13 +102,14 @@ class _LoadingScreenState extends State<LoadingScreen> {
       if (message is! Map<String, dynamic>) return;
 
       if (message["type"] == "result") {
-        final String? result = message["result"];
+        final T? result = message["result"];
+        final bool success = message["success"] ?? false;
 
         // In case the user cancelled.
         if (result == null) return;
 
         // Set the duration and stop loading.
-        if (mounted) {
+        if (mounted && success) {
           setState(() {
             duration = formatDuration(DateTime.now().difference(startTime));
             debugPrint("Completed in $duration seconds.");
@@ -116,7 +117,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
           });
         }
 
-        Future.delayed(Duration(seconds: 5)).then((_) {
+        Future.delayed(Duration(seconds: success ? 3 : 0)).then((_) {
           if (mounted) {
             Navigator.pop(context, result);
           }
@@ -132,8 +133,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
       }
     });
   }
-
-  Future<void> updateProgress(Progress progress) async {}
 
   String formatDuration(Duration duration) {
     final durationStr = "${duration.inMilliseconds}";

@@ -151,6 +151,9 @@ Future<String?> createRemFile({
         Progress(value: 0.99, label: "Bundling everything up...").toMap(),
   });
 
+  // Close the database
+  await db.close();
+
   // Adding the database and nonce to the rem file.
   await encoder.addFile(File(dbPath), "database.db");
   encoder.addArchiveFile(
@@ -159,9 +162,6 @@ Future<String?> createRemFile({
 
   // Close the rem file
   await encoder.close();
-
-  // Close the database
-  await db.close();
 
   sendPort?.send({
     "type": "progress",
@@ -277,19 +277,23 @@ Future<void> insertMediaFiles(
     updateProgress(attachmentsDone / attachments.length);
 
     if (archiveFile != null) {
-      final encryptedPath = path.join(tempDir.path, "encrypted_attachment.dat");
+      InputStream fileStream;
 
       if (derivedKey != null) {
+        final tempPath = path.join(tempDir.path, "attachment.dat");
+
         await encryptStream(
           inputStream: archiveFile.getContent()!,
-          outputPath: encryptedPath,
+          outputPath: tempPath,
           secretKey: derivedKey.secretKey,
         );
+
+        fileStream = InputFileStream(tempPath);
+      } else {
+        fileStream = archiveFile.getContent() ?? InputMemoryStream.empty();
       }
 
-      remEncoder.addArchiveFile(
-        ArchiveFile.stream(targetPath, InputFileStream(encryptedPath)),
-      );
+      remEncoder.addArchiveFile(ArchiveFile.stream(targetPath, fileStream));
     }
 
     attachmentsDone++;

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
-import 'package:path/path.dart' as p;
 import 'package:reminiscence/features/data_loader/utils.dart';
 
 void main() async {
@@ -11,5 +10,9 @@ void main() async {
   InputFileStream stream = InputFileStream(archivePath);
   Archive archive = ZipDecoder().decodeStream(stream);
 
-  await extractArchiveDir(archive, "your_instagram_activity", "output");
+  await extractArchiveDir(
+    archive,
+    "your_instagram_activity",
+    Directory("output"),
+  );
 }

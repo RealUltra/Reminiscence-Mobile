@@ -18,7 +18,7 @@ class _LoadDataButtonState extends State<LoadDataButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        widget.parent.loadData(context);
+        widget.parent.loadNewData(context);
       },
       onTapDown: (_) {
         setState(() {
