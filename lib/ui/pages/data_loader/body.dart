@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/data_loader/rem_generator.dart';
 
@@ -13,15 +17,15 @@ import 'package:reminiscence/ui/pages/data_loader/recent_files_list.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
 
 class Body extends StatefulWidget {
-  const Body({super.key});
+  final MediaStore mediaStorePlugin;
+
+  const Body(this.mediaStorePlugin, {super.key});
 
   @override
   State<Body> createState() => BodyState();
 }
 
 class BodyState extends State<Body> {
-  final List<String> recentFiles = [];
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,10 +34,37 @@ class BodyState extends State<Body> {
         children: [
           const SizedBox(height: 6),
           LoadDataButton(parent: this),
-          SizedBox(height: (recentFiles.isNotEmpty ? 32 : 50)),
-          recentFiles.isNotEmpty
-              ? RecentFilesList(recentFiles: recentFiles)
-              : const NoRecentFilesWidget(),
+          FutureBuilder<List<String>>(
+            future: fetchRecentFiles(),
+            builder: (context, snapshot) {
+              const noRecentFilesWidget = Expanded(
+                child: Column(
+                  children: [SizedBox(height: 50), NoRecentFilesWidget()],
+                ),
+              );
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return noRecentFilesWidget;
+              } else if (snapshot.hasError) {
+                return noRecentFilesWidget;
+              } else if (snapshot.hasData) {
+                final List<String> recentFiles = snapshot.data!;
+
+                return Expanded(
+                  child: Column(
+                    children: [
+                      SizedBox(height: (recentFiles.isNotEmpty ? 32 : 50)),
+                      recentFiles.isNotEmpty
+                          ? RecentFilesList(recentFiles: recentFiles)
+                          : const NoRecentFilesWidget(),
+                    ],
+                  ),
+                );
+              } else {
+                return noRecentFilesWidget;
+              }
+            },
+          ),
         ],
       ),
     );
@@ -83,7 +114,15 @@ class BodyState extends State<Body> {
   }
 
   Future<void> saveNewRemFile(String tempPath) async {
-    debugPrint("Data Loaded Successfully: $tempPath");
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = path.join(directory.path, path.basename(tempPath));
+
+    final tempFile = File(tempPath);
+    await tempFile.rename(filePath);
+
+    debugPrint("Data Loaded Successfully: $filePath");
+
+    setState(() {});
   }
 
   Future<String?> _promptPassword(BuildContext context) async {
@@ -94,6 +133,26 @@ class BodyState extends State<Body> {
       },
     );
     return password;
+  }
+
+  Future<List<String>> fetchRecentFiles() async {
+    final List<String> recentFiles = [];
+
+    final directory = await getApplicationDocumentsDirectory();
+
+    await for (FileSystemEntity entity in directory.list()) {
+      if (entity is File) {
+        File file = entity;
+
+        if (path.extension(file.path) == ".rem") {
+          recentFiles.add(file.path);
+        }
+      }
+    }
+
+    debugPrint("$recentFiles");
+
+    return recentFiles;
   }
 }
 
