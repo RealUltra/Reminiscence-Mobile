@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 import "package:path/path.dart" as p;
 import 'package:reminiscence/features/data_loader/utils.dart';
 
-class RecentFileCard extends StatelessWidget {
+class FileCard extends StatelessWidget {
   final String filePath;
+  final DateTime? lastOpened;
   late final bool isEncrypted;
   final void Function(String) onClick;
 
-  RecentFileCard({super.key, required this.filePath, required this.onClick}) {
+  FileCard({
+    super.key,
+    required this.filePath,
+    required this.lastOpened,
+    required this.onClick,
+  }) {
     isEncrypted = isRemFileEncrypted(filePath);
   }
 
@@ -46,7 +52,9 @@ class RecentFileCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    "Last Opened: 06/02/2025",
+                    lastOpened == null
+                        ? ""
+                        : "Last Opened: ${_formatDateTime(lastOpened!)}",
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 13,
@@ -68,5 +76,16 @@ class RecentFileCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    // 03/06/2024 10:15
+    final day = dateTime.day.toString().padLeft(2, "0");
+    final month = dateTime.month.toString().padLeft(2, "0");
+    final year = dateTime.year;
+    final hour = dateTime.hour.toString().padLeft(2, "0");
+    final minute = dateTime.minute.toString().padLeft(2, "0");
+
+    return "$day/$month/$year $hour:$minute";
   }
 }

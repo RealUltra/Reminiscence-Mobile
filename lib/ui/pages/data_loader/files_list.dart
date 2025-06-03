@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:reminiscence/ui/pages/data_loader/recent_file_card.dart';
+import 'package:reminiscence/ui/pages/data_loader/file_card.dart';
 
-class RecentFilesList extends StatelessWidget {
-  final List<String> recentFiles;
+class FilesList extends StatelessWidget {
+  final Map<String, DateTime?> recentFiles;
   final void Function(String filePath) onClick;
 
-  const RecentFilesList({
+  const FilesList({
     super.key,
     required this.recentFiles,
     required this.onClick,
@@ -14,12 +14,14 @@ class RecentFilesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filePaths = recentFiles.keys.toList();
+
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            "Recent Files",
+            "Loaded Files",
             style: TextStyle(
               color: Colors.grey[400],
               fontSize: 18,
@@ -29,12 +31,13 @@ class RecentFilesList extends StatelessWidget {
           const SizedBox(height: 10),
           Expanded(
             child: ListView.builder(
-              itemCount: recentFiles.length,
+              itemCount: filePaths.length,
               itemBuilder: (BuildContext context, int index) {
                 return Column(
                   children: [
-                    RecentFileCard(
-                      filePath: recentFiles[index],
+                    FileCard(
+                      filePath: filePaths[index],
+                      lastOpened: recentFiles[filePaths[index]],
                       onClick: onClick,
                     ),
                     const SizedBox(height: 12),

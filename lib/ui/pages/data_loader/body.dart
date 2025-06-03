@@ -7,18 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/data_loader/data_loader.dart';
 import 'package:reminiscence/features/data_loader/rem_generator.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
+import 'package:reminiscence/features/data_storage/data_storage.dart';
 import 'package:reminiscence/ui/components/bullet_point.dart';
 
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_recent_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry_dialog.dart';
-import 'package:reminiscence/ui/pages/data_loader/recent_files_list.dart';
+import 'package:reminiscence/ui/pages/data_loader/files_list.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
 
 class Body extends StatefulWidget {
@@ -39,39 +41,25 @@ class BodyState extends State<Body> {
         children: [
           const SizedBox(height: 6),
           LoadDataButton(parent: this),
-          FutureBuilder<List<String>>(
+          const SizedBox(height: 50),
+          FutureBuilder<Map<String, DateTime?>>(
             future: fetchRecentFiles(),
             builder: (context, snapshot) {
-              const noRecentFilesWidget = Expanded(
-                child: Column(
-                  children: [SizedBox(height: 50), NoRecentFilesWidget()],
-                ),
-              );
-
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return noRecentFilesWidget;
+                return const NoRecentFilesWidget();
               } else if (snapshot.hasError) {
-                return noRecentFilesWidget;
+                return const NoRecentFilesWidget();
               } else if (snapshot.hasData) {
-                final List<String> recentFiles = snapshot.data!;
+                final Map<String, DateTime?> recentFiles = snapshot.data!;
 
-                return Expanded(
-                  child: Column(
-                    children: [
-                      SizedBox(height: (recentFiles.isNotEmpty ? 32 : 50)),
-                      recentFiles.isNotEmpty
-                          ? RecentFilesList(
-                            recentFiles: recentFiles,
-                            onClick:
-                                (String filePath) =>
-                                    loadData(context, filePath),
-                          )
-                          : const NoRecentFilesWidget(),
-                    ],
-                  ),
-                );
+                return recentFiles.isNotEmpty
+                    ? FilesList(
+                      recentFiles: recentFiles,
+                      onClick: (String filePath) => loadData(context, filePath),
+                    )
+                    : const NoRecentFilesWidget();
               } else {
-                return noRecentFilesWidget;
+                return const NoRecentFilesWidget();
               }
             },
           ),
@@ -129,6 +117,9 @@ class BodyState extends State<Body> {
     }
 
     password = password.isEmpty ? null : password;
+
+    await updateFileHistory(filePath);
+    setState(() {});
 
     if (!context.mounted) return;
 
@@ -237,6 +228,7 @@ class BodyState extends State<Body> {
     final tempFile = File(tempPath);
     await tempFile.rename(filePath);
 
+    await updateFileHistory(filePath);
     debugPrint("Data Loaded Successfully: $filePath");
 
     setState(() {});
@@ -258,24 +250,42 @@ class BodyState extends State<Body> {
     return password;
   }
 
-  Future<List<String>> fetchRecentFiles() async {
-    final List<String> recentFiles = [];
+  Future<Map<String, DateTime?>> fetchRecentFiles() async {
+    final Map<String, DateTime?> recentFiles = {};
 
     final directory = await getApplicationDocumentsDirectory();
+    final fileHistory = await getFileHistory();
 
     await for (FileSystemEntity entity in directory.list()) {
       if (entity is File) {
         File file = entity;
+        final filePath = p.normalize(file.path);
 
-        if (path.extension(file.path) == ".rem") {
-          recentFiles.add(file.path);
+        if (path.extension(filePath) == ".rem") {
+          final epoch = fileHistory[filePath];
+          recentFiles[filePath] =
+              epoch != null ? DateTime.fromMillisecondsSinceEpoch(epoch) : null;
         }
       }
     }
 
-    debugPrint("$recentFiles");
+    final sortedRecentFiles = Map.fromEntries(
+      recentFiles.entries.toList()..sort((a, b) {
+        if ((a.value == null) && (b.value == null)) {
+          return 0;
+        } else if (a.value == null) {
+          return -1;
+        } else if (b.value == null) {
+          return 1;
+        } else {
+          return b.value!.compareTo(a.value!);
+        }
+      }),
+    );
 
-    return recentFiles;
+    debugPrint("$sortedRecentFiles");
+
+    return sortedRecentFiles;
   }
 }
 
