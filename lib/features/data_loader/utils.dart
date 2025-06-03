@@ -73,6 +73,7 @@ Future<void> extractArchiveDir(
 
       if (archiveFile.isFile) {
         await Directory(p.dirname(filePath)).create(recursive: true);
+
         final stream = OutputFileStream(filePath);
         stream.writeStream(archiveFile.getContent()!);
         await stream.close();

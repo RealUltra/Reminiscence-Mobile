@@ -1,18 +1,18 @@
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
+import 'package:reminiscence/features/encryption/kdf.dart';
 
 void main() async {
   /*
-  final file = File(
+  final inputStream = InputFileStream(
     "B:\\UserData\\Documents\\Albums\\School\\A2 Events\\Class Photograph\\solo photo.png",
   );
 
-  final inputStream = file.openRead();
-
   final derivedKey = await deriveKey(password: "1234567890");
-  print(await derivedKey.secretKey.extractBytes());
+  print(derivedKey.nonce);
 
   encryptStream(
     inputStream: inputStream,
@@ -21,40 +21,27 @@ void main() async {
   );
   */
 
-  final secretKey = SecretKey([
-    154,
-    189,
-    198,
-    127,
-    113,
-    246,
-    64,
-    117,
-    177,
-    197,
-    120,
-    141,
-    179,
-    233,
-    250,
-    31,
-    254,
+  ///*
+  final nonce = [
+    53,
+    195,
+    214,
+    157,
     27,
-    80,
-    112,
+    188,
+    155,
+    28,
+    192,
+    124,
+    76,
+    85,
+    29,
+    56,
     212,
-    221,
-    206,
-    173,
-    244,
-    142,
-    249,
-    198,
-    181,
-    80,
-    114,
-    181,
-  ]);
+    36,
+  ];
+
+  final derivedKey = await deriveKey(password: "1234567890", nonce: nonce);
 
   final stopwatch = Stopwatch()..start();
 
@@ -64,10 +51,11 @@ void main() async {
   final outputFile = File("output.png");
 
   decryptStream(
-    inputPath: inputFile.path,
+    inputStream: InputFileStream(inputFile.path),
     outputPath: outputFile.path,
-    secretKey: secretKey,
+    secretKey: derivedKey.secretKey,
   );
 
   stopwatch.stop();
+  //*/
 }

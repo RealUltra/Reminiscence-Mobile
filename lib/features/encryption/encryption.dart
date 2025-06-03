@@ -65,36 +65,41 @@ Future<void> encryptStream({
     },
   );
 
+  List<int> emptyMac = [];
+
+  for (int i = 0; i < 16; i++) {
+    emptyMac.add(0);
+  }
+
   await outputStream.addStream(encryptedStream);
-  outputStream.add(outputMac?.bytes ?? []);
+  outputStream.add(outputMac?.bytes ?? emptyMac);
+
+  await outputStream.close();
 }
 
 Future<void> decryptStream({
-  required String inputPath,
+  required InputStream inputStream,
   required String outputPath,
   required SecretKey secretKey,
   int chunkSize = 64 * 1024,
 }) async {
-  final inputFile = File(inputPath);
-  final fileLength = await inputFile.length();
+  final fileLength = inputStream.length;
 
   if (fileLength < 28) {
     throw Exception("The file is too short to contain the nonce and the mac.");
   }
 
-  final nonce = await inputFile
-      .openRead(0, 12)
-      .fold<List<int>>([], (a, b) => a..addAll(b));
+  final nonce = inputStream.readBytes(12).toUint8List();
 
-  final macStart = fileLength - 16;
-  final macBytes = await inputFile
-      .openRead(macStart)
-      .fold<List<int>>([], (a, b) => a..addAll(b));
+  final input = getStreamFromInputStream(
+    stream: inputStream.readBytes(fileLength - 28),
+  );
+
+  final macBytes = inputStream.readBytes(16).toUint8List();
   final mac = Mac(macBytes);
 
   final algorithm = AesGcm.with256bits();
 
-  final input = inputFile.openRead(12, macStart);
   final output = File(outputPath).openWrite();
 
   final decryptedStream = algorithm.decryptStream(
@@ -105,4 +110,6 @@ Future<void> decryptStream({
   );
 
   await output.addStream(decryptedStream);
+
+  await output.close();
 }
