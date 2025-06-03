@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
 
 import 'package:reminiscence/ui/theme/app_theme.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
@@ -11,13 +11,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MediaStore.ensureInitialized();
 
-  List<Permission> permissions = [Permission.storage];
-  if ((await mediaStorePlugin.getPlatformSDKInt()) >= 33) {
-    permissions.add(Permission.photos);
-    permissions.add(Permission.audio);
-    permissions.add(Permission.videos);
-  }
-  await permissions.request();
+  await requestPermissions();
 
   MediaStore.appFolder = "Reminiscence";
 

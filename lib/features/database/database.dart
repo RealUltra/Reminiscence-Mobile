@@ -14,6 +14,10 @@ part 'database.g.dart';
 
 // dart run build_runner build --delete-conflicting-outputs
 
+String escapeString(String source) {
+  return source.replaceAll('\'', '\'\'');
+}
+
 @DriftDatabase(tables: [Chats, Participants, Messages, Attachments])
 class AppDatabase extends _$AppDatabase {
   AppDatabase({
@@ -43,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
       },
       setup: (rawDb) {
         if (password != null) {
-          rawDb.execute("PRAGMA key = '$password'");
+          rawDb.execute("PRAGMA key = '${escapeString(password)}';");
         }
         rawDb.config.doubleQuotedStringLiterals = false;
       },

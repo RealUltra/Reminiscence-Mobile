@@ -1,16 +1,20 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:ui';
 
 import 'package:archive/archive.dart';
+import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
 
 import "package:reminiscence/features/data_loader/reminiscence_data.dart";
+import 'package:reminiscence/features/database/database.dart';
 
 Future<ReminiscenceData?> loadRemFile({
   required String filePath,
   String? password,
+  required RootIsolateToken rootToken,
   required SendPort? sendPort,
 }) async {
   // Set up receive port and cancellation token
@@ -63,6 +67,17 @@ Future<ReminiscenceData?> loadRemFile({
 
   if (isCancelled) return null;
 
+  // Try to decrypt the database to check if the password is correct.
+  final db = AppDatabase(dbPath: dbPath, password: password, token: rootToken);
+
+  try {
+    await db.chats.select().get();
+    await db.close();
+  } catch (_) {
+    await db.close();
+    return null;
+  }
+
   // Get the nonce
   List<int> nonce = [];
 
@@ -78,7 +93,9 @@ Future<ReminiscenceData?> loadRemFile({
   });
 
   // Extract the media files
-  await mediaDir.delete(recursive: true);
+  if (await mediaDir.exists()) {
+    await mediaDir.delete(recursive: true);
+  }
 
   if (isCancelled) return null;
 

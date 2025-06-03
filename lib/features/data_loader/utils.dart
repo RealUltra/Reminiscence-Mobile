@@ -1,7 +1,10 @@
 import 'dart:io';
-
+import 'package:collection/collection.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
+
+import 'package:reminiscence/features/encryption/encryption.dart';
+import 'package:reminiscence/features/encryption/kdf.dart';
 
 bool isRemFileEncrypted(String filePath) {
   InputFileStream stream = InputFileStream(filePath);
@@ -18,6 +21,33 @@ bool isRemFileEncrypted(String filePath) {
   }
 
   return true;
+}
+
+Future<bool> checkPassword(String remFilePath, String? password) async {
+  if (password == null) {
+    return !isRemFileEncrypted(remFilePath);
+  }
+
+  InputFileStream stream = InputFileStream(remFilePath);
+  Archive archive = ZipDecoder().decodeStream(stream);
+
+  ArchiveFile? nonceFile = archive.find("nonce.txt");
+  List<int> nonce = nonceFile!.readBytes() ?? [];
+
+  ArchiveFile? testFile = archive.find("test.dat");
+  List<int> encryptionTest = testFile?.readBytes() ?? [];
+
+  DerivedKey derivedKey = await deriveKey(password: password, nonce: nonce);
+
+  try {
+    List<int> decryptedTest = await decrypt(
+      encryptionTest,
+      derivedKey.secretKey,
+    );
+    return ListEquality().equals(nonce, decryptedTest);
+  } catch (e) {
+    return false;
+  }
 }
 
 Future<void> extractArchiveDir(

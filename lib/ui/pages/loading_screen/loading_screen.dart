@@ -106,7 +106,10 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
         final bool success = message["success"] ?? false;
 
         // In case the user cancelled.
-        if (result == null) return;
+        if (mounted && !success) {
+          Navigator.pop(context, result);
+          return;
+        }
 
         // Set the duration and stop loading.
         if (mounted && success) {

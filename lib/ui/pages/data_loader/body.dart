@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,8 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart
 import 'package:reminiscence/features/data_loader/data_loader.dart';
 import 'package:reminiscence/features/data_loader/rem_generator.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
+import 'package:reminiscence/features/data_loader/utils.dart';
+import 'package:reminiscence/ui/components/bullet_point.dart';
 
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_recent_files_widget.dart';
@@ -90,64 +93,141 @@ class BodyState extends State<Body> {
     }
   }
 
-  Future<void> loadData(
+  Future<void> loadData(BuildContext context, String filePath) async {
+    final extension = path.extension(filePath);
+
+    if (extension == ".rem") {
+      await loadRemData(context, filePath);
+    } else if (extension == ".zip") {
+      await loadZipData(context, filePath);
+    } else {
+      debugPrint("Invalid file type!");
+    }
+  }
+
+  Future<void> loadRemData(
     BuildContext context,
     String filePath, {
     String? password,
   }) async {
-    final extension = path.extension(filePath);
-
-    if (extension == ".rem") {
-      Map<String, dynamic>? dataMap = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder:
-              (_) => LoadingScreen<Map<String, dynamic>>(
-                operation: loadRemFileForIsolate,
-                operationParams: <dynamic>[filePath, password],
-              ),
-        ),
+    // If the file is encrypted but there is no password given, prompt for a password.
+    // If the user closes the password prompt, exit the function.
+    if (isRemFileEncrypted(filePath)) {
+      password ??= await _promptPassword(
+        context,
+        1,
+        checkPassword: (String password) async {
+          return await checkPassword(
+            filePath,
+            password.isEmpty ? null : password,
+          );
+        },
       );
-
-      if (dataMap == null) return;
-
-      final data = ReminiscenceData.fromMap(dataMap);
-      data.loadDatabase();
-
-      debugPrint("REM FILE LOADED!");
-    } else if (extension == ".zip") {
-      if (!isValidArchive(archivePath: filePath)) {
-        debugPrint("Invalid archive!");
-        return;
-      }
-
-      if (!context.mounted) return;
-
-      password ??= await _promptPassword(context);
       if (password == null) return;
-      password = password.isEmpty ? null : password;
-
-      if (!context.mounted) return;
-
-      String? outputPath = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder:
-              (_) => LoadingScreen<String>(
-                operation: createRemFileForIsolate,
-                operationParams: <dynamic>[filePath, password],
-              ),
-        ),
-      );
-
-      if (outputPath == null) return;
-
-      final remFilePath = await saveNewRemFile(outputPath);
-
-      if (!context.mounted) return;
-
-      await loadData(context, remFilePath, password: password);
     } else {
-      debugPrint("Invalid file type!");
+      password = "";
     }
+
+    password = password.isEmpty ? null : password;
+
+    if (!context.mounted) return;
+
+    // Load the rem file with the loading screen.
+    Map<String, dynamic>? dataMap = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => LoadingScreen<Map<String, dynamic>>(
+              operation: loadRemFileForIsolate,
+              operationParams: <dynamic>[filePath, password],
+            ),
+      ),
+    );
+
+    // If the rem file loading failed, exit.
+    if (dataMap == null) return;
+
+    // Load the database.
+    final data = ReminiscenceData.fromMap(dataMap);
+    data.loadDatabase();
+
+    final chats = await data.db.chats.select().get();
+    debugPrint("Chat: ${chats[0]}");
+
+    debugPrint("REM FILE LOADED!");
+  }
+
+  Future<void> loadZipData(BuildContext context, String filePath) async {
+    // Check if the zip file selected is valid.
+    if (!isValidArchive(archivePath: filePath)) {
+      debugPrint("Invalid archive!");
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    // If no password has been given, prompt for a password.
+    String? password = await _promptPassword(context, 0);
+
+    // If the user closes the password prompt, exit the function.
+    if (password == null) return;
+
+    // If the password is an empty string, it equates to no password i.e password = null
+    password = password.isEmpty ? null : password;
+
+    if (!context.mounted) return;
+
+    // Create a rem file with a loading screen.
+    String? outputPath = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => LoadingScreen<String>(
+              operation: createRemFileForIsolate,
+              operationParams: <dynamic>[filePath, password],
+            ),
+      ),
+    );
+
+    if (outputPath == null) return;
+
+    // Save the file in my applications directory.
+    final remFilePath = await saveNewRemFile(outputPath);
+
+    if (!context.mounted) return;
+
+    // Load the rem file.
+    //await loadRemData(context, remFilePath, password: password);
+
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Disclaimer'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BulletPoint(
+                  "A .rem file has been created using your instagram data.",
+                ),
+                const SizedBox(height: 8),
+                BulletPoint(
+                  "Please delete the zip file containing your instagram data as it poses security risks.",
+                  textStyle: TextStyle(color: Colors.redAccent),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+    );
+
+    if (!context.mounted) return;
+
+    // Load the rem file.
+    await loadRemData(context, remFilePath, password: password);
   }
 
   Future<String> saveNewRemFile(String tempPath) async {
@@ -164,11 +244,15 @@ class BodyState extends State<Body> {
     return filePath;
   }
 
-  Future<String?> _promptPassword(BuildContext context) async {
+  Future<String?> _promptPassword(
+    BuildContext context,
+    int mode, {
+    Future<bool> Function(String password)? checkPassword,
+  }) async {
     final password = await showDialog<String?>(
       context: context,
       builder: (context) {
-        return PasswordEntryDialog();
+        return PasswordEntryDialog(mode, checkPassword: checkPassword);
       },
     );
     return password;
@@ -214,7 +298,11 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
     sendPort: sendPort,
   );
 
-  sendPort.send({"type": "result", "result": outputPath});
+  sendPort.send({
+    "type": "result",
+    "result": outputPath,
+    "success": outputPath != null,
+  });
 }
 
 Future<void> loadRemFileForIsolate(List<dynamic> args) async {
@@ -232,6 +320,7 @@ Future<void> loadRemFileForIsolate(List<dynamic> args) async {
   ReminiscenceData? data = await loadRemFile(
     filePath: filePath,
     password: password,
+    rootToken: rootToken,
     sendPort: sendPort,
   );
 

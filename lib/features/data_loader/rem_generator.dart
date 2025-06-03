@@ -154,11 +154,23 @@ Future<String?> createRemFile({
   // Close the database
   await db.close();
 
-  // Adding the database and nonce to the rem file.
+  // Adding the database to the rem file.
   await encoder.addFile(File(dbPath), "database.db");
+
+  // Adding the nonce to the rem file.
   encoder.addArchiveFile(
     ArchiveFile.bytes("nonce.txt", derivedKey?.nonce ?? []),
   );
+
+  // Adding the password test to the rem file.
+  if (derivedKey != null) {
+    encoder.addArchiveFile(
+      ArchiveFile.bytes(
+        "test.dat",
+        await encrypt(derivedKey.nonce, derivedKey.secretKey),
+      ),
+    );
+  }
 
   // Close the rem file
   await encoder.close();
@@ -278,10 +290,9 @@ Future<void> insertMediaFiles(
 
     if (archiveFile != null) {
       InputStream fileStream;
+      final tempPath = path.join(tempDir.path, "attachment.dat");
 
       if (derivedKey != null) {
-        final tempPath = path.join(tempDir.path, "attachment.dat");
-
         await encryptStream(
           inputStream: archiveFile.getContent()!,
           outputPath: tempPath,
@@ -294,6 +305,12 @@ Future<void> insertMediaFiles(
       }
 
       remEncoder.addArchiveFile(ArchiveFile.stream(targetPath, fileStream));
+
+      final tempFile = File(tempPath);
+
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
     }
 
     attachmentsDone++;

@@ -21,6 +21,7 @@ dependencies:
   sqlcipher_flutter_libs: ^0.6.6
   cryptography: ^2.7.0
   sqlite3: ^2.7.5
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:
