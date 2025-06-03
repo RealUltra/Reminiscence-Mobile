@@ -18,7 +18,7 @@ import 'package:reminiscence/features/data_storage/data_storage.dart';
 import 'package:reminiscence/ui/components/bullet_point.dart';
 
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
-import 'package:reminiscence/ui/pages/data_loader/no_recent_files_widget.dart';
+import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry_dialog.dart';
 import 'package:reminiscence/ui/pages/data_loader/files_list.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
@@ -46,9 +46,9 @@ class BodyState extends State<Body> {
             future: fetchRecentFiles(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const NoRecentFilesWidget();
+                return const NoFilesWidget();
               } else if (snapshot.hasError) {
-                return const NoRecentFilesWidget();
+                return const NoFilesWidget();
               } else if (snapshot.hasData) {
                 final Map<String, DateTime?> recentFiles = snapshot.data!;
 
@@ -57,9 +57,9 @@ class BodyState extends State<Body> {
                       recentFiles: recentFiles,
                       onClick: (String filePath) => loadData(context, filePath),
                     )
-                    : const NoRecentFilesWidget();
+                    : const NoFilesWidget();
               } else {
-                return const NoRecentFilesWidget();
+                return const NoFilesWidget();
               }
             },
           ),

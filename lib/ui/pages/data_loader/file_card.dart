@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import "package:path/path.dart" as p;
+
 import 'package:reminiscence/features/data_loader/utils.dart';
 
 class FileCard extends StatelessWidget {
@@ -8,12 +8,14 @@ class FileCard extends StatelessWidget {
   final DateTime? lastOpened;
   late final bool isEncrypted;
   final void Function(String) onClick;
+  final void Function(String) onDelete;
 
   FileCard({
     super.key,
     required this.filePath,
     required this.lastOpened,
     required this.onClick,
+    required this.onDelete,
   }) {
     isEncrypted = isRemFileEncrypted(filePath);
   }
@@ -67,15 +69,47 @@ class FileCard extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: const Icon(Icons.more_vert),
-                onPressed: () {},
+              child: MenuAnchor(
+                builder: (
+                  BuildContext context,
+                  MenuController controller,
+                  Widget? child,
+                ) {
+                  return IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                  );
+                },
+                menuChildren: getOptionsMenuChildren(),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  List<MenuItemButton> getOptionsMenuChildren() {
+    return [
+      MenuItemButton(
+        onPressed: () => onDelete(filePath),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.delete, color: Colors.redAccent),
+            const SizedBox(width: 8),
+            Text("Delete", style: TextStyle(color: Colors.redAccent)),
+          ],
+        ),
+      ),
+    ];
   }
 
   String _formatDateTime(DateTime dateTime) {

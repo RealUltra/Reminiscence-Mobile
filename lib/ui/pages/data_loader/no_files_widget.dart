@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class NoRecentFilesWidget extends StatelessWidget {
-  const NoRecentFilesWidget({super.key});
+class NoFilesWidget extends StatelessWidget {
+  const NoFilesWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
