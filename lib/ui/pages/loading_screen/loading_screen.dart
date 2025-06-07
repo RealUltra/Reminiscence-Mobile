@@ -139,8 +139,16 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
 
   String formatDuration(Duration duration) {
     final durationStr = "${duration.inMilliseconds}";
-    final secondsPart = durationStr.substring(0, durationStr.length - 3);
+
+    if (durationStr.length < 3) {
+      return "0";
+    }
+
+    String secondsPart = durationStr.substring(0, durationStr.length - 3);
+    secondsPart = secondsPart.isEmpty ? "0" : secondsPart;
+
     final millisecondsPart = durationStr.substring(durationStr.length - 3);
+
     return "$secondsPart.${millisecondsPart[0]}";
   }
 }

@@ -30,6 +30,13 @@ class ReminiscenceData {
     _db ??= AppDatabase(dbPath: dbPath, password: password, token: token);
   }
 
+  Future<void> closeDatabase({RootIsolateToken? token}) async {
+    if (isDatabaseReady()) {
+      await _db!.close();
+      _db = null;
+    }
+  }
+
   bool isDatabaseReady() {
     return _db != null;
   }

@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:media_store_plus/media_store_plus.dart';
+import 'package:flutter/services.dart';
+
+import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
-
 import 'package:reminiscence/ui/theme/app_theme.dart';
+import 'package:reminiscence/ui/pages/chats_list/chats_list_page.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
-
-final mediaStorePlugin = MediaStore();
+import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
+import 'package:reminiscence/ui/pages/loading_screen/loading_screen_args.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MediaStore.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   await requestPermissions();
-
-  MediaStore.appFolder = "Reminiscence";
 
   runApp(const App());
 }
@@ -29,7 +33,39 @@ class App extends StatelessWidget {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
       initialRoute: "/",
-      routes: {'/': (context) => DataLoaderPage(mediaStorePlugin)},
+      onGenerateRoute: onGenerateRoute,
     );
+  }
+
+  Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    if (settings.name == '/') {
+      return MaterialPageRoute(
+        builder: (context) {
+          return DataLoaderPage();
+        },
+      );
+    } else if (settings.name == "/loading") {
+      final args = settings.arguments as LoadingScreenArgs;
+
+      debugPrint("Hey, settings.name is correct and I've got the arguments!");
+
+      return MaterialPageRoute(
+        builder:
+            (_) => LoadingScreen(
+              operation: args.operation,
+              operationParams: args.operationParams,
+            ),
+      );
+    } else if (settings.name == "/chats") {
+      final data = settings.arguments as ReminiscenceData;
+
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatsListPage(data);
+        },
+      );
+    }
+
+    return null;
   }
 }

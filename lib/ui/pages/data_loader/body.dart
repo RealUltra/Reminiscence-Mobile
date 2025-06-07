@@ -1,14 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
-
-import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/data_loader/data_loader.dart';
 import 'package:reminiscence/features/data_loader/rem_generator.dart';
@@ -16,23 +16,39 @@ import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/data_storage.dart';
 import 'package:reminiscence/ui/components/bullet_point.dart';
-
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry_dialog.dart';
 import 'package:reminiscence/ui/pages/data_loader/files_list.dart';
-import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
+import 'package:reminiscence/ui/pages/loading_screen/loading_screen_args.dart';
 
 class Body extends StatefulWidget {
-  final MediaStore mediaStorePlugin;
-
-  const Body(this.mediaStorePlugin, {super.key});
+  const Body({super.key});
 
   @override
   State<Body> createState() => BodyState();
 }
 
 class BodyState extends State<Body> {
+  late StreamSubscription _intentSub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
+      if (mounted) {
+        loadData(context, value.first.path);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _intentSub.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -124,15 +140,15 @@ class BodyState extends State<Body> {
     if (!context.mounted) return;
 
     // Load the rem file with the loading screen.
-    Map<String, dynamic>? dataMap = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => LoadingScreen<Map<String, dynamic>>(
-              operation: loadRemFileForIsolate,
-              operationParams: <dynamic>[filePath, password],
-            ),
-      ),
-    );
+    Map<String, dynamic>? dataMap =
+        await Navigator.of(context).pushNamed(
+              "/loading",
+              arguments: LoadingScreenArgs(
+                operation: loadRemFileForIsolate,
+                operationParams: <dynamic>[filePath, password],
+              ),
+            )
+            as Map<String, dynamic>?;
 
     // If the rem file loading failed, exit.
     if (dataMap == null) return;
@@ -141,10 +157,14 @@ class BodyState extends State<Body> {
     final data = ReminiscenceData.fromMap(dataMap);
     data.loadDatabase();
 
-    final chats = await data.db.chats.select().get();
-    debugPrint("Chat: ${chats[0]}");
+    if (!context.mounted) {
+      await data.closeDatabase();
+      return;
+    }
 
     debugPrint("REM FILE LOADED!");
+
+    await Navigator.of(context).pushNamed("/chats", arguments: data);
   }
 
   Future<void> loadZipData(BuildContext context, String filePath) async {
@@ -168,15 +188,15 @@ class BodyState extends State<Body> {
     if (!context.mounted) return;
 
     // Create a rem file with a loading screen.
-    String? outputPath = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => LoadingScreen<String>(
-              operation: createRemFileForIsolate,
-              operationParams: <dynamic>[filePath, password],
-            ),
-      ),
-    );
+    String? outputPath =
+        await Navigator.of(context).pushNamed(
+              "/loading",
+              arguments: LoadingScreenArgs(
+                operation: createRemFileForIsolate,
+                operationParams: <dynamic>[filePath, password],
+              ),
+            )
+            as String?;
 
     if (outputPath == null) return;
 
