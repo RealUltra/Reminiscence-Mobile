@@ -72,6 +72,7 @@ class BodyState extends State<Body> {
                     ? FilesList(
                       recentFiles: recentFiles,
                       onClick: (String filePath) => loadData(context, filePath),
+                      onDelete: (String filePath) => deleteLoadedFile(filePath),
                     )
                     : const NoFilesWidget();
               } else {
@@ -105,7 +106,15 @@ class BodyState extends State<Body> {
     } else if (extension == ".zip") {
       await loadZipData(context, filePath);
     } else {
-      debugPrint("Invalid file type!");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Unrecognized file type.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
 
@@ -114,6 +123,21 @@ class BodyState extends State<Body> {
     String filePath, {
     String? password,
   }) async {
+    // Check if the rem file selected is valid.
+    if (!isValidRemFile(filePath)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Invalid rem file.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+
+      return;
+    }
+
     // If the file is encrypted but there is no password given, prompt for a password.
     // If the user closes the password prompt, exit the function.
     if (isRemFileEncrypted(filePath)) {
@@ -170,7 +194,16 @@ class BodyState extends State<Body> {
   Future<void> loadZipData(BuildContext context, String filePath) async {
     // Check if the zip file selected is valid.
     if (!isValidArchive(archivePath: filePath)) {
-      debugPrint("Invalid archive!");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Unrecognized zip file format.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+
       return;
     }
 
@@ -229,7 +262,7 @@ class BodyState extends State<Body> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('OK'),
+                child: Text('OK', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -254,6 +287,16 @@ class BodyState extends State<Body> {
     setState(() {});
 
     return filePath;
+  }
+
+  Future<void> deleteLoadedFile(String filePath) async {
+    final file = File(filePath);
+
+    if (await file.exists()) {
+      await file.delete();
+    }
+
+    setState(() {});
   }
 
   Future<String?> _promptPassword(

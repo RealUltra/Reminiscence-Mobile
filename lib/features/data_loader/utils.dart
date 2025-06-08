@@ -50,6 +50,15 @@ Future<bool> checkPassword(String remFilePath, String? password) async {
   }
 }
 
+bool isValidRemFile(String filePath) {
+  InputFileStream stream = InputFileStream(filePath);
+  Archive archive = ZipDecoder().decodeStream(stream);
+
+  ArchiveFile? archiveFile = archive.find("database.db");
+
+  return archiveFile != null;
+}
+
 Future<void> extractArchiveDir(
   Archive archive,
   String directory,

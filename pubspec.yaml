@@ -28,6 +28,8 @@ dependencies:
       url: https://github.com/KasemJaffer/receive_sharing_intent
       ref: 2cea396843cd3ab1b5ec4334be4233864637874e
 
+  intl: ^0.20.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

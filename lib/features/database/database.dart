@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
+import 'package:reminiscence/features/database/daos/chat_dao.dart';
 
 import 'package:reminiscence/features/database/models/chat.dart';
 import 'package:reminiscence/features/database/models/participant.dart';
@@ -18,7 +19,10 @@ String escapeString(String source) {
   return source.replaceAll('\'', '\'\'');
 }
 
-@DriftDatabase(tables: [Chats, Participants, Messages, Attachments])
+@DriftDatabase(
+  tables: [Chats, Participants, Messages, Attachments],
+  daos: [ChatDao],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase({
     QueryExecutor? executor,
@@ -30,6 +34,7 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  // Custom _openConnection implementation
   static QueryExecutor _openConnection(
     String dbPath,
     String? password,

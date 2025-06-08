@@ -47,8 +47,6 @@ class App extends StatelessWidget {
     } else if (settings.name == "/loading") {
       final args = settings.arguments as LoadingScreenArgs;
 
-      debugPrint("Hey, settings.name is correct and I've got the arguments!");
-
       return MaterialPageRoute(
         builder:
             (_) => LoadingScreen(
