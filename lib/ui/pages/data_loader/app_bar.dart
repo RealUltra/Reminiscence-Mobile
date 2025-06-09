@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/components/full_screen_ad.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MyAppBar({super.key});
@@ -10,7 +11,10 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0.0,
       backgroundColor: Colors.transparent,
       actions: [
-        IconButton(onPressed: () {}, icon: Icon(Icons.help_outline, size: 30)),
+        IconButton(
+          onPressed: () => showTutorial(context),
+          icon: Icon(Icons.help_outline, size: 30),
+        ),
       ],
       actionsPadding: EdgeInsets.only(right: 16),
       titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
@@ -20,4 +24,13 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
+
+  void showTutorial(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => FullScreenAd(assetFilePath: "assets/tutorial-video.mp4"),
+      ),
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/components/full_screen_ad.dart';
 
 class NoFilesWidget extends StatelessWidget {
   const NoFilesWidget({super.key});
@@ -16,9 +17,7 @@ class NoFilesWidget extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextButton(
-          onPressed: () {
-            debugPrint("Pressed");
-          },
+          onPressed: () => showTutorial(context),
           style: ButtonStyle(
             overlayColor: WidgetStateProperty.all(Colors.red.withAlpha(50)),
           ),
@@ -33,6 +32,15 @@ class NoFilesWidget extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void showTutorial(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => FullScreenAd(assetFilePath: "assets/tutorial-video.mp4"),
+      ),
     );
   }
 }

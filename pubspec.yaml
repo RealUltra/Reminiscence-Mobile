@@ -29,6 +29,7 @@ dependencies:
       ref: 2cea396843cd3ab1b5ec4334be4233864637874e
 
   intl: ^0.20.2
+  video_player: ^2.10.0
 
 dev_dependencies:
   flutter_test:
