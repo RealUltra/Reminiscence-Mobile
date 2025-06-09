@@ -55,7 +55,7 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
                 children: [
                   RotatingImage(
                     image: Image.asset(
-                      'assets/logo.png',
+                      'assets/icon.png',
                       height: 100,
                       fit: BoxFit.cover,
                     ),
