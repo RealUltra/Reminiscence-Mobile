@@ -31,7 +31,7 @@ class _LoadDataButtonState extends State<LoadDataButton> {
           child: Center(
             child: Text(
               "Load New File",
-              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                 color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
               ),

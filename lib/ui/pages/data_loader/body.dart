@@ -36,11 +36,21 @@ class BodyState extends State<Body> {
   void initState() {
     super.initState();
 
-    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
-      if (mounted) {
-        loadData(context, value.first.path);
+    listener(value) {
+      if (value.isNotEmpty) {
+        debugPrint("Received a path: ${value.first.path}");
+
+        if (mounted) {
+          loadData(context, value.first.path);
+        }
       }
-    });
+    }
+
+    ReceiveSharingIntent.instance.getInitialMedia().then(listener);
+
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      listener,
+    );
   }
 
   @override
@@ -273,7 +283,7 @@ class BodyState extends State<Body> {
                 child: Text(
                   'OK',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
