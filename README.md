@@ -2,7 +2,7 @@
 
 **Revisit your old Instagram messages with clarity, security, and nostalgia.**
 
-Instagram allows users to request their messages (or other data) from the app. Reminiscence offers a better way to explore your message history by presenting your **Instagram data download** in a clean, searchable interface.
+Instagram lets you download an archive of all your messages. Reminiscence offers a better way to explore them by presenting your **Instagram data download** in a clean, searchable interface.
 
 ## ✨ Features
 
