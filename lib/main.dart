@@ -31,7 +31,7 @@ class App extends StatelessWidget {
       title: "Reminiscence",
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.system,
       initialRoute: "/",
       onGenerateRoute: onGenerateRoute,
     );

@@ -15,15 +15,14 @@ class MyAppBar extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12),
           child: Text(
             "${formatNumber(numChats)} Chats Loaded",
-            style: const TextStyle(
-              color: Colors.white,
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
             ),
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.settings, color: Colors.white),
+          icon: const Icon(Icons.settings),
           onPressed: () {
             // Handle Settings
           },

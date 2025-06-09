@@ -29,8 +29,11 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
           margin: EdgeInsets.symmetric(vertical: 50, horizontal: 20),
           padding: EdgeInsets.fromLTRB(12, 24, 12, 12),
           decoration: BoxDecoration(
-            color: Colors.black,
-            border: Border.all(color: Colors.grey, width: 1),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceContainerLowest,
+              width: 1,
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -43,13 +46,11 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
                 obscureText: !showPassword,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                   labelText: 'Password',
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.pinkAccent),
-                  ),
-                  floatingLabelStyle: TextStyle(color: Colors.pinkAccent),
                   suffixIcon: IconButton(
                     icon: Icon(
                       showPassword ? Icons.visibility : Icons.visibility_off,
@@ -69,7 +70,7 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
               if (failedAttempt)
                 Text(
                   "Incorrect Password.",
-                  style: TextStyle(color: Colors.redAccent),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
 
               const SizedBox(height: 16),
@@ -77,7 +78,7 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
               ElevatedButton(
                 onPressed: submitButtonPressed,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -89,10 +90,9 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
                   child: Text(
                     "Submit",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -133,7 +133,9 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
       children: [
         Text(
           "Create Password",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
         ),
 
         const SizedBox(height: 24),
@@ -171,7 +173,9 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
       children: [
         Text(
           "Enter Password",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
         ),
 
         const SizedBox(height: 24),

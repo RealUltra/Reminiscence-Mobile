@@ -30,7 +30,7 @@ class FileCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.fromLTRB(16, 12, 4, 12),
         decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -46,9 +46,8 @@ class FileCard extends StatelessWidget {
                 children: [
                   Text(
                     fileName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -57,9 +56,8 @@ class FileCard extends StatelessWidget {
                     lastOpened == null
                         ? ""
                         : "Last Opened: ${_formatDateTime(lastOpened!)}",
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 13,
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -86,7 +84,7 @@ class FileCard extends StatelessWidget {
                     },
                   );
                 },
-                menuChildren: getOptionsMenuChildren(),
+                menuChildren: getOptionsMenuChildren(context),
               ),
             ),
           ],
@@ -95,7 +93,7 @@ class FileCard extends StatelessWidget {
     );
   }
 
-  List<MenuItemButton> getOptionsMenuChildren() {
+  List<MenuItemButton> getOptionsMenuChildren(BuildContext context) {
     return [
       MenuItemButton(
         onPressed: () => onDelete(filePath),
@@ -103,9 +101,12 @@ class FileCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.delete, color: Colors.redAccent),
+            Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
             const SizedBox(width: 8),
-            Text("Delete", style: TextStyle(color: Colors.redAccent)),
+            Text(
+              "Delete",
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
         ),
       ),

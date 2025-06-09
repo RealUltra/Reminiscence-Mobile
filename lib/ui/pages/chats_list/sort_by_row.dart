@@ -22,25 +22,28 @@ class _SortByRowState extends State<SortByRow> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Text("Sort By:", style: TextStyle(color: Colors.white)),
+        const Text("Sort By:"),
         const SizedBox(width: 8),
         Expanded(
           child: Container(
             padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E2E2E),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: options[sortByMode],
-                dropdownColor: const Color(0xFF2E2E2E),
-                style: const TextStyle(color: Colors.white),
+                dropdownColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                 items:
                     options.map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(
+                          value,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
                       );
                     }).toList(),
 

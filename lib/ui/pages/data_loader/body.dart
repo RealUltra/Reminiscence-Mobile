@@ -110,9 +110,11 @@ class BodyState extends State<Body> {
         SnackBar(
           content: Text(
             "Unrecognized file type.",
-            style: TextStyle(color: Colors.white),
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+            ),
           ),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -129,9 +131,11 @@ class BodyState extends State<Body> {
         SnackBar(
           content: Text(
             "Invalid rem file.",
-            style: TextStyle(color: Colors.white),
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+            ),
           ),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
 
@@ -198,9 +202,11 @@ class BodyState extends State<Body> {
         SnackBar(
           content: Text(
             "Unrecognized zip file format.",
-            style: TextStyle(color: Colors.white),
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+            ),
           ),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
 
@@ -255,14 +261,21 @@ class BodyState extends State<Body> {
                 const SizedBox(height: 8),
                 BulletPoint(
                   "Please delete the zip file containing your instagram data as it poses security risks.",
-                  textStyle: TextStyle(color: Colors.redAccent),
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                 ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('OK', style: TextStyle(color: Colors.white)),
+                child: Text(
+                  'OK',
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
               ),
             ],
           ),

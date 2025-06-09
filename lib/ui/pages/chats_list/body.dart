@@ -53,7 +53,7 @@ class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Container();
+      return Container(color: Theme.of(context).colorScheme.surfaceContainer);
     }
 
     return PopScope(

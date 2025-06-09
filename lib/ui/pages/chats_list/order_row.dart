@@ -18,25 +18,28 @@ class _OrderRowState extends State<OrderRow> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Text("Order:", style: TextStyle(color: Colors.white)),
+        const Text("Order:"),
         const SizedBox(width: 19),
         Expanded(
           child: Container(
             padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E2E2E),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: options[orderMode],
-                dropdownColor: const Color(0xFF2E2E2E),
-                style: const TextStyle(color: Colors.white),
+                dropdownColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                 items:
                     options.map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(
+                          value,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
                       );
                     }).toList(),
 

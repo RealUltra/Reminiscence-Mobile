@@ -21,8 +21,10 @@ class ChatsList extends StatelessWidget {
       child: Container(
         color:
             chats.length % 2 == 0
-                ? const Color(0xFF2E2E2E) // Light
-                : const Color(0xFF1E1E1E), // Dark
+                ? Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest // Light
+                : Theme.of(context).colorScheme.surface, // Dark
 
         child: ListView.builder(
           padding: EdgeInsets.zero,

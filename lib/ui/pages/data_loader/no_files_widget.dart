@@ -8,25 +8,33 @@ class NoFilesWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(Icons.folder_outlined, size: 90, color: Colors.grey[600]),
+        Icon(
+          Icons.folder_outlined,
+          size: 90,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
         const SizedBox(height: 16),
         Text(
           "Use the \"Load New File\" button\nto load your instagram data\nand get started!",
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey, fontSize: 16),
+          style: Theme.of(context).textTheme.labelLarge!.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 8),
         TextButton(
           onPressed: () => showTutorial(context),
           style: ButtonStyle(
-            overlayColor: WidgetStateProperty.all(Colors.red.withAlpha(50)),
+            overlayColor: WidgetStateProperty.all(
+              Theme.of(context).colorScheme.error.withAlpha(50),
+            ),
           ),
 
           child: Text(
             "Need help downloading your instagram data?\nClick here.",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.redAccent,
+            style: Theme.of(context).textTheme.labelLarge!.copyWith(
+              color: Theme.of(context).colorScheme.error,
               fontWeight: FontWeight.bold,
             ),
           ),

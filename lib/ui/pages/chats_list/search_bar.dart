@@ -10,9 +10,11 @@ class MySearchBar extends StatelessWidget {
     return TextField(
       decoration: InputDecoration(
         hintText: 'Search',
-        hintStyle: const TextStyle(color: Colors.grey),
+        hintStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         filled: true,
-        fillColor: const Color(0xFF2E2E2E),
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,

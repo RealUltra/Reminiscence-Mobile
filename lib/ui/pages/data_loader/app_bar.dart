@@ -17,7 +17,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ],
       actionsPadding: EdgeInsets.only(right: 16),
-      titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+      titleTextStyle: Theme.of(context).textTheme.titleLarge,
       titleSpacing: 18.0,
     );
   }

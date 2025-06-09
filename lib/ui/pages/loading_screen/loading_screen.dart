@@ -65,7 +65,7 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 100),
                     child: LinearProgressIndicator(
                       value: progress.value,
-                      color: Colors.pinkAccent,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 24),

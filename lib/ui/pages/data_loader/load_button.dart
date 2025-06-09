@@ -12,28 +12,11 @@ class LoadDataButton extends StatefulWidget {
 }
 
 class _LoadDataButtonState extends State<LoadDataButton> {
-  bool _isPressed = false;
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         widget.parent.loadNewData(context);
-      },
-      onTapDown: (_) {
-        setState(() {
-          _isPressed = true;
-        });
-      },
-      onTapUp: (_) {
-        Future.delayed(const Duration(milliseconds: 150), () {
-          setState(() => _isPressed = false);
-        });
-      },
-      onTapCancel: () {
-        Future.delayed(const Duration(milliseconds: 150), () {
-          setState(() => _isPressed = false);
-        });
       },
       child: AnimatedContainer(
         width: double.infinity,
@@ -41,31 +24,16 @@ class _LoadDataButtonState extends State<LoadDataButton> {
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors:
-                _isPressed
-                    ? [Color(0xFF2a6fd4), Color(0xFF0047b3)]
-                    : [Color(0xFF3a8dff), Color(0xFF005eff)],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color.fromRGBO(58, 141, 255, 0.6),
-              offset: Offset(0, 4),
-              blurRadius: 12,
-            ),
-          ],
+          color: Theme.of(context).colorScheme.primary,
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 14),
           child: Center(
             child: Text(
               "Load New File",
-              style: TextStyle(
-                color: Colors.white,
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
               ),
             ),
           ),
