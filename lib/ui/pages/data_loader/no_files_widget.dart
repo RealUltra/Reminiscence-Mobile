@@ -26,7 +26,7 @@ class NoFilesWidget extends StatelessWidget {
           onPressed: () => showTutorial(context),
           style: ButtonStyle(
             overlayColor: WidgetStateProperty.all(
-              Theme.of(context).colorScheme.error.withAlpha(50),
+              Theme.of(context).colorScheme.primary.withAlpha(50),
             ),
           ),
 
@@ -34,7 +34,7 @@ class NoFilesWidget extends StatelessWidget {
             "Need help downloading your instagram data?\nClick here.",
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelLarge!.copyWith(
-              color: Theme.of(context).colorScheme.error,
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ),

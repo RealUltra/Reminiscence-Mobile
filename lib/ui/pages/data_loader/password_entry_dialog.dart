@@ -26,14 +26,15 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
       color: Colors.transparent,
       child: Center(
         child: Container(
-          margin: EdgeInsets.symmetric(vertical: 50, horizontal: 20),
-          padding: EdgeInsets.fromLTRB(12, 24, 12, 12),
+          margin: EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.fromLTRB(12, 24, 12, 16),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             border: Border.all(
               color: Theme.of(context).colorScheme.surfaceContainerLowest,
               width: 1,
             ),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
