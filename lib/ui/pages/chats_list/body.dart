@@ -86,6 +86,7 @@ class _BodyState extends State<Body> {
             ),
 
             ChatsList(
+              data: widget.data,
               chats: filteredChats,
               scrollController: controller,
               sortByMode: sortByMode,

@@ -463,6 +463,15 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
       'REFERENCES chats (id)',
     ),
   );
+  static const VerificationMeta _indexMeta = const VerificationMeta('index');
+  @override
+  late final GeneratedColumn<int> index = GeneratedColumn<int>(
+    'index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _rawDataMeta = const VerificationMeta(
     'rawData',
   );
@@ -509,6 +518,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   List<GeneratedColumn> get $columns => [
     id,
     chatId,
+    index,
     rawData,
     sentAt,
     senderName,
@@ -538,6 +548,14 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
       );
     } else if (isInserting) {
       context.missing(_chatIdMeta);
+    }
+    if (data.containsKey('index')) {
+      context.handle(
+        _indexMeta,
+        index.isAcceptableOrUnknown(data['index']!, _indexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_indexMeta);
     }
     if (data.containsKey('raw_data')) {
       context.handle(
@@ -590,6 +608,11 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
             DriftSqlType.int,
             data['${effectivePrefix}chat_id'],
           )!,
+      index:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}index'],
+          )!,
       rawData:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -622,6 +645,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
 class Message extends DataClass implements Insertable<Message> {
   final String id;
   final int chatId;
+  final int index;
   final String rawData;
   final int sentAt;
   final String senderName;
@@ -629,6 +653,7 @@ class Message extends DataClass implements Insertable<Message> {
   const Message({
     required this.id,
     required this.chatId,
+    required this.index,
     required this.rawData,
     required this.sentAt,
     required this.senderName,
@@ -639,6 +664,7 @@ class Message extends DataClass implements Insertable<Message> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['chat_id'] = Variable<int>(chatId);
+    map['index'] = Variable<int>(index);
     map['raw_data'] = Variable<String>(rawData);
     map['sent_at'] = Variable<int>(sentAt);
     map['sender_name'] = Variable<String>(senderName);
@@ -650,6 +676,7 @@ class Message extends DataClass implements Insertable<Message> {
     return MessagesCompanion(
       id: Value(id),
       chatId: Value(chatId),
+      index: Value(index),
       rawData: Value(rawData),
       sentAt: Value(sentAt),
       senderName: Value(senderName),
@@ -665,6 +692,7 @@ class Message extends DataClass implements Insertable<Message> {
     return Message(
       id: serializer.fromJson<String>(json['id']),
       chatId: serializer.fromJson<int>(json['chatId']),
+      index: serializer.fromJson<int>(json['index']),
       rawData: serializer.fromJson<String>(json['rawData']),
       sentAt: serializer.fromJson<int>(json['sentAt']),
       senderName: serializer.fromJson<String>(json['senderName']),
@@ -677,6 +705,7 @@ class Message extends DataClass implements Insertable<Message> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'chatId': serializer.toJson<int>(chatId),
+      'index': serializer.toJson<int>(index),
       'rawData': serializer.toJson<String>(rawData),
       'sentAt': serializer.toJson<int>(sentAt),
       'senderName': serializer.toJson<String>(senderName),
@@ -687,6 +716,7 @@ class Message extends DataClass implements Insertable<Message> {
   Message copyWith({
     String? id,
     int? chatId,
+    int? index,
     String? rawData,
     int? sentAt,
     String? senderName,
@@ -694,6 +724,7 @@ class Message extends DataClass implements Insertable<Message> {
   }) => Message(
     id: id ?? this.id,
     chatId: chatId ?? this.chatId,
+    index: index ?? this.index,
     rawData: rawData ?? this.rawData,
     sentAt: sentAt ?? this.sentAt,
     senderName: senderName ?? this.senderName,
@@ -703,6 +734,7 @@ class Message extends DataClass implements Insertable<Message> {
     return Message(
       id: data.id.present ? data.id.value : this.id,
       chatId: data.chatId.present ? data.chatId.value : this.chatId,
+      index: data.index.present ? data.index.value : this.index,
       rawData: data.rawData.present ? data.rawData.value : this.rawData,
       sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
       senderName:
@@ -716,6 +748,7 @@ class Message extends DataClass implements Insertable<Message> {
     return (StringBuffer('Message(')
           ..write('id: $id, ')
           ..write('chatId: $chatId, ')
+          ..write('index: $index, ')
           ..write('rawData: $rawData, ')
           ..write('sentAt: $sentAt, ')
           ..write('senderName: $senderName, ')
@@ -726,13 +759,14 @@ class Message extends DataClass implements Insertable<Message> {
 
   @override
   int get hashCode =>
-      Object.hash(id, chatId, rawData, sentAt, senderName, content);
+      Object.hash(id, chatId, index, rawData, sentAt, senderName, content);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Message &&
           other.id == this.id &&
           other.chatId == this.chatId &&
+          other.index == this.index &&
           other.rawData == this.rawData &&
           other.sentAt == this.sentAt &&
           other.senderName == this.senderName &&
@@ -742,6 +776,7 @@ class Message extends DataClass implements Insertable<Message> {
 class MessagesCompanion extends UpdateCompanion<Message> {
   final Value<String> id;
   final Value<int> chatId;
+  final Value<int> index;
   final Value<String> rawData;
   final Value<int> sentAt;
   final Value<String> senderName;
@@ -750,6 +785,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   const MessagesCompanion({
     this.id = const Value.absent(),
     this.chatId = const Value.absent(),
+    this.index = const Value.absent(),
     this.rawData = const Value.absent(),
     this.sentAt = const Value.absent(),
     this.senderName = const Value.absent(),
@@ -759,6 +795,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   MessagesCompanion.insert({
     required String id,
     required int chatId,
+    required int index,
     required String rawData,
     required int sentAt,
     required String senderName,
@@ -766,6 +803,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        chatId = Value(chatId),
+       index = Value(index),
        rawData = Value(rawData),
        sentAt = Value(sentAt),
        senderName = Value(senderName),
@@ -773,6 +811,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   static Insertable<Message> custom({
     Expression<String>? id,
     Expression<int>? chatId,
+    Expression<int>? index,
     Expression<String>? rawData,
     Expression<int>? sentAt,
     Expression<String>? senderName,
@@ -782,6 +821,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (chatId != null) 'chat_id': chatId,
+      if (index != null) 'index': index,
       if (rawData != null) 'raw_data': rawData,
       if (sentAt != null) 'sent_at': sentAt,
       if (senderName != null) 'sender_name': senderName,
@@ -793,6 +833,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   MessagesCompanion copyWith({
     Value<String>? id,
     Value<int>? chatId,
+    Value<int>? index,
     Value<String>? rawData,
     Value<int>? sentAt,
     Value<String>? senderName,
@@ -802,6 +843,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     return MessagesCompanion(
       id: id ?? this.id,
       chatId: chatId ?? this.chatId,
+      index: index ?? this.index,
       rawData: rawData ?? this.rawData,
       sentAt: sentAt ?? this.sentAt,
       senderName: senderName ?? this.senderName,
@@ -818,6 +860,9 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     }
     if (chatId.present) {
       map['chat_id'] = Variable<int>(chatId.value);
+    }
+    if (index.present) {
+      map['index'] = Variable<int>(index.value);
     }
     if (rawData.present) {
       map['raw_data'] = Variable<String>(rawData.value);
@@ -842,6 +887,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     return (StringBuffer('MessagesCompanion(')
           ..write('id: $id, ')
           ..write('chatId: $chatId, ')
+          ..write('index: $index, ')
           ..write('rawData: $rawData, ')
           ..write('sentAt: $sentAt, ')
           ..write('senderName: $senderName, ')
@@ -1169,6 +1215,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MessagesTable messages = $MessagesTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
   late final ChatDao chatDao = ChatDao(this as AppDatabase);
+  late final MessageDao messageDao = MessageDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1773,6 +1820,7 @@ typedef $$MessagesTableCreateCompanionBuilder =
     MessagesCompanion Function({
       required String id,
       required int chatId,
+      required int index,
       required String rawData,
       required int sentAt,
       required String senderName,
@@ -1783,6 +1831,7 @@ typedef $$MessagesTableUpdateCompanionBuilder =
     MessagesCompanion Function({
       Value<String> id,
       Value<int> chatId,
+      Value<int> index,
       Value<String> rawData,
       Value<int> sentAt,
       Value<String> senderName,
@@ -1842,6 +1891,11 @@ class $$MessagesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get index => $composableBuilder(
+    column: $table.index,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1928,6 +1982,11 @@ class $$MessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get index => $composableBuilder(
+    column: $table.index,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get rawData => $composableBuilder(
     column: $table.rawData,
     builder: (column) => ColumnOrderings(column),
@@ -1983,6 +2042,9 @@ class $$MessagesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get index =>
+      $composableBuilder(column: $table.index, builder: (column) => column);
 
   GeneratedColumn<String> get rawData =>
       $composableBuilder(column: $table.rawData, builder: (column) => column);
@@ -2077,6 +2139,7 @@ class $$MessagesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<int> chatId = const Value.absent(),
+                Value<int> index = const Value.absent(),
                 Value<String> rawData = const Value.absent(),
                 Value<int> sentAt = const Value.absent(),
                 Value<String> senderName = const Value.absent(),
@@ -2085,6 +2148,7 @@ class $$MessagesTableTableManager
               }) => MessagesCompanion(
                 id: id,
                 chatId: chatId,
+                index: index,
                 rawData: rawData,
                 sentAt: sentAt,
                 senderName: senderName,
@@ -2095,6 +2159,7 @@ class $$MessagesTableTableManager
               ({
                 required String id,
                 required int chatId,
+                required int index,
                 required String rawData,
                 required int sentAt,
                 required String senderName,
@@ -2103,6 +2168,7 @@ class $$MessagesTableTableManager
               }) => MessagesCompanion.insert(
                 id: id,
                 chatId: chatId,
+                index: index,
                 rawData: rawData,
                 sentAt: sentAt,
                 senderName: senderName,

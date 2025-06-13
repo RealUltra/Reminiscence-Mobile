@@ -5,6 +5,7 @@ import 'package:reminiscence/features/database/models/chat.dart';
 class Messages extends Table {
   TextColumn get id => text()();
   IntColumn get chatId => integer().references(Chats, #id)();
+  IntColumn get index => integer()();
   TextColumn get rawData => text()();
   IntColumn get sentAt => integer()();
   TextColumn get senderName => text()();

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:reminiscence/features/database/daos/chat_dao.dart';
+import 'package:reminiscence/features/database/daos/message_dao.dart';
 
 import 'package:reminiscence/features/database/models/chat.dart';
 import 'package:reminiscence/features/database/models/participant.dart';
@@ -21,7 +22,7 @@ String escapeString(String source) {
 
 @DriftDatabase(
   tables: [Chats, Participants, Messages, Attachments],
-  daos: [ChatDao],
+  daos: [ChatDao, MessageDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase({

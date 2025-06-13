@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
+import 'package:reminiscence/ui/pages/chat/chat_page.dart';
+import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
 import 'package:reminiscence/ui/pages/chats_list/chats_list_page.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
@@ -60,6 +62,14 @@ class App extends StatelessWidget {
       return MaterialPageRoute(
         builder: (context) {
           return ChatsListPage(data);
+        },
+      );
+    } else if (settings.name == "/chat") {
+      final args = settings.arguments as ChatPageArgs;
+
+      return MaterialPageRoute(
+        builder: (context) {
+          return ChatPage(data: args.data, chat: args.chat);
         },
       );
     }

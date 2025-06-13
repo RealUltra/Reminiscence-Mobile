@@ -209,6 +209,7 @@ Future<void> insertArchiveChat(
 
   // Add messages to database
   int stacksDone = 0;
+  int index = 0;
 
   for (archive_loader.MessageStack messageStack in archiveChat.messageStacks) {
     Set<String> usedMessageIds = {};
@@ -223,6 +224,7 @@ Future<void> insertArchiveChat(
         MessagesCompanion message = MessagesCompanion(
           id: Value(archiveMessage.id),
           chatId: chat.id,
+          index: Value(index),
           rawData: Value(jsonEncode(archiveMessage.data)),
           sentAt: Value(archiveMessage.sentAt),
           senderName: Value(archiveMessage.senderName),
@@ -231,6 +233,8 @@ Future<void> insertArchiveChat(
 
         batch.insert(db.messages, message);
         usedMessageIds.add(message.id.value);
+
+        index++;
 
         // Add attachments to database
         for (archive_loader.Attachment archiveAttachment
