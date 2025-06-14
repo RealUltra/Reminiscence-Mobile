@@ -40,7 +40,11 @@ class _BodyState extends State<Body> {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child:
             isReady
-                ? MessagesList(chat: widget.chat, messageReader: messageReader)
+                ? MessagesList(
+                  data: widget.data,
+                  chat: widget.chat,
+                  messageReader: messageReader,
+                )
                 : null,
       ),
     );

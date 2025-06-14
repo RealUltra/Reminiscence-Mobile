@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
+import 'package:reminiscence/ui/pages/chat/attachment_widget.dart';
 
 class MessageWidget extends StatelessWidget {
+  final ReminiscenceData data;
   final String? userName;
   final MessageDto message;
   final MessageDto? previousMessage;
@@ -11,6 +14,7 @@ class MessageWidget extends StatelessWidget {
 
   const MessageWidget({
     super.key,
+    required this.data,
     required this.userName,
     required this.message,
     this.previousMessage,
@@ -30,51 +34,75 @@ class MessageWidget extends StatelessWidget {
     final topPadding =
         (previousMessage == null) ? 0.0 : (showSenderName ? 24.0 : 8.0);
 
-    final isUser = userName == message.senderName;
-
     return Container(
       padding: EdgeInsets.fromLTRB(12, topPadding, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (showSenderName)
-            Row(
-              children: [
-                Text(
-                  message.senderName,
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                    color:
-                        isUser
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+          Visibility(visible: showSenderName, child: _buildSenderInfo(context)),
+          Visibility(
+            visible: message.content.trim().isNotEmpty,
+            child: _buildMessageContent(context),
+          ),
+          Visibility(
+            visible: message.attachments.isNotEmpty,
+            child: _buildAttachments(context),
+          ),
+        ],
+      ),
+    );
+  }
 
-                const SizedBox(width: 8.0),
+  Widget _buildSenderInfo(BuildContext context) {
+    final isUser = userName == message.senderName;
 
-                Text(
-                  DateFormat(
-                    "dd/MM/yyyy HH:mm",
-                  ).format(DateTime.fromMillisecondsSinceEpoch(message.sentAt)),
-                  style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+    return Padding(
+      padding: EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Text(
+            message.senderName,
+            style: Theme.of(context).textTheme.titleMedium!.copyWith(
+              color:
+                  isUser
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
             ),
+          ),
 
-          if (showSenderName) const SizedBox(height: 4),
+          const SizedBox(width: 8.0),
 
           Text(
-            message.content,
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+            DateFormat(
+              "dd/MM/yyyy HH:mm",
+            ).format(DateTime.fromMillisecondsSinceEpoch(message.sentAt)),
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildMessageContent(BuildContext context) {
+    return Text(
+      message.content,
+      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+  }
+
+  Widget _buildAttachments(BuildContext context) {
+    List<Widget> children = [];
+
+    for (final attachment in message.attachments) {
+      children.add(AttachmentWidget(attachment: attachment, data: data));
+    }
+
+    return Column(spacing: 4.0, children: children);
   }
 }

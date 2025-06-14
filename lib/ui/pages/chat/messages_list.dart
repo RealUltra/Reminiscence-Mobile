@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/message_reader.dart';
@@ -6,11 +7,13 @@ import 'package:reminiscence/ui/pages/chat/message_widget.dart';
 
 // ignore: must_be_immutable
 class MessagesList extends StatelessWidget {
+  final ReminiscenceData data;
   final ChatDto chat;
   final MessageReader messageReader;
 
   const MessagesList({
     super.key,
+    required this.data,
     required this.chat,
     required this.messageReader,
   });
@@ -21,6 +24,7 @@ class MessagesList extends StatelessWidget {
       itemCount: chat.messageCount,
       reverse: true,
       padding: EdgeInsets.symmetric(vertical: 16),
+      cacheExtent: 1000.0,
 
       itemBuilder: (BuildContext context, int index) {
         // Check if the message has already been loaded
@@ -29,6 +33,7 @@ class MessagesList extends StatelessWidget {
 
         if (message != null && previousMessage != null) {
           return MessageWidget(
+            data: data,
             userName: chat.userName,
             message: message,
             previousMessage: previousMessage,
@@ -67,6 +72,7 @@ class MessagesList extends StatelessWidget {
               }
 
               return MessageWidget(
+                data: data,
                 userName: chat.userName,
                 message: messages[0],
                 previousMessage: messages[1],

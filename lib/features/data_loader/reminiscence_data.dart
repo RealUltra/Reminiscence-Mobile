@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:reminiscence/features/database/database.dart';
+import 'package:reminiscence/features/encryption/kdf.dart';
 
 class ReminiscenceData {
   final String dbPath;
   final String? password;
   final List<int> nonce;
+  late final SecretKey? secretKey;
   final Directory mediaDir;
   AppDatabase? _db;
 
@@ -15,7 +18,16 @@ class ReminiscenceData {
     required this.password,
     required this.nonce,
     required this.mediaDir,
-  });
+  }) {
+    if (password == null) {
+      secretKey = null;
+    } else {
+      deriveKey(
+        password: password!,
+        nonce: nonce,
+      ).then((key) => secretKey = key.secretKey);
+    }
+  }
 
   static ReminiscenceData fromMap(Map<String, dynamic> data) {
     return ReminiscenceData(
