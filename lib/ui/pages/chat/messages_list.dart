@@ -29,6 +29,7 @@ class MessagesList extends StatelessWidget {
 
         if (message != null && previousMessage != null) {
           return MessageWidget(
+            userName: chat.userName,
             message: message,
             previousMessage: previousMessage,
           );
@@ -57,13 +58,16 @@ class MessagesList extends StatelessWidget {
             } else if (snapshot.hasError) {
               return errorWidget;
             } else if (!snapshot.hasData) {
-              return emptyWidget;
+              return Text("No data");
             } else {
               final messages = snapshot.data;
 
-              if (messages[0] == null) return emptyWidget;
+              if (messages[0] == null) {
+                return Text("message was null; index: $index");
+              }
 
               return MessageWidget(
+                userName: chat.userName,
                 message: messages[0],
                 previousMessage: messages[1],
               );

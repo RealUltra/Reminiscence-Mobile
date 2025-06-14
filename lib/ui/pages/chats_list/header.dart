@@ -21,7 +21,7 @@ class Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8.0, 40.0, 8.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(12.0, 40.0, 12.0, 16.0),
       color: Theme.of(context).colorScheme.surfaceContainer,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

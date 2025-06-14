@@ -26,8 +26,19 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _userNameMeta = const VerificationMeta(
+    'userName',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, title];
+  late final GeneratedColumn<String> userName = GeneratedColumn<String>(
+    'user_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, title, userName];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -51,6 +62,12 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
+    if (data.containsKey('user_name')) {
+      context.handle(
+        _userNameMeta,
+        userName.isAcceptableOrUnknown(data['user_name']!, _userNameMeta),
+      );
+    }
     return context;
   }
 
@@ -70,6 +87,10 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
             DriftSqlType.string,
             data['${effectivePrefix}title'],
           )!,
+      userName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_name'],
+      ),
     );
   }
 
@@ -82,17 +103,28 @@ class $ChatsTable extends Chats with TableInfo<$ChatsTable, Chat> {
 class Chat extends DataClass implements Insertable<Chat> {
   final int id;
   final String title;
-  const Chat({required this.id, required this.title});
+  final String? userName;
+  const Chat({required this.id, required this.title, this.userName});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
+    if (!nullToAbsent || userName != null) {
+      map['user_name'] = Variable<String>(userName);
+    }
     return map;
   }
 
   ChatsCompanion toCompanion(bool nullToAbsent) {
-    return ChatsCompanion(id: Value(id), title: Value(title));
+    return ChatsCompanion(
+      id: Value(id),
+      title: Value(title),
+      userName:
+          userName == null && nullToAbsent
+              ? const Value.absent()
+              : Value(userName),
+    );
   }
 
   factory Chat.fromJson(
@@ -103,6 +135,7 @@ class Chat extends DataClass implements Insertable<Chat> {
     return Chat(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
+      userName: serializer.fromJson<String?>(json['userName']),
     );
   }
   @override
@@ -111,15 +144,24 @@ class Chat extends DataClass implements Insertable<Chat> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
+      'userName': serializer.toJson<String?>(userName),
     };
   }
 
-  Chat copyWith({int? id, String? title}) =>
-      Chat(id: id ?? this.id, title: title ?? this.title);
+  Chat copyWith({
+    int? id,
+    String? title,
+    Value<String?> userName = const Value.absent(),
+  }) => Chat(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    userName: userName.present ? userName.value : this.userName,
+  );
   Chat copyWithCompanion(ChatsCompanion data) {
     return Chat(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
+      userName: data.userName.present ? data.userName.value : this.userName,
     );
   }
 
@@ -127,40 +169,59 @@ class Chat extends DataClass implements Insertable<Chat> {
   String toString() {
     return (StringBuffer('Chat(')
           ..write('id: $id, ')
-          ..write('title: $title')
+          ..write('title: $title, ')
+          ..write('userName: $userName')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title);
+  int get hashCode => Object.hash(id, title, userName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Chat && other.id == this.id && other.title == this.title);
+      (other is Chat &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.userName == this.userName);
 }
 
 class ChatsCompanion extends UpdateCompanion<Chat> {
   final Value<int> id;
   final Value<String> title;
+  final Value<String?> userName;
   const ChatsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
+    this.userName = const Value.absent(),
   });
-  ChatsCompanion.insert({this.id = const Value.absent(), required String title})
-    : title = Value(title);
+  ChatsCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    this.userName = const Value.absent(),
+  }) : title = Value(title);
   static Insertable<Chat> custom({
     Expression<int>? id,
     Expression<String>? title,
+    Expression<String>? userName,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
+      if (userName != null) 'user_name': userName,
     });
   }
 
-  ChatsCompanion copyWith({Value<int>? id, Value<String>? title}) {
-    return ChatsCompanion(id: id ?? this.id, title: title ?? this.title);
+  ChatsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<String?>? userName,
+  }) {
+    return ChatsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      userName: userName ?? this.userName,
+    );
   }
 
   @override
@@ -172,6 +233,9 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
+    if (userName.present) {
+      map['user_name'] = Variable<String>(userName.value);
+    }
     return map;
   }
 
@@ -179,7 +243,8 @@ class ChatsCompanion extends UpdateCompanion<Chat> {
   String toString() {
     return (StringBuffer('ChatsCompanion(')
           ..write('id: $id, ')
-          ..write('title: $title')
+          ..write('title: $title, ')
+          ..write('userName: $userName')
           ..write(')'))
         .toString();
   }
@@ -1229,9 +1294,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 }
 
 typedef $$ChatsTableCreateCompanionBuilder =
-    ChatsCompanion Function({Value<int> id, required String title});
+    ChatsCompanion Function({
+      Value<int> id,
+      required String title,
+      Value<String?> userName,
+    });
 typedef $$ChatsTableUpdateCompanionBuilder =
-    ChatsCompanion Function({Value<int> id, Value<String> title});
+    ChatsCompanion Function({
+      Value<int> id,
+      Value<String> title,
+      Value<String?> userName,
+    });
 
 final class $$ChatsTableReferences
     extends BaseReferences<_$AppDatabase, $ChatsTable, Chat> {
@@ -1290,6 +1363,11 @@ class $$ChatsTableFilterComposer extends Composer<_$AppDatabase, $ChatsTable> {
 
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userName => $composableBuilder(
+    column: $table.userName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1362,6 +1440,11 @@ class $$ChatsTableOrderingComposer
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get userName => $composableBuilder(
+    column: $table.userName,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ChatsTableAnnotationComposer
@@ -1378,6 +1461,9 @@ class $$ChatsTableAnnotationComposer
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get userName =>
+      $composableBuilder(column: $table.userName, builder: (column) => column);
 
   Expression<T> participantsRefs<T extends Object>(
     Expression<T> Function($$ParticipantsTableAnnotationComposer a) f,
@@ -1460,10 +1546,18 @@ class $$ChatsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
-              }) => ChatsCompanion(id: id, title: title),
+                Value<String?> userName = const Value.absent(),
+              }) => ChatsCompanion(id: id, title: title, userName: userName),
           createCompanionCallback:
-              ({Value<int> id = const Value.absent(), required String title}) =>
-                  ChatsCompanion.insert(id: id, title: title),
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                Value<String?> userName = const Value.absent(),
+              }) => ChatsCompanion.insert(
+                id: id,
+                title: title,
+                userName: userName,
+              ),
           withReferenceMapper:
               (p0) =>
                   p0

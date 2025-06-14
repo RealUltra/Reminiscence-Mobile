@@ -14,7 +14,7 @@ class Chat {
   String title = "";
   List<String> participants = [];
 
-  final List<dynamic> messageStacks = [];
+  final List<MessageStack> messageStacks = [];
 
   Chat({
     required this.archive,

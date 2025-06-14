@@ -9,6 +9,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:reminiscence/features/data_loader/data_archive_loader/data_archive_loader.dart';
+import 'package:reminiscence/features/data_loader/data_archive_loader/message_reader.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 import 'package:reminiscence/features/database/database.dart';
 
@@ -110,12 +111,14 @@ Future<String?> createRemFile({
 
   final Map<String, ArchiveFile> archiveMap = getArchiveMap(archive);
 
+  final messageReader = MessageReader(chats);
+
   for (var chat in chats) {
     debugPrint("Chat Title: ${chat.title}");
 
     final stacksMid = chat.messageStacks.length / 2;
 
-    await insertArchiveChat(db, chat, (int increment) async {
+    await insertArchiveChat(db, chat, messageReader, (int increment) async {
       sendPort?.send({
         "type": "progress",
         "progress": {
@@ -186,12 +189,14 @@ Future<String?> createRemFile({
 Future<void> insertArchiveChat(
   AppDatabase db,
   archive_loader.Chat archiveChat,
+  MessageReader messageReader,
   Future<void> Function(int) updateProgress,
 ) async {
   // Create database chat
   ChatsCompanion chat = ChatsCompanion(
     id: Value(archiveChat.id),
     title: Value(archiveChat.title),
+    userName: Value(messageReader.userName),
   );
 
   // Preparing participant objects to add to the database later
@@ -211,16 +216,16 @@ Future<void> insertArchiveChat(
   int stacksDone = 0;
   int index = 0;
 
-  for (archive_loader.MessageStack messageStack in archiveChat.messageStacks) {
-    Set<String> usedMessageIds = {};
+  messageReader.initialize(archiveChat);
 
+  for (archive_loader.MessageStack messageStack in archiveChat.messageStacks) {
     updateProgress(stacksDone);
 
     // Efficiently inserting all the messages and attachments into the database.
     await db.batch((batch) {
-      for (archive_loader.Message archiveMessage in messageStack.messages()) {
-        if (usedMessageIds.contains(archiveMessage.id)) continue;
-
+      for (archive_loader.Message archiveMessage in messageReader.messages(
+        messageStack,
+      )) {
         MessagesCompanion message = MessagesCompanion(
           id: Value(archiveMessage.id),
           chatId: chat.id,
@@ -232,7 +237,6 @@ Future<void> insertArchiveChat(
         );
 
         batch.insert(db.messages, message);
-        usedMessageIds.add(message.id.value);
 
         index++;
 

@@ -9,6 +9,7 @@ class MessageReader {
   final batchSize = 1000;
   Map<int, MessageDto> messages = {};
   List<int> messageIndexes = [];
+  bool loading = false;
 
   MessageReader({required this.data, required this.chat});
 
@@ -31,9 +32,17 @@ class MessageReader {
   }
 
   Future<void> load(int startIndex) async {
+    if (loading) {
+      while (loading) {
+        await Future.delayed(const Duration(microseconds: 5));
+      }
+    }
+
     if (messages.containsKey(startIndex)) {
       return;
     }
+
+    loading = true;
 
     final batch = await data.db.messageDao.getMessages(
       chat.id,
@@ -50,5 +59,7 @@ class MessageReader {
 
     messages.addAll(Map.fromEntries(batch.map((m) => MapEntry(m.index, m))));
     messageIndexes.addAll(batch.map((m) => m.index));
+
+    loading = false;
   }
 }

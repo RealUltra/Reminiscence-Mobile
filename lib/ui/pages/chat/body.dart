@@ -15,7 +15,7 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  bool isReady = false;
+  bool isReady = true;
   late final MessageReader messageReader;
 
   @override
@@ -24,11 +24,13 @@ class _BodyState extends State<Body> {
 
     messageReader = MessageReader(data: widget.data, chat: widget.chat);
 
+    /*
     messageReader.load(0).then((_) {
       setState(() {
         isReady = true;
       });
     });
+    */
   }
 
   @override

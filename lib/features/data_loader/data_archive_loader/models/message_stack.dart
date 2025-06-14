@@ -46,6 +46,25 @@ class MessageStack {
     }
   }
 
+  Iterable<Message> messagesReverse() sync* {
+    Map<String, dynamic> jsonData = _getJsonData();
+
+    List<dynamic> messages = jsonData['messages'];
+
+    for (int i = messages.length - 1; i >= 0; i--) {
+      Map<String, dynamic> messageData = messages[i];
+
+      Message message = Message(
+        data: messageData,
+        chat: chat,
+        messageStack: this,
+        index: i,
+      );
+
+      yield message;
+    }
+  }
+
   Map<String, dynamic> getMetaData() {
     Map<String, dynamic> metaData = {
       'chatTitle': "",
