@@ -325,12 +325,7 @@ class BodyState extends State<Body> {
   }
 
   Future<void> shareRemFile(String filePath) async {
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(filePath)],
-        text: "Export your reminiscence data to a different app.",
-      ),
-    );
+    await SharePlus.instance.share(ShareParams(files: [XFile(filePath)]));
   }
 
   Future<String?> _promptPassword(

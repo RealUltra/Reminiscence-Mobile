@@ -29,9 +29,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   @override
   void initState() {
     super.initState();
-
     playbackSpeed = minPlaybackSpeed;
-
     initAudio();
   }
 
@@ -68,6 +66,12 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
   }
 
   @override

@@ -11,6 +11,7 @@ import 'package:reminiscence/features/database/models/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/ui/pages/chat/audio_player_widget.dart';
 import 'package:reminiscence/ui/pages/chat/file_widget.dart';
+import 'package:reminiscence/ui/pages/chat/video_player_widget.dart';
 import 'package:share_plus/share_plus.dart';
 
 class AttachmentWidget extends StatefulWidget {
@@ -46,6 +47,8 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       return _buildAudio();
     } else if (widget.attachment.type == AttachmentType.file) {
       return _buildFile();
+    } else if (widget.attachment.type == AttachmentType.video) {
+      return _buildVideo();
     }
 
     return Container();
@@ -90,6 +93,19 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     );
   }
 
+  Widget _buildVideo() {
+    String videoPath = _getFilePath();
+
+    if (!File(videoPath).existsSync()) {
+      return CircularProgressIndicator();
+    }
+
+    return Container(
+      margin: EdgeInsets.only(top: 8),
+      child: VideoPlayerWidget(File(videoPath), onShare: shareFile),
+    );
+  }
+
   Future<void> launchFile() async {
     final file = File(_getFilePath());
 
@@ -114,18 +130,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     await file.copy(tempPath);
 
-    String attachmentTypeName = "";
-
-    if (widget.attachment.type == AttachmentType.audio) {
-      attachmentTypeName = "voice message";
-    }
-
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(tempPath)],
-        text: "Share this $attachmentTypeName to a different platform.",
-      ),
-    );
+    await SharePlus.instance.share(ShareParams(files: [XFile(tempPath)]));
   }
 
   String _getFilePath() {
