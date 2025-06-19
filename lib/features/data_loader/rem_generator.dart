@@ -4,7 +4,6 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -23,7 +22,6 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/models/att
     as archive_loader;
 import 'package:reminiscence/features/database/models/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
-//import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 
@@ -114,7 +112,7 @@ Future<String?> createRemFile({
   final messageReader = MessageReader(chats);
 
   for (var chat in chats) {
-    debugPrint("Chat Title: ${chat.title}");
+    print("Chat Title: ${chat.title}");
 
     final stacksMid = chat.messageStacks.length / 2;
 

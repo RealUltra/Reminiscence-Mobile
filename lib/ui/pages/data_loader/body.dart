@@ -21,6 +21,7 @@ import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry_dialog.dart';
 import 'package:reminiscence/ui/pages/data_loader/files_list.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen_args.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -82,6 +83,7 @@ class BodyState extends State<Body> {
                     ? FilesList(
                       recentFiles: recentFiles,
                       onClick: (String filePath) => loadData(context, filePath),
+                      onShare: (String filePath) => shareRemFile(filePath),
                       onDelete: (String filePath) => deleteLoadedFile(filePath),
                     )
                     : const NoFilesWidget();
@@ -320,6 +322,15 @@ class BodyState extends State<Body> {
     }
 
     setState(() {});
+  }
+
+  Future<void> shareRemFile(String filePath) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(filePath)],
+        text: "Export your reminiscence data to a different app.",
+      ),
+    );
   }
 
   Future<String?> _promptPassword(

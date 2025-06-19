@@ -1,18 +1,24 @@
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
-import 'package:reminiscence/features/data_loader/utils.dart';
+import 'package:path/path.dart' as p;
+import 'package:reminiscence/features/encryption/encryption.dart';
+import 'package:reminiscence/features/encryption/kdf.dart';
 
 void main() async {
-  final String archivePath =
-      "B:/UserData/Documents/Instagram Data Downloads/instagram-bss_2024-2024-01-17-QZzMumC1.zip";
+  final nonce = await File("./test/data/nonce.txt").readAsBytes();
+  final derivedKey = await deriveKey(password: '1234567890', nonce: nonce);
 
-  InputFileStream stream = InputFileStream(archivePath);
-  Archive archive = ZipDecoder().decodeStream(stream);
+  await for (final file in Directory("./test/data/media").list()) {
+    final filename = p.basename(file.path);
+    final inputStream = InputFileStream(file.path);
 
-  await extractArchiveDir(
-    archive,
-    "your_instagram_activity",
-    Directory("output"),
-  );
+    await decryptStream(
+      inputStream: inputStream,
+      outputPath: p.join("./test/decrypted", '${filename}_decrypted.mp4'),
+      secretKey: derivedKey.secretKey,
+    );
+
+    print("Decrypted: $filename");
+  }
 }

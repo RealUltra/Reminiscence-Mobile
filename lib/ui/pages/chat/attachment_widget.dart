@@ -11,6 +11,7 @@ import 'package:reminiscence/features/database/models/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/ui/pages/chat/audio_player_widget.dart';
 import 'package:reminiscence/ui/pages/chat/file_widget.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AttachmentWidget extends StatefulWidget {
   final AttachmentDto attachment;
@@ -72,7 +73,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     return Container(
       margin: EdgeInsets.only(top: 8),
-      child: AudioPlayerWidget(audioPath),
+      child: AudioPlayerWidget(audioPath, onShare: shareFile),
     );
   }
 
@@ -92,13 +93,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   Future<void> launchFile() async {
     final file = File(_getFilePath());
 
-    String tempFilename = p.basename(widget.attachment.uri);
-
-    if (widget.attachment.type == AttachmentType.photo) {
-      tempFilename += ".jpg";
-    } else if (widget.attachment.type == AttachmentType.audio) {
-      tempFilename += ".mp3";
-    }
+    String tempFilename = p.basename(widget.attachment.uri) + _getExtension();
 
     final tempDir = await getTemporaryDirectory();
     final tempPath = p.join(tempDir.path, tempFilename);
@@ -106,6 +101,31 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     await file.copy(tempPath);
 
     await OpenFile.open(tempPath);
+  }
+
+  Future<void> shareFile() async {
+    final file = File(_getFilePath());
+
+    String tempFilename =
+        p.basenameWithoutExtension(widget.attachment.uri) + _getExtension();
+
+    final tempDir = await getTemporaryDirectory();
+    final tempPath = p.join(tempDir.path, tempFilename);
+
+    await file.copy(tempPath);
+
+    String attachmentTypeName = "";
+
+    if (widget.attachment.type == AttachmentType.audio) {
+      attachmentTypeName = "voice message";
+    }
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(tempPath)],
+        text: "Share this $attachmentTypeName to a different platform.",
+      ),
+    );
   }
 
   String _getFilePath() {
@@ -119,8 +139,18 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     }
   }
 
+  String _getExtension() {
+    if (widget.attachment.type == AttachmentType.photo) {
+      return ".jpg";
+    } else if (widget.attachment.type == AttachmentType.audio) {
+      return ".mp3";
+    } else {
+      return p.extension(widget.attachment.uri);
+    }
+  }
+
   Future<void> _prepareFile() async {
-    // If the photo is not encrypted, exit the function.
+    // If the file is not encrypted, exit the function.
     if (widget.data.secretKey == null) {
       return;
     }
@@ -147,7 +177,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     await decryptStream(
       inputStream: stream,
-      outputPath: encryptedPath,
+      outputPath: decryptedPath,
       secretKey: widget.data.secretKey!,
     );
 

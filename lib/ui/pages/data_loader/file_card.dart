@@ -8,6 +8,7 @@ class FileCard extends StatelessWidget {
   final DateTime? lastOpened;
   late final bool isEncrypted;
   final void Function(String) onClick;
+  final void Function(String) onShare;
   final void Function(String) onDelete;
 
   FileCard({
@@ -15,6 +16,7 @@ class FileCard extends StatelessWidget {
     required this.filePath,
     required this.lastOpened,
     required this.onClick,
+    required this.onShare,
     required this.onDelete,
   }) {
     isEncrypted = isRemFileEncrypted(filePath);
@@ -95,6 +97,25 @@ class FileCard extends StatelessWidget {
 
   List<MenuItemButton> getOptionsMenuChildren(BuildContext context) {
     return [
+      MenuItemButton(
+        onPressed: () => onShare(filePath),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.ios_share,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              "Export",
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            ),
+          ],
+        ),
+      ),
+
       MenuItemButton(
         onPressed: () => onDelete(filePath),
         child: Row(

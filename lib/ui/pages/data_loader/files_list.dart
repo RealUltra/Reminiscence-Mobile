@@ -4,14 +4,16 @@ import 'package:reminiscence/ui/pages/data_loader/file_card.dart';
 
 class FilesList extends StatefulWidget {
   final Map<String, DateTime?> recentFiles;
-  final void Function(String filePath)? onClick;
-  final Future<void> Function(String filePath)? onDelete;
+  final void Function(String filePath) onClick;
+  final Future<void> Function(String) onShare;
+  final Future<void> Function(String) onDelete;
 
   const FilesList({
     super.key,
     required this.recentFiles,
-    this.onClick,
-    this.onDelete,
+    required this.onClick,
+    required this.onShare,
+    required this.onDelete,
   });
 
   @override
@@ -45,7 +47,8 @@ class _FilesListState extends State<FilesList> {
                     FileCard(
                       filePath: filePaths[index],
                       lastOpened: widget.recentFiles[filePaths[index]],
-                      onClick: widget.onClick ?? (_) {},
+                      onClick: widget.onClick,
+                      onShare: widget.onShare,
                       onDelete: onDelete,
                     ),
                     const SizedBox(height: 12),
@@ -98,8 +101,6 @@ class _FilesListState extends State<FilesList> {
       return;
     }
 
-    if (widget.onDelete != null) {
-      await widget.onDelete!(filePath);
-    }
+    await widget.onDelete(filePath);
   }
 }

@@ -6,8 +6,9 @@ import 'package:reminiscence/ui/pages/chat/audio_manager.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
   final String audioFilePath;
+  final VoidCallback? onShare;
 
-  const AudioPlayerWidget(this.audioFilePath, {super.key});
+  const AudioPlayerWidget(this.audioFilePath, {super.key, this.onShare});
 
   @override
   State<AudioPlayerWidget> createState() => _AudioPlayerWidgetState();
@@ -103,9 +104,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: widget.onShare,
                     icon: Icon(
-                      Icons.download,
+                      Icons.share,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
