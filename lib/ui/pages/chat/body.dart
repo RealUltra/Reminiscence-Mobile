@@ -23,14 +23,6 @@ class _BodyState extends State<Body> {
     super.initState();
 
     messageReader = MessageReader(data: widget.data, chat: widget.chat);
-
-    /*
-    messageReader.load(0).then((_) {
-      setState(() {
-        isReady = true;
-      });
-    });
-    */
   }
 
   @override

@@ -11,6 +11,7 @@ import 'package:reminiscence/features/database/models/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/ui/pages/chat/audio_player_widget.dart';
 import 'package:reminiscence/ui/pages/chat/file_widget.dart';
+import 'package:reminiscence/ui/pages/chat/link_preview.dart';
 import 'package:reminiscence/ui/pages/chat/video_player_widget.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -49,9 +50,9 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       return _buildFile();
     } else if (widget.attachment.type == AttachmentType.video) {
       return _buildVideo();
+    } else {
+      return _buildLink();
     }
-
-    return Container();
   }
 
   Widget _buildPhoto() {
@@ -104,6 +105,10 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       margin: EdgeInsets.only(top: 8),
       child: VideoPlayerWidget(File(videoPath), onShare: shareFile),
     );
+  }
+
+  Widget _buildLink() {
+    return LinkPreview(widget.attachment.uri);
   }
 
   Future<void> launchFile() async {
