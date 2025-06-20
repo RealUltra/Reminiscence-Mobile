@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:reminiscence/features/data_storage/data_storage.dart';
 
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
@@ -55,6 +56,53 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
           ],
         ).get();
 
+    return _getMessageDtos(rows);
+  }
+
+  Future<List<MessageDto>> getPinned(int chatId) async {
+    final allPinnedMessages = await getPinnedMessages();
+
+    final placeholders = List.generate(
+      allPinnedMessages.length,
+      (i) => '?',
+    ).join(', ');
+
+    final variables = [
+      ...allPinnedMessages.map((id) => Variable.withString(id)),
+      Variable.withInt(chatId),
+    ];
+
+    final rows =
+        await customSelect("""
+            SELECT
+              m.id,
+              m.chat_id,
+              m."index",
+              m.raw_data,
+              m.sent_at,
+              m.sender_name,
+              m.content,
+              a.id as attachment_id,
+              a.type as attachment_type,
+              a.uri as attachment_uri
+
+            FROM
+              messages m
+
+            LEFT JOIN
+              attachments a
+              ON a.message_id = m.id
+
+            WHERE
+              m.id IN ($placeholders) AND
+              m.chat_id = ?
+
+          """, variables: variables).get();
+
+    return _getMessageDtos(rows);
+  }
+
+  List<MessageDto> _getMessageDtos(List<QueryRow> rows) {
     final messageDtos = <String, MessageDto>{};
 
     for (final row in rows) {

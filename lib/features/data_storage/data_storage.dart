@@ -20,3 +20,41 @@ Future<void> updateFileHistory(String filePath) async {
 
   prefs.setString("file_history", jsonEncode(fileHistory));
 }
+
+Future<List<String>> getPinnedMessages() async {
+  final prefs = await SharedPreferences.getInstance();
+
+  String pinnedMessagesJson = prefs.getString('pinnedMessages') ?? "[]";
+  List<String> pinnedMessages = jsonDecode(pinnedMessagesJson).cast<String>();
+
+  return pinnedMessages;
+}
+
+Future<void> pinMessage(String messageId) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  final pinnedMessages = await getPinnedMessages();
+
+  if (!pinnedMessages.contains(messageId)) {
+    pinnedMessages.add(messageId);
+  }
+
+  prefs.setString("pinnedMessages", jsonEncode(pinnedMessages));
+}
+
+Future<void> unpinMessage(String messageId) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  final pinnedMessages = await getPinnedMessages();
+
+  if (pinnedMessages.contains(messageId)) {
+    pinnedMessages.remove(messageId);
+  }
+
+  prefs.setString("pinnedMessages", jsonEncode(pinnedMessages));
+}
+
+Future<bool> isPinned(String messageId) async {
+  final pinnedMessages = await getPinnedMessages();
+  return pinnedMessages.contains(messageId);
+}

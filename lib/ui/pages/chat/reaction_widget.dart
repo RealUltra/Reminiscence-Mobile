@@ -26,6 +26,10 @@ class ReactionWidget extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
         color: color,
+        border: BoxBorder.all(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          width: 0.5,
+        ),
       ),
 
       child: Text(

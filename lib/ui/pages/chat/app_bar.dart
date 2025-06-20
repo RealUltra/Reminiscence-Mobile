@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final ReminiscenceData data;
   final ChatDto chat;
 
-  const MyAppBar(this.chat, {super.key});
+  const MyAppBar({super.key, required this.data, required this.chat});
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +53,10 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: Icon(Icons.push_pin, size: 22.0),
           onPressed: () {
             // List pinned messages
+            Navigator.of(context).pushNamed(
+              "/pinned_messages",
+              arguments: PinnedMessagesPageArgs(data: data, chat: chat),
+            );
           },
         ),
         IconButton(

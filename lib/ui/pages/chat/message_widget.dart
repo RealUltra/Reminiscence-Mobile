@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
+import 'package:reminiscence/features/data_storage/data_storage.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/attachment_widget.dart';
 import 'package:reminiscence/ui/pages/chat/reaction_widget.dart';
@@ -248,6 +249,10 @@ class _MessageWidgetState extends State<MessageWidget> {
     BuildContext context,
     LongPressStartDetails details,
   ) async {
+    final pinned = await isPinned(widget.message.id);
+
+    if (!context.mounted) return;
+
     final result = await showMenu(
       context: context,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -304,14 +309,17 @@ class _MessageWidgetState extends State<MessageWidget> {
         ),
 
         PopupMenuItem(
-          value: 'pinMessage',
+          value: pinned ? "unpinMessage" : "pinMessage",
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const Icon(Icons.push_pin, size: 16.0),
               SizedBox(width: 12),
-              Text("Pin Message", style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                pinned ? "Unpin Message" : "Pin Message",
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ),
         ),
@@ -350,16 +358,25 @@ class _MessageWidgetState extends State<MessageWidget> {
               );
             },
           );
+          break;
         }
 
       case "copyText":
         {
           Clipboard.setData(ClipboardData(text: widget.message.content));
+          break;
         }
 
       case "pinMessage":
         {
-          // Pin message here
+          await pinMessage(widget.message.id);
+          break;
+        }
+
+      case "unpinMessage":
+        {
+          await unpinMessage(widget.message.id);
+          break;
         }
 
       case "markAsSystem":

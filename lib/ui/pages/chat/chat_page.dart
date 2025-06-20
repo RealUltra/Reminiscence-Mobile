@@ -12,6 +12,9 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: MyAppBar(chat), body: Body(data: data, chat: chat));
+    return Scaffold(
+      appBar: MyAppBar(data: data, chat: chat),
+      body: Body(data: data, chat: chat),
+    );
   }
 }

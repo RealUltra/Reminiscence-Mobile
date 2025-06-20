@@ -40,7 +40,8 @@ class _ViewReactionsWidgetState extends State<ViewReactionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       height: 400,
       child: Row(
         children: [
@@ -78,7 +79,6 @@ class _ViewReactionsWidgetState extends State<ViewReactionsWidget> {
           // Content for the selected tab (right side)
           Expanded(
             child: Container(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               padding: const EdgeInsets.symmetric(
                 vertical: 0.0,
                 horizontal: 16.0,
