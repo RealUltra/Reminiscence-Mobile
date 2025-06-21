@@ -83,7 +83,12 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       // Show message saying that you can't go to pins right now.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text("Jump to the message to use this feature!"),
+          content: Text(
+            "Jump to the message to use this feature!",
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
           backgroundColor: Theme.of(context).colorScheme.errorContainer,
           duration: const Duration(seconds: 2),
         ),
