@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
@@ -42,9 +43,12 @@ class _ChatsListPageState extends State<ChatsListPage> {
       return Scaffold();
     }
 
-    return Scaffold(
-      appBar: MyAppBar(numChats: chats.length),
-      body: Body(data: widget.data, chats: chats),
+    return MultiProvider(
+      providers: [
+        Provider<ReminiscenceData>.value(value: widget.data),
+        Provider<List<ChatDto>>.value(value: chats),
+      ],
+      child: Scaffold(appBar: MyAppBar(), body: Body()),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
@@ -6,22 +7,16 @@ import 'package:reminiscence/ui/pages/chats_list/chats_list.dart';
 import 'package:reminiscence/ui/pages/chats_list/header.dart';
 
 class Body extends StatefulWidget {
-  final ReminiscenceData data;
-  final List<ChatDto> chats;
-
-  const Body({super.key, required this.data, required this.chats});
+  const Body({super.key});
 
   @override
   State<Body> createState() => _BodyState();
 }
 
 class _BodyState extends State<Body> {
-  bool _isLoading = true;
-
-  final chats = <ChatDto>[];
   List<ChatDto> filteredChats = [];
 
-  ScrollController? controller;
+  ScrollController controller = ScrollController();
 
   int sortByMode = 0;
   int orderMode = 0;
@@ -30,36 +25,20 @@ class _BodyState extends State<Body> {
   void initState() {
     super.initState();
 
-    _fetchData();
-  }
-
-  Future<void> _fetchData() async {
-    final chatDtos = await widget.data.db.chatDao.getChatDtos();
-
-    chats.clear();
-    chats.addAll(chatDtos);
-
-    filteredChats.clear();
-    filteredChats.addAll(chatDtos);
-
-    _sortChats();
-
-    controller = ScrollController();
+    filteredChats = Provider.of<List<ChatDto>>(context, listen: false);
 
     setState(() {
-      _isLoading = false;
+      _sortChats(scrollUp: false);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Container(color: Theme.of(context).colorScheme.surfaceContainer);
-    }
+    final data = Provider.of<ReminiscenceData>(context, listen: false);
 
     return PopScope(
       onPopInvokedWithResult: (bool didPop, _) {
-        widget.data.closeDatabase();
+        data.closeDatabase();
       },
 
       child: SafeArea(
@@ -85,7 +64,6 @@ class _BodyState extends State<Body> {
             ),
 
             ChatsList(
-              data: widget.data,
               chats: filteredChats,
               scrollController: controller,
               sortByMode: sortByMode,
@@ -97,6 +75,8 @@ class _BodyState extends State<Body> {
   }
 
   void _filterChatsBySearch(String text) {
+    final chats = Provider.of<List<ChatDto>>(context, listen: false);
+
     setState(() {
       filteredChats =
           chats
@@ -106,11 +86,12 @@ class _BodyState extends State<Body> {
                 ),
               )
               .toList();
+
       _sortChats();
     });
   }
 
-  void _sortChats() {
+  void _sortChats({scrollUp = true}) {
     filteredChats.sort((chat1, chat2) {
       if (orderMode == 1) {
         [chat2, chat1] = [chat1, chat2];
@@ -125,8 +106,8 @@ class _BodyState extends State<Body> {
       }
     });
 
-    if (controller != null) {
-      controller!.animateTo(
+    if (scrollUp) {
+      controller.animateTo(
         0.0,
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
