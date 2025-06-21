@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/data_storage/data_storage.dart';
+import 'package:reminiscence/features/data_storage/pinned_messages.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';

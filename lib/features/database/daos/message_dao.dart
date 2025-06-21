@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:reminiscence/features/data_storage/data_storage.dart';
+import 'package:reminiscence/features/data_storage/pinned_messages.dart';
+import 'package:reminiscence/features/data_storage/system_messages.dart';
 
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
@@ -13,14 +14,45 @@ part 'message_dao.g.dart';
 class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   MessageDao(super.db);
 
-  Future<List<MessageDto>> getMessages(
-    int chatId,
-    int startIndex,
-    int length,
-  ) async {
+  Future<List<String>> getMessageIds(int chatId) async {
+    final systemMessages = await getSystemMessages();
+
+    final placeholders = List.generate(
+      systemMessages.length,
+      (i) => '?',
+    ).join(', ');
+
+    final variables = [
+      Variable.withInt(chatId),
+      ...systemMessages.map((msg) => Variable.withString(msg)),
+    ];
+
     final rows =
-        await customSelect(
-          """
+        await customSelect("""
+            SELECT
+              id
+
+            FROM
+              messages
+
+            WHERE
+              chat_id = ?
+              AND no_emojis_content NOT IN ($placeholders)
+
+            ORDER BY
+              sent_at DESC
+          """, variables: variables).get();
+
+    return rows.map((r) => r.read<String>("id")).toList();
+  }
+
+  Future<List<MessageDto>> getMessages(List<String> messageIds) async {
+    final placeholders = List.filled(messageIds.length, '?').join(',');
+
+    final variables = messageIds.map((id) => Variable.withString(id)).toList();
+
+    final rows =
+        await customSelect("""
             SELECT
               m.id,
               m.chat_id,
@@ -29,6 +61,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
               m.sent_at,
               m.sender_name,
               m.content,
+              m.no_emojis_content,
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -41,21 +74,11 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
               ON a.message_id = m.id
 
             WHERE
-              m.chat_id = ?
-              AND m."index" >= ?
+              m.id IN ($placeholders)
 
             ORDER BY
-              m."index" ASC
-
-            LIMIT
-              ?
-          """,
-          variables: [
-            Variable.withInt(chatId),
-            Variable.withInt(startIndex),
-            Variable.withInt(length),
-          ],
-        ).get();
+              m.sent_at DESC
+          """, variables: variables).get();
 
     return _getMessageDtos(rows);
   }
@@ -83,6 +106,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
               m.sent_at,
               m.sender_name,
               m.content,
+              m.no_emojis_content,
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -114,6 +138,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       final sentAt = row.read<int>("sent_at");
       final senderName = row.read<String>("sender_name");
       final content = row.read<String>("content");
+      final noEmojisContent = row.read<String>("no_emojis_content");
 
       final attachmentId = row.read<int?>("attachment_id");
       final attachmentType = row.read<String?>("attachment_type");
@@ -128,6 +153,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
           sentAt: sentAt,
           senderName: senderName,
           content: content,
+          noEmojisContent: noEmojisContent,
           attachments: [],
         );
       }

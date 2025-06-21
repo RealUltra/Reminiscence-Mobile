@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/data_storage/data_storage.dart';
+import 'package:reminiscence/features/data_storage/pinned_messages.dart';
+import 'package:reminiscence/features/data_storage/system_messages.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
@@ -393,6 +394,15 @@ class _MessageWidgetState extends State<MessageWidget> {
       case "markAsSystem":
         {
           // Mark as system message here
+          await markAsSystemMessage(widget.message.noEmojisContent);
+
+          if (!context.mounted) return;
+
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            "/chats",
+            ModalRoute.withName("/"),
+            arguments: widget.data,
+          );
         }
     }
   }

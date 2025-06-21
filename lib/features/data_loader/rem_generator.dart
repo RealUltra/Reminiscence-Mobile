@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -112,7 +113,7 @@ Future<String?> createRemFile({
   final messageReader = MessageReader(chats);
 
   for (var chat in chats) {
-    print("Chat Title: ${chat.title}");
+    debugPrint("Chat Title: ${chat.title}");
 
     final stacksMid = chat.messageStacks.length / 2;
 
@@ -232,6 +233,9 @@ Future<void> insertArchiveChat(
           sentAt: Value(archiveMessage.sentAt),
           senderName: Value(archiveMessage.senderName),
           content: Value(archiveMessage.content),
+          noEmojisContent: Value(
+            removeEmojis(archiveMessage.content.toLowerCase()),
+          ),
         );
 
         batch.insert(db.messages, message);

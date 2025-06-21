@@ -8,6 +8,8 @@ class MessageDto {
   final int sentAt;
   final String senderName;
   final String content;
+  final String noEmojisContent;
+
   final List<AttachmentDto> attachments;
 
   MessageDto({
@@ -18,6 +20,8 @@ class MessageDto {
     required this.sentAt,
     required this.senderName,
     required this.content,
+    required this.noEmojisContent,
+
     this.attachments = const [],
   });
 }

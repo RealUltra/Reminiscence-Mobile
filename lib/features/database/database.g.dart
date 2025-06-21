@@ -579,6 +579,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _noEmojisContentMeta = const VerificationMeta(
+    'noEmojisContent',
+  );
+  @override
+  late final GeneratedColumn<String> noEmojisContent = GeneratedColumn<String>(
+    'no_emojis_content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -588,6 +599,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     sentAt,
     senderName,
     content,
+    noEmojisContent,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -654,6 +666,17 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
+    if (data.containsKey('no_emojis_content')) {
+      context.handle(
+        _noEmojisContentMeta,
+        noEmojisContent.isAcceptableOrUnknown(
+          data['no_emojis_content']!,
+          _noEmojisContentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_noEmojisContentMeta);
+    }
     return context;
   }
 
@@ -698,6 +721,11 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
             DriftSqlType.string,
             data['${effectivePrefix}content'],
           )!,
+      noEmojisContent:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}no_emojis_content'],
+          )!,
     );
   }
 
@@ -715,6 +743,7 @@ class Message extends DataClass implements Insertable<Message> {
   final int sentAt;
   final String senderName;
   final String content;
+  final String noEmojisContent;
   const Message({
     required this.id,
     required this.chatId,
@@ -723,6 +752,7 @@ class Message extends DataClass implements Insertable<Message> {
     required this.sentAt,
     required this.senderName,
     required this.content,
+    required this.noEmojisContent,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -734,6 +764,7 @@ class Message extends DataClass implements Insertable<Message> {
     map['sent_at'] = Variable<int>(sentAt);
     map['sender_name'] = Variable<String>(senderName);
     map['content'] = Variable<String>(content);
+    map['no_emojis_content'] = Variable<String>(noEmojisContent);
     return map;
   }
 
@@ -746,6 +777,7 @@ class Message extends DataClass implements Insertable<Message> {
       sentAt: Value(sentAt),
       senderName: Value(senderName),
       content: Value(content),
+      noEmojisContent: Value(noEmojisContent),
     );
   }
 
@@ -762,6 +794,7 @@ class Message extends DataClass implements Insertable<Message> {
       sentAt: serializer.fromJson<int>(json['sentAt']),
       senderName: serializer.fromJson<String>(json['senderName']),
       content: serializer.fromJson<String>(json['content']),
+      noEmojisContent: serializer.fromJson<String>(json['noEmojisContent']),
     );
   }
   @override
@@ -775,6 +808,7 @@ class Message extends DataClass implements Insertable<Message> {
       'sentAt': serializer.toJson<int>(sentAt),
       'senderName': serializer.toJson<String>(senderName),
       'content': serializer.toJson<String>(content),
+      'noEmojisContent': serializer.toJson<String>(noEmojisContent),
     };
   }
 
@@ -786,6 +820,7 @@ class Message extends DataClass implements Insertable<Message> {
     int? sentAt,
     String? senderName,
     String? content,
+    String? noEmojisContent,
   }) => Message(
     id: id ?? this.id,
     chatId: chatId ?? this.chatId,
@@ -794,6 +829,7 @@ class Message extends DataClass implements Insertable<Message> {
     sentAt: sentAt ?? this.sentAt,
     senderName: senderName ?? this.senderName,
     content: content ?? this.content,
+    noEmojisContent: noEmojisContent ?? this.noEmojisContent,
   );
   Message copyWithCompanion(MessagesCompanion data) {
     return Message(
@@ -805,6 +841,10 @@ class Message extends DataClass implements Insertable<Message> {
       senderName:
           data.senderName.present ? data.senderName.value : this.senderName,
       content: data.content.present ? data.content.value : this.content,
+      noEmojisContent:
+          data.noEmojisContent.present
+              ? data.noEmojisContent.value
+              : this.noEmojisContent,
     );
   }
 
@@ -817,14 +857,23 @@ class Message extends DataClass implements Insertable<Message> {
           ..write('rawData: $rawData, ')
           ..write('sentAt: $sentAt, ')
           ..write('senderName: $senderName, ')
-          ..write('content: $content')
+          ..write('content: $content, ')
+          ..write('noEmojisContent: $noEmojisContent')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, chatId, index, rawData, sentAt, senderName, content);
+  int get hashCode => Object.hash(
+    id,
+    chatId,
+    index,
+    rawData,
+    sentAt,
+    senderName,
+    content,
+    noEmojisContent,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -835,7 +884,8 @@ class Message extends DataClass implements Insertable<Message> {
           other.rawData == this.rawData &&
           other.sentAt == this.sentAt &&
           other.senderName == this.senderName &&
-          other.content == this.content);
+          other.content == this.content &&
+          other.noEmojisContent == this.noEmojisContent);
 }
 
 class MessagesCompanion extends UpdateCompanion<Message> {
@@ -846,6 +896,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   final Value<int> sentAt;
   final Value<String> senderName;
   final Value<String> content;
+  final Value<String> noEmojisContent;
   final Value<int> rowid;
   const MessagesCompanion({
     this.id = const Value.absent(),
@@ -855,6 +906,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     this.sentAt = const Value.absent(),
     this.senderName = const Value.absent(),
     this.content = const Value.absent(),
+    this.noEmojisContent = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MessagesCompanion.insert({
@@ -865,6 +917,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     required int sentAt,
     required String senderName,
     required String content,
+    required String noEmojisContent,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        chatId = Value(chatId),
@@ -872,7 +925,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
        rawData = Value(rawData),
        sentAt = Value(sentAt),
        senderName = Value(senderName),
-       content = Value(content);
+       content = Value(content),
+       noEmojisContent = Value(noEmojisContent);
   static Insertable<Message> custom({
     Expression<String>? id,
     Expression<int>? chatId,
@@ -881,6 +935,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     Expression<int>? sentAt,
     Expression<String>? senderName,
     Expression<String>? content,
+    Expression<String>? noEmojisContent,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -891,6 +946,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       if (sentAt != null) 'sent_at': sentAt,
       if (senderName != null) 'sender_name': senderName,
       if (content != null) 'content': content,
+      if (noEmojisContent != null) 'no_emojis_content': noEmojisContent,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -903,6 +959,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     Value<int>? sentAt,
     Value<String>? senderName,
     Value<String>? content,
+    Value<String>? noEmojisContent,
     Value<int>? rowid,
   }) {
     return MessagesCompanion(
@@ -913,6 +970,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       sentAt: sentAt ?? this.sentAt,
       senderName: senderName ?? this.senderName,
       content: content ?? this.content,
+      noEmojisContent: noEmojisContent ?? this.noEmojisContent,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -941,6 +999,9 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     if (content.present) {
       map['content'] = Variable<String>(content.value);
     }
+    if (noEmojisContent.present) {
+      map['no_emojis_content'] = Variable<String>(noEmojisContent.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -957,6 +1018,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
           ..write('sentAt: $sentAt, ')
           ..write('senderName: $senderName, ')
           ..write('content: $content, ')
+          ..write('noEmojisContent: $noEmojisContent, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1919,6 +1981,7 @@ typedef $$MessagesTableCreateCompanionBuilder =
       required int sentAt,
       required String senderName,
       required String content,
+      required String noEmojisContent,
       Value<int> rowid,
     });
 typedef $$MessagesTableUpdateCompanionBuilder =
@@ -1930,6 +1993,7 @@ typedef $$MessagesTableUpdateCompanionBuilder =
       Value<int> sentAt,
       Value<String> senderName,
       Value<String> content,
+      Value<String> noEmojisContent,
       Value<int> rowid,
     });
 
@@ -2010,6 +2074,11 @@ class $$MessagesTableFilterComposer
 
   ColumnFilters<String> get content => $composableBuilder(
     column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get noEmojisContent => $composableBuilder(
+    column: $table.noEmojisContent,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2101,6 +2170,11 @@ class $$MessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get noEmojisContent => $composableBuilder(
+    column: $table.noEmojisContent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ChatsTableOrderingComposer get chatId {
     final $$ChatsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2153,6 +2227,11 @@ class $$MessagesTableAnnotationComposer
 
   GeneratedColumn<String> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get noEmojisContent => $composableBuilder(
+    column: $table.noEmojisContent,
+    builder: (column) => column,
+  );
 
   $$ChatsTableAnnotationComposer get chatId {
     final $$ChatsTableAnnotationComposer composer = $composerBuilder(
@@ -2238,6 +2317,7 @@ class $$MessagesTableTableManager
                 Value<int> sentAt = const Value.absent(),
                 Value<String> senderName = const Value.absent(),
                 Value<String> content = const Value.absent(),
+                Value<String> noEmojisContent = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MessagesCompanion(
                 id: id,
@@ -2247,6 +2327,7 @@ class $$MessagesTableTableManager
                 sentAt: sentAt,
                 senderName: senderName,
                 content: content,
+                noEmojisContent: noEmojisContent,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2258,6 +2339,7 @@ class $$MessagesTableTableManager
                 required int sentAt,
                 required String senderName,
                 required String content,
+                required String noEmojisContent,
                 Value<int> rowid = const Value.absent(),
               }) => MessagesCompanion.insert(
                 id: id,
@@ -2267,6 +2349,7 @@ class $$MessagesTableTableManager
                 sentAt: sentAt,
                 senderName: senderName,
                 content: content,
+                noEmojisContent: noEmojisContent,
                 rowid: rowid,
               ),
           withReferenceMapper:

@@ -10,6 +10,7 @@ class Messages extends Table {
   IntColumn get sentAt => integer()();
   TextColumn get senderName => text()();
   TextColumn get content => text()();
+  TextColumn get noEmojisContent => text()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

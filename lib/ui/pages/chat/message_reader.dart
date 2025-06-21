@@ -6,10 +6,16 @@ class MessageReader {
   final ReminiscenceData data;
   final ChatDto chat;
 
-  final batchSize = 1000;
-  Map<int, MessageDto> messages = {};
-  List<int> messageIndexes = [];
+  final batchSize = 500;
+
   bool loading = false;
+
+  // its id's index in the allMessageIds list : message
+  Map<int, MessageDto> cache = {};
+  List<int> cacheIndexes = [];
+
+  bool isReady = false;
+  List<String> allMessageIds = [];
 
   MessageReader({required this.data, required this.chat});
 
@@ -20,46 +26,66 @@ class MessageReader {
     }
 
     // Index not in currently loaded data
-    if (!messages.containsKey(index)) {
+    if (!cache.containsKey(index)) {
       await load(index - index % batchSize);
     }
 
-    return messages[index];
+    return cache[index];
   }
 
   MessageDto? cachedMessageAt(int index) {
-    return messages[index];
+    return cache[index];
   }
 
   Future<void> load(int startIndex) async {
+    // If it is already loading, wait for it to stop loading.
     if (loading) {
       while (loading) {
         await Future.delayed(const Duration(microseconds: 5));
       }
     }
 
-    if (messages.containsKey(startIndex)) {
+    // If the cache contains the required message, move on.
+    if (cache.containsKey(startIndex)) {
+      loading = false;
       return;
     }
 
+    // Start loading
     loading = true;
 
-    final batch = await data.db.messageDao.getMessages(
-      chat.id,
-      startIndex,
-      batchSize,
-    );
+    // If the system messages and message ids haven't been loaded, load them.
+    if (!isReady) {
+      allMessageIds = await data.db.messageDao.getMessageIds(chat.id);
 
-    if (messages.length > batchSize) {
-      messageIndexes = messageIndexes.sublist(
-        messageIndexes.length - batchSize,
-      );
-      messages.removeWhere((key, value) => !messageIndexes.contains(key));
+      isReady = true;
     }
 
-    messages.addAll(Map.fromEntries(batch.map((m) => MapEntry(m.index, m))));
-    messageIndexes.addAll(batch.map((m) => m.index));
+    // Ids to retrieve
+    final targetIds = allMessageIds.sublist(startIndex, startIndex + batchSize);
 
+    // Loaded message dtos
+    final batch = await data.db.messageDao.getMessages(targetIds);
+
+    // This ensures two batches are always cached. This will remove one batch when a new one is coming in.
+    if (cache.length > batchSize) {
+      cacheIndexes = cacheIndexes.sublist(cacheIndexes.length - batchSize);
+      cache.removeWhere((key, value) => cacheIndexes.contains(key));
+    }
+
+    // Add the new batch to the cache.
+    cache.addAll(
+      Map.fromEntries(
+        batch.map((m) => MapEntry(allMessageIds.indexOf(m.id), m)),
+      ),
+    );
+
+    // Add the new batch's indexes to the cache.
+    cacheIndexes.addAll(
+      targetIds.map((id) => allMessageIds.indexOf(id)).toList(),
+    );
+
+    // Stop loading
     loading = false;
   }
 }
