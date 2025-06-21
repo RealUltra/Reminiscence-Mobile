@@ -7,8 +7,9 @@ import 'package:reminiscence/ui/pages/chats_list/header.dart';
 
 class Body extends StatefulWidget {
   final ReminiscenceData data;
+  final List<ChatDto> chats;
 
-  const Body(this.data, {super.key});
+  const Body({super.key, required this.data, required this.chats});
 
   @override
   State<Body> createState() => _BodyState();
@@ -66,8 +67,6 @@ class _BodyState extends State<Body> {
         child: Column(
           children: [
             Header(
-              numChats: chats.length,
-
               onSearchChanged: _filterChatsBySearch,
 
               onSortByChanged: (m) {

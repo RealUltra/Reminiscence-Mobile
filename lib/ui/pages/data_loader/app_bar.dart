@@ -16,11 +16,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: Icon(Icons.help_outline, size: 30),
         ),
       ],
-      actionsPadding: EdgeInsets.only(right: 16),
+      actionsPadding: EdgeInsets.only(right: 8),
       titleTextStyle: Theme.of(
         context,
       ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.w600),
-      titleSpacing: 18.0,
+      titleSpacing: 24.0,
     );
   }
 
