@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
@@ -39,15 +41,12 @@ class MessageReader {
 
   Future<void> load(int startIndex) async {
     // If it is already loading, wait for it to stop loading.
-    if (loading) {
-      while (loading) {
-        await Future.delayed(const Duration(microseconds: 5));
-      }
+    while (loading) {
+      await Future.delayed(const Duration(microseconds: 5));
     }
 
     // If the cache contains the required message, move on.
     if (cache.containsKey(startIndex)) {
-      loading = false;
       return;
     }
 
@@ -57,12 +56,12 @@ class MessageReader {
     // If the system messages and message ids haven't been loaded, load them.
     if (!isReady) {
       allMessageIds = await data.db.messageDao.getMessageIds(chat.id);
-
       isReady = true;
     }
 
     // Ids to retrieve
-    final targetIds = allMessageIds.sublist(startIndex, startIndex + batchSize);
+    final endIndex = min(startIndex + batchSize, allMessageIds.length);
+    final targetIds = allMessageIds.sublist(startIndex, endIndex);
 
     // Loaded message dtos
     final batch = await data.db.messageDao.getMessages(targetIds);
