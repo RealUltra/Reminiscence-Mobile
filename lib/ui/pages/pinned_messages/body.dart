@@ -9,12 +9,14 @@ class Body extends StatefulWidget {
   final ReminiscenceData data;
   final ChatDto chat;
   final List<MessageDto> pinnedMessages;
+  final Future<void> Function() updatePinnedMessages;
 
   const Body({
     super.key,
     required this.data,
     required this.chat,
     required this.pinnedMessages,
+    required this.updatePinnedMessages,
   });
 
   @override
@@ -46,6 +48,7 @@ class _BodyState extends State<Body> {
                 chat: widget.chat,
                 pinnedMessages: widget.pinnedMessages,
                 scrollController: controller,
+                updatePinnedMessages: widget.updatePinnedMessages,
               ),
             ),
           ),

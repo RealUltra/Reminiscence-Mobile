@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/chat/full_screen_video_player.dart';
 import 'package:video_player/video_player.dart';
+
+import 'package:reminiscence/ui/components/full_screen_video_player.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
   final File videoFile;

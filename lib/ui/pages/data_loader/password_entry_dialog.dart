@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/components/bullet_point.dart';
+import 'package:reminiscence/ui/pages/data_loader/bullet_point.dart';
 
 class PasswordEntryDialog extends StatefulWidget {
   /*

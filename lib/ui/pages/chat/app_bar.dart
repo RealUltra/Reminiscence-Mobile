@@ -6,8 +6,14 @@ import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final ReminiscenceData data;
   final ChatDto chat;
+  final bool disabled;
 
-  const MyAppBar({super.key, required this.data, required this.chat});
+  const MyAppBar({
+    super.key,
+    required this.data,
+    required this.chat,
+    required this.disabled,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +57,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: Icon(Icons.push_pin, size: 22.0),
-          onPressed: () {
-            // List pinned messages
-            Navigator.of(context).pushNamed(
-              "/pinned_messages",
-              arguments: PinnedMessagesPageArgs(data: data, chat: chat),
-            );
-          },
+          onPressed: () => goToPins(context),
         ),
         IconButton(
           icon: Icon(Icons.bar_chart, size: 22.0),
@@ -71,4 +71,23 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
+
+  Future<void> goToPins(BuildContext context) async {
+    if (!disabled) {
+      // List pinned messages
+      Navigator.of(context).pushNamed(
+        "/pins",
+        arguments: PinnedMessagesPageArgs(data: data, chat: chat),
+      );
+    } else {
+      // Show message saying that you can't go to pins right now.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Jump to the message to use this feature!"),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 }

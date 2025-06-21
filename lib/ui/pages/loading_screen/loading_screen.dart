@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'package:reminiscence/ui/components/rotating_image.dart';
+import 'package:reminiscence/ui/pages/loading_screen/rotating_image.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 
 class LoadingScreen<T> extends StatefulWidget {

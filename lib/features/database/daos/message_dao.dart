@@ -43,7 +43,9 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
             WHERE
               m.chat_id = ?
               AND m."index" >= ?
-              AND m."index" < ?
+
+            ORDER BY
+              m."index" ASC
 
             LIMIT
               ?
@@ -51,7 +53,6 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
           variables: [
             Variable.withInt(chatId),
             Variable.withInt(startIndex),
-            Variable.withInt(startIndex + length),
             Variable.withInt(length),
           ],
         ).get();

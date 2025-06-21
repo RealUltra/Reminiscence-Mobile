@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
+import 'package:reminiscence/features/data_storage/data_storage.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
-import 'package:reminiscence/ui/pages/pinned_messages/message_widget.dart';
+import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
+import 'package:reminiscence/ui/components/message_card.dart';
 
 class MessagesList extends StatelessWidget {
   final ReminiscenceData data;
   final ChatDto chat;
   final List<MessageDto> pinnedMessages;
   final ScrollController scrollController;
+  final Future<void> Function() updatePinnedMessages;
 
   const MessagesList({
     super.key,
@@ -16,6 +19,7 @@ class MessagesList extends StatelessWidget {
     required this.chat,
     required this.pinnedMessages,
     required this.scrollController,
+    required this.updatePinnedMessages,
   });
 
   @override
@@ -29,14 +33,74 @@ class MessagesList extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         final message = pinnedMessages[index];
 
-        return MessageWidget(
-          data: data,
-          userName: chat.userName,
-          message: message,
+        return GestureDetector(
+          onTap: () => onMessagePressed(context, message),
+          onLongPressStart:
+              (details) => showContextMenu(context, details, message),
+          child: MessageCard(
+            data: data,
+            userName: chat.userName,
+            message: message,
+          ),
         );
       },
 
       separatorBuilder: (context, index) => const SizedBox(height: 16.0),
     );
+  }
+
+  void onMessagePressed(BuildContext context, MessageDto message) {
+    Navigator.of(context).pushNamed(
+      "/chat",
+      arguments: ChatPageArgs(
+        data: data,
+        chat: chat,
+        startIndex: message.index,
+        disabled: true,
+      ),
+    );
+  }
+
+  Future<void> showContextMenu(
+    BuildContext context,
+    LongPressStartDetails details,
+    MessageDto message,
+  ) async {
+    final result = await showMenu(
+      context: context,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      position: RelativeRect.fromLTRB(
+        details.globalPosition.dx,
+        details.globalPosition.dy,
+        MediaQuery.of(context).size.width - details.globalPosition.dx,
+        MediaQuery.of(context).size.height - details.globalPosition.dy,
+      ),
+
+      items: <PopupMenuEntry>[
+        PopupMenuItem(
+          value: "unpinMessage",
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const Icon(Icons.push_pin, size: 16.0),
+              SizedBox(width: 12),
+              Text(
+                "Unpin Message",
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    if (result != "unpinMessage" || !context.mounted) {
+      return;
+    }
+
+    await unpinMessage(message.id);
+
+    await updatePinnedMessages();
   }
 }

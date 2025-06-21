@@ -15,7 +15,7 @@ import 'package:reminiscence/features/data_loader/rem_generator.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/data_storage.dart';
-import 'package:reminiscence/ui/components/bullet_point.dart';
+import 'package:reminiscence/ui/pages/data_loader/bullet_point.dart';
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry_dialog.dart';

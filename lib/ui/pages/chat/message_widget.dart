@@ -8,8 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_storage/data_storage.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
-import 'package:reminiscence/ui/pages/chat/attachment_widget.dart';
-import 'package:reminiscence/ui/pages/chat/reaction_widget.dart';
+import 'package:reminiscence/ui/components/attachment_widget.dart';
+import 'package:reminiscence/ui/components/reaction_widget.dart';
 import 'package:reminiscence/ui/pages/chat/view_reactions_widget.dart';
 
 class MessageWidget extends StatefulWidget {
@@ -17,6 +17,7 @@ class MessageWidget extends StatefulWidget {
   final String? userName;
   final MessageDto message;
   final MessageDto? previousMessage;
+  final bool startHighlighted;
 
   const MessageWidget({
     super.key,
@@ -24,6 +25,7 @@ class MessageWidget extends StatefulWidget {
     required this.userName,
     required this.message,
     this.previousMessage,
+    this.startHighlighted = false,
   });
 
   @override
@@ -36,6 +38,15 @@ class _MessageWidgetState extends State<MessageWidget> {
   bool isHighlighted = false;
   int highlightStart = 0;
   Timer? highlightTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.startHighlighted) {
+      _highlightTemporarily();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

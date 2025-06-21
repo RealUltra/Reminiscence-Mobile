@@ -1,20 +1,19 @@
-import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
-import 'package:reminiscence/ui/pages/chat/attachment_widget.dart';
-import 'package:reminiscence/ui/pages/chat/reaction_widget.dart';
+import 'package:reminiscence/ui/components/attachment_widget.dart';
+import 'package:reminiscence/ui/components/reaction_widget.dart';
 import 'package:reminiscence/ui/pages/chat/view_reactions_widget.dart';
 
-class MessageWidget extends StatefulWidget {
+class MessageCard extends StatefulWidget {
   final ReminiscenceData data;
   final String? userName;
   final MessageDto message;
 
-  const MessageWidget({
+  const MessageCard({
     super.key,
     required this.data,
     required this.userName,
@@ -22,15 +21,11 @@ class MessageWidget extends StatefulWidget {
   });
 
   @override
-  State<MessageWidget> createState() => _MessageWidgetState();
+  State<MessageCard> createState() => _MessageCardState();
 }
 
-class _MessageWidgetState extends State<MessageWidget> {
+class _MessageCardState extends State<MessageCard> {
   final senderNameExpiryTime = 5 * 60 * 1000; // 5 minutes in ms
-
-  bool isHighlighted = false;
-  int highlightStart = 0;
-  Timer? highlightTimer;
 
   @override
   Widget build(BuildContext context) {

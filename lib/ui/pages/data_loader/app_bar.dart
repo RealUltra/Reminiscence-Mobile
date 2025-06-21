@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/components/full_screen_ad.dart';
+import 'package:reminiscence/ui/pages/data_loader/full_screen_ad.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MyAppBar({super.key});

@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:audioplayers/audioplayers.dart';
 
 class AudioManager {

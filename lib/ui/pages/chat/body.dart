@@ -7,8 +7,16 @@ import 'package:reminiscence/ui/pages/chat/messages_list.dart';
 class Body extends StatefulWidget {
   final ReminiscenceData data;
   final ChatDto chat;
+  final int startIndex;
+  final bool disabled;
 
-  const Body({super.key, required this.data, required this.chat});
+  const Body({
+    super.key,
+    required this.data,
+    required this.chat,
+    required this.startIndex,
+    required this.disabled,
+  });
 
   @override
   State<Body> createState() => _BodyState();
@@ -30,14 +38,16 @@ class _BodyState extends State<Body> {
     return SafeArea(
       child: Container(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child:
-            isReady
-                ? MessagesList(
-                  data: widget.data,
-                  chat: widget.chat,
-                  messageReader: messageReader,
-                )
-                : null,
+        child: Visibility(
+          visible: isReady,
+          child: MessagesList(
+            data: widget.data,
+            chat: widget.chat,
+            messageReader: messageReader,
+            startIndex: widget.startIndex,
+            disabled: widget.disabled,
+          ),
+        ),
       ),
     );
   }

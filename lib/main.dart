@@ -44,6 +44,7 @@ class App extends StatelessWidget {
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     if (settings.name == '/') {
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) {
           return DataLoaderPage();
         },
@@ -52,6 +53,7 @@ class App extends StatelessWidget {
       final args = settings.arguments as LoadingScreenArgs;
 
       return MaterialPageRoute(
+        settings: settings,
         builder:
             (_) => LoadingScreen(
               operation: args.operation,
@@ -62,6 +64,7 @@ class App extends StatelessWidget {
       final data = settings.arguments as ReminiscenceData;
 
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) {
           return ChatsListPage(data);
         },
@@ -70,14 +73,21 @@ class App extends StatelessWidget {
       final args = settings.arguments as ChatPageArgs;
 
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) {
-          return ChatPage(data: args.data, chat: args.chat);
+          return ChatPage(
+            data: args.data,
+            chat: args.chat,
+            startIndex: args.startIndex,
+            disabled: args.disabled,
+          );
         },
       );
-    } else if (settings.name == "/pinned_messages") {
+    } else if (settings.name == "/pins") {
       final args = settings.arguments as PinnedMessagesPageArgs;
 
       return MaterialPageRoute(
+        settings: settings,
         builder: (context) {
           return PinnedMessagesPage(data: args.data, chat: args.chat);
         },

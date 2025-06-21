@@ -1,8 +1,8 @@
 import 'dart:async';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/chat/audio_manager.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+import 'package:reminiscence/ui/components/audio_manager.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
   final String audioFilePath;

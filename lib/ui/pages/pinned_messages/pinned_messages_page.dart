@@ -45,6 +45,7 @@ class _PinnedMessagesPageState extends State<PinnedMessagesPage> {
         data: widget.data,
         chat: widget.chat,
         pinnedMessages: pinnedMessages,
+        updatePinnedMessages: updatePinnedMessages,
       ),
     );
   }
