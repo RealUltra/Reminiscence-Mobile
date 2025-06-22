@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final ReminiscenceData data;
-  final ChatDto chat;
-  final bool disabled;
-
-  const MyAppBar({
-    super.key,
-    required this.data,
-    required this.chat,
-    required this.disabled,
-  });
+  const MyAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final chat = Provider.of<ChatDto>(context);
+
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       foregroundColor: Theme.of(context).colorScheme.onSurface,
@@ -73,6 +67,10 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   Future<void> goToPins(BuildContext context) async {
+    final data = Provider.of<ReminiscenceData>(context, listen: false);
+    final chat = Provider.of<ChatDto>(context, listen: false);
+    final disabled = Provider.of<bool>(context, listen: false);
+
     if (!disabled) {
       // List pinned messages
       Navigator.of(context).pushNamed(

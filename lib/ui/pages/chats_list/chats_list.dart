@@ -19,7 +19,7 @@ class ChatsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
+    final data = Provider.of<ReminiscenceData>(context);
 
     return Expanded(
       child: Container(

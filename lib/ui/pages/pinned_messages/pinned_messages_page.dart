@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
@@ -39,13 +40,16 @@ class _PinnedMessagesPageState extends State<PinnedMessagesPage> {
       return Scaffold();
     }
 
-    return Scaffold(
-      appBar: MyAppBar(pinnedMessages.length),
-      body: Body(
-        data: widget.data,
-        chat: widget.chat,
-        pinnedMessages: pinnedMessages,
-        updatePinnedMessages: updatePinnedMessages,
+    return MultiProvider(
+      providers: [
+        Provider<ReminiscenceData>.value(value: widget.data),
+        Provider<ChatDto>.value(value: widget.chat),
+        Provider<List<MessageDto>>.value(value: pinnedMessages),
+      ],
+
+      child: Scaffold(
+        appBar: MyAppBar(),
+        body: Body(updatePinnedMessages: updatePinnedMessages),
       ),
     );
   }

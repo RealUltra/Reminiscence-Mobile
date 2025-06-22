@@ -34,7 +34,7 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
+    final data = Provider.of<ReminiscenceData>(context);
 
     return PopScope(
       onPopInvokedWithResult: (bool didPop, _) {
@@ -75,7 +75,7 @@ class _BodyState extends State<Body> {
   }
 
   void _filterChatsBySearch(String text) {
-    final chats = Provider.of<List<ChatDto>>(context, listen: false);
+    final chats = Provider.of<List<ChatDto>>(context);
 
     setState(() {
       filteredChats =
@@ -109,7 +109,7 @@ class _BodyState extends State<Body> {
     if (scrollUp) {
       controller.animateTo(
         0.0,
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }

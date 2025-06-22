@@ -1,23 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:provider/provider.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/messages_list.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/header.dart';
 
 class Body extends StatefulWidget {
-  final ReminiscenceData data;
-  final ChatDto chat;
-  final List<MessageDto> pinnedMessages;
   final Future<void> Function() updatePinnedMessages;
 
-  const Body({
-    super.key,
-    required this.data,
-    required this.chat,
-    required this.pinnedMessages,
-    required this.updatePinnedMessages,
-  });
+  const Body({super.key, required this.updatePinnedMessages});
 
   @override
   State<Body> createState() => _BodyState();
@@ -44,9 +34,6 @@ class _BodyState extends State<Body> {
             child: Container(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: MessagesList(
-                data: widget.data,
-                chat: widget.chat,
-                pinnedMessages: widget.pinnedMessages,
                 scrollController: controller,
                 updatePinnedMessages: widget.updatePinnedMessages,
               ),
@@ -58,8 +45,13 @@ class _BodyState extends State<Body> {
   }
 
   void sortMessages(int sortByMode) {
+    final pinnedMessages = Provider.of<List<MessageDto>>(
+      context,
+      listen: false,
+    );
+
     setState(() {
-      widget.pinnedMessages.sort((message1, message2) {
+      pinnedMessages.sort((message1, message2) {
         if (sortByMode == 1) {
           [message1, message2] = [message2, message1];
         }

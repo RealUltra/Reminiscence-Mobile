@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
@@ -10,20 +11,7 @@ import 'package:reminiscence/ui/pages/chat/message_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class MessagesList extends StatefulWidget {
-  final ReminiscenceData data;
-  final ChatDto chat;
-  final MessageReader messageReader;
-  final int startIndex;
-  final bool disabled;
-
-  const MessagesList({
-    super.key,
-    required this.data,
-    required this.chat,
-    required this.messageReader,
-    required this.startIndex,
-    required this.disabled,
-  });
+  const MessagesList({super.key});
 
   @override
   State<MessagesList> createState() => _MessagesListState();
@@ -38,6 +26,8 @@ class _MessagesListState extends State<MessagesList> {
   final ScrollOffsetListener scrollOffsetListener =
       ScrollOffsetListener.create();
 
+  late final MessageReader messageReader;
+
   bool showScrollToBottom = false;
 
   @override
@@ -45,18 +35,28 @@ class _MessagesListState extends State<MessagesList> {
     super.initState();
 
     itemPositionsListener.itemPositions.addListener(onScroll);
+
+    final data = Provider.of<ReminiscenceData>(context, listen: false);
+    final chat = Provider.of<ChatDto>(context, listen: false);
+
+    messageReader = MessageReader(data: data, chat: chat);
   }
 
   @override
   Widget build(BuildContext context) {
+    final data = Provider.of<ReminiscenceData>(context);
+    final chat = Provider.of<ChatDto>(context);
+    final startIndex = Provider.of<int>(context);
+    final disabled = Provider.of<bool>(context);
+
     return Stack(
       children: [
         ScrollablePositionedList.builder(
-          itemCount: widget.chat.messageCount,
+          itemCount: chat.messageCount,
           reverse: true,
           padding: EdgeInsets.symmetric(vertical: 16),
-          initialScrollIndex: max(widget.startIndex, 0),
-          initialAlignment: widget.startIndex < 0 ? 0 : 0.5,
+          initialScrollIndex: max(startIndex, 0),
+          initialAlignment: startIndex < 0 ? 0 : 0.5,
           minCacheExtent: 1000.0,
 
           itemScrollController: itemScrollController,
@@ -66,18 +66,16 @@ class _MessagesListState extends State<MessagesList> {
 
           itemBuilder: (BuildContext context, int index) {
             // Check if the message has already been loaded
-            final message = widget.messageReader.cachedMessageAt(index);
-            final previousMessage = widget.messageReader.cachedMessageAt(
-              index + 1,
-            );
+            final message = messageReader.cachedMessageAt(index);
+            final previousMessage = messageReader.cachedMessageAt(index + 1);
 
             if (message != null && previousMessage != null) {
               return MessageWidget(
-                data: widget.data,
-                userName: widget.chat.userName,
+                data: data,
+                userName: chat.userName,
                 message: message,
                 previousMessage: previousMessage,
-                startHighlighted: index == widget.startIndex,
+                startHighlighted: index == startIndex,
               );
             }
 
@@ -85,9 +83,10 @@ class _MessagesListState extends State<MessagesList> {
             return FutureBuilder<List<MessageDto?>>(
               future:
                   (() async {
-                    final message = await widget.messageReader.messageAt(index);
-                    final previousMessage = await widget.messageReader
-                        .messageAt(index + 1);
+                    final message = await messageReader.messageAt(index);
+                    final previousMessage = await messageReader.messageAt(
+                      index + 1,
+                    );
                     return [message, previousMessage];
                   })(),
 
@@ -112,11 +111,11 @@ class _MessagesListState extends State<MessagesList> {
                   }
 
                   return MessageWidget(
-                    data: widget.data,
-                    userName: widget.chat.userName,
+                    data: data,
+                    userName: chat.userName,
                     message: messages[0],
                     previousMessage: messages[1],
-                    startHighlighted: index == widget.startIndex,
+                    startHighlighted: index == startIndex,
                   );
                 }
               },
@@ -125,7 +124,7 @@ class _MessagesListState extends State<MessagesList> {
         ),
 
         Visibility(
-          visible: !widget.disabled && showScrollToBottom,
+          visible: !disabled && showScrollToBottom,
           child: Positioned(
             bottom: 16.0,
             left: 0,
@@ -145,7 +144,7 @@ class _MessagesListState extends State<MessagesList> {
         ),
 
         Visibility(
-          visible: widget.disabled,
+          visible: disabled,
           child: Positioned(
             bottom: 0.0,
             left: 0,
@@ -160,6 +159,7 @@ class _MessagesListState extends State<MessagesList> {
                     "Jump Here",
                     style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -185,13 +185,17 @@ class _MessagesListState extends State<MessagesList> {
   }
 
   Future<void> jumpHere(BuildContext context) async {
+    final data = Provider.of<ReminiscenceData>(context, listen: false);
+    final chat = Provider.of<ChatDto>(context, listen: false);
+    final startIndex = Provider.of<int>(context, listen: false);
+
     await Navigator.of(context).pushNamedAndRemoveUntil(
       "/chat",
       ModalRoute.withName("/chats"),
       arguments: ChatPageArgs(
-        data: widget.data,
-        chat: widget.chat,
-        startIndex: widget.startIndex,
+        data: data,
+        chat: chat,
+        startIndex: startIndex,
         disabled: false,
       ),
     );
