@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/pages/graph/graph_page_args.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -55,9 +56,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: Icon(Icons.bar_chart, size: 22.0),
-          onPressed: () {
-            // Show graph
-          },
+          onPressed: () => goToGraph(context),
         ),
       ],
     );
@@ -77,6 +76,33 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
         "/pins",
         arguments: PinnedMessagesPageArgs(data: data, chat: chat),
       );
+    } else {
+      // Show message saying that you can't go to pins right now.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Jump to the message to use this feature!",
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> goToGraph(BuildContext context) async {
+    final data = Provider.of<ReminiscenceData>(context, listen: false);
+    final chat = Provider.of<ChatDto>(context, listen: false);
+    final disabled = Provider.of<bool>(context, listen: false);
+
+    if (!disabled) {
+      // List pinned messages
+      Navigator.of(
+        context,
+      ).pushNamed("/graph", arguments: GraphPageArgs(data: data, chat: chat));
     } else {
       // Show message saying that you can't go to pins right now.
       ScaffoldMessenger.of(context).showSnackBar(

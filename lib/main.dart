@@ -5,6 +5,8 @@ import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
+import 'package:reminiscence/ui/pages/graph/graph_page.dart';
+import 'package:reminiscence/ui/pages/graph/graph_page_args.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
@@ -90,6 +92,15 @@ class App extends StatelessWidget {
         settings: settings,
         builder: (context) {
           return PinnedMessagesPage(data: args.data, chat: args.chat);
+        },
+      );
+    } else if (settings.name == "/graph") {
+      final args = settings.arguments as GraphPageArgs;
+
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) {
+          return GraphPage(data: args.data, chat: args.chat);
         },
       );
     }

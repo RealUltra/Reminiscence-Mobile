@@ -127,6 +127,38 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     return _getMessageDtos(rows);
   }
 
+  Future<List<int>> getMessageTimestamps(int chatId) async {
+    final systemMessages = await getSystemMessages();
+
+    final placeholders = List.generate(
+      systemMessages.length,
+      (i) => '?',
+    ).join(', ');
+
+    final variables = [
+      Variable.withInt(chatId),
+      ...systemMessages.map((msg) => Variable.withString(msg)),
+    ];
+
+    final rows =
+        await customSelect("""
+            SELECT
+              sent_at
+
+            FROM
+              messages
+
+            WHERE
+              chat_id = ?
+              AND no_emojis_content NOT IN ($placeholders)
+
+            ORDER BY
+              sent_at DESC
+          """, variables: variables).get();
+
+    return rows.map((r) => r.read<int>("sent_at")).toList();
+  }
+
   List<MessageDto> _getMessageDtos(List<QueryRow> rows) {
     final messageDtos = <String, MessageDto>{};
 
