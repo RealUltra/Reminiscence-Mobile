@@ -6,6 +6,7 @@ import 'package:reminiscence/ui/pages/graph/add_chat_dialog.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 import 'package:reminiscence/ui/pages/graph/charts_notifier.dart';
 import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings_dialog.dart';
 import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
@@ -64,6 +65,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     final charts = await showDialog<Map<int, ChartInfo>>(
       context: context,
+      barrierDismissible: false,
       builder:
           (BuildContext context) => AddChatDialog(
             data: data,
@@ -79,18 +81,32 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Future<void> openGraphSettings(BuildContext context) async {
-    await showDialog<Map<int, ChartInfo>>(
+    final updatedSettings = await showDialog<GraphSettings>(
       context: context,
+      barrierDismissible: false,
       builder:
           (BuildContext context) => GraphSettingsDialog(
-            separateParticipantsController: separateParticipantsController,
-            graphModeController: graphModeController,
-            monthController: monthController,
-            yearController: yearController,
-            allTimeController: allTimeController,
-            chartTypeController: chartTypeController,
+            initialSettings: GraphSettings(
+              separateParticipants: separateParticipantsController.value,
+              mode: graphModeController.selected,
+              month: monthController.selected,
+              yearIndex: yearController.selected,
+              allTime: allTimeController.value,
+              chartType: chartTypeController.selected,
+            ),
             years: years,
           ),
     );
+
+    if (updatedSettings == null) {
+      return;
+    }
+
+    separateParticipantsController.value = updatedSettings.separateParticipants;
+    graphModeController.selected = updatedSettings.mode;
+    monthController.selected = updatedSettings.month;
+    yearController.selected = updatedSettings.yearIndex;
+    allTimeController.value = updatedSettings.allTime;
+    chartTypeController.selected = updatedSettings.chartType;
   }
 }
