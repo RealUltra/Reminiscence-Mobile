@@ -28,8 +28,8 @@ class Graph extends StatefulWidget {
 }
 
 class _GraphState extends State<Graph> {
-  Future<List<GraphData>> loadData(
-    ChartInfo chart, {
+  Future<List<GraphData>> loadData({
+    required ChartInfo chart,
     String? participant,
   }) async {
     final Map<String, int> counter = {};
@@ -37,13 +37,12 @@ class _GraphState extends State<Graph> {
 
     final data = Provider.of<ReminiscenceData>(context, listen: false);
 
-    final timestamps = await data.db.messageDao.getMessageTimestamps(
+    final messageTimestamps = await data.db.messageDao.getMessageTimestamps(
       chart.chat.id,
       senderName: participant,
     );
-    timestamps.sort();
 
-    for (final timestamp in timestamps) {
+    for (final timestamp in messageTimestamps) {
       final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
       final label = _getLabel(dt);
 
@@ -65,17 +64,26 @@ class _GraphState extends State<Graph> {
       }
     }
 
-    DateTime minDate = DateTime.fromMillisecondsSinceEpoch(timestamps[0]);
-    DateTime maxDate = DateTime.fromMillisecondsSinceEpoch(
-      timestamps[timestamps.length - 1],
-    );
+    // Daily, so check every day in the month.
+    if (widget.mode == 0) {
+      for (int i = 0; i < _getDaysInMonth(widget.month, widget.year); i++) {
+        final dt = DateTime(widget.year, widget.month, i + 1);
+        final label = _getLabel(dt);
 
-    for (int i = 0; i < maxDate.difference(minDate).inDays; i++) {
-      final dt = minDate.add(Duration(days: i));
-      final label = _getLabel(dt);
+        if (!counter.containsKey(label)) {
+          counter[label] = 0;
+          timestampToLabel[dt.millisecondsSinceEpoch] = label;
+        }
+      }
+    } else if (widget.mode == 1) {
+      for (int i = 0; i < 12; i++) {
+        final dt = DateTime(widget.year, i + 1, 1);
+        final label = _getLabel(dt);
 
-      if (!counter.containsKey(label)) {
-        counter[label] = 0;
+        if (!counter.containsKey(label)) {
+          counter[label] = 0;
+          timestampToLabel[dt.millisecondsSinceEpoch] = label;
+        }
       }
     }
 
@@ -100,10 +108,12 @@ class _GraphState extends State<Graph> {
     for (final chart in charts) {
       if (chart.separateParticipants) {
         for (final participant in chart.chat.participants) {
-          dataSources.add(await loadData(chart, participant: participant));
+          dataSources.add(
+            await loadData(chart: chart, participant: participant),
+          );
         }
       } else {
-        dataSources.add(await loadData(chart));
+        dataSources.add(await loadData(chart: chart));
       }
     }
 
@@ -134,6 +144,10 @@ class _GraphState extends State<Graph> {
     } else {
       return DateFormat('MM').format(dt);
     }
+  }
+
+  int _getDaysInMonth(int month, int year) {
+    return DateTime(year, month + 1, 0).day;
   }
 
   @override
