@@ -27,7 +27,7 @@ class _GraphModeDropdownState extends State<GraphModeDropdown> {
 
             return ButtonSegment<int>(
               value: index,
-              label: Text(text),
+              label: Text(text, style: Theme.of(context).textTheme.labelSmall),
               icon: Icon(graphModeIcons[index]),
             );
           }).toList(),

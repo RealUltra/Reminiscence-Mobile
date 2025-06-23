@@ -127,7 +127,10 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     return _getMessageDtos(rows);
   }
 
-  Future<List<int>> getMessageTimestamps(int chatId) async {
+  Future<List<int>> getMessageTimestamps(
+    int chatId, {
+    String? senderName,
+  }) async {
     final systemMessages = await getSystemMessages();
 
     final placeholders = List.generate(
@@ -140,6 +143,12 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       ...systemMessages.map((msg) => Variable.withString(msg)),
     ];
 
+    final includeSender = senderName != null;
+
+    if (includeSender) {
+      variables.add(Variable.withString(senderName));
+    }
+
     final rows =
         await customSelect("""
             SELECT
@@ -151,6 +160,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
             WHERE
               chat_id = ?
               AND no_emojis_content NOT IN ($placeholders)
+              ${includeSender ? 'AND sender_name = ?' : ''}
 
             ORDER BY
               sent_at DESC

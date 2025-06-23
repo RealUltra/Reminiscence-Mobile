@@ -46,9 +46,6 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
       "November",
       "December",
     ];
-
-    widget.monthController.setSelectedQuietly(monthOptions.length - 1);
-    widget.yearController.setSelectedQuietly(yearOptions.length - 1);
   }
 
   @override
@@ -61,7 +58,6 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
       builtWidget = _buildMonthly();
     } else {
       builtWidget = null;
-      widget.allTimeController.setValueQuietly(true);
     }
 
     final children = <Widget>[];

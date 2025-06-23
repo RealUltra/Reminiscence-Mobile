@@ -5,9 +5,29 @@ import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/graph/add_chat_dialog.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 import 'package:reminiscence/ui/pages/graph/charts_notifier.dart';
+import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/graph_settings_dialog.dart';
+import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const MyAppBar({super.key});
+  final SwitchController separateParticipantsController;
+  final DropdownController graphModeController;
+  final DropdownController monthController;
+  final DropdownController yearController;
+  final SwitchController allTimeController;
+  final DropdownController chartTypeController;
+  final List<int> years;
+
+  const MyAppBar({
+    super.key,
+    required this.separateParticipantsController,
+    required this.graphModeController,
+    required this.monthController,
+    required this.yearController,
+    required this.allTimeController,
+    required this.chartTypeController,
+    required this.years,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +45,10 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       actions: [
         IconButton(icon: Icon(Icons.add), onPressed: () => addNewChat(context)),
+        IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () => openGraphSettings(context),
+        ),
       ],
     );
   }
@@ -52,5 +76,21 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (charts != null) {
       chartsNotifier.setCharts(charts);
     }
+  }
+
+  Future<void> openGraphSettings(BuildContext context) async {
+    await showDialog<Map<int, ChartInfo>>(
+      context: context,
+      builder:
+          (BuildContext context) => GraphSettingsDialog(
+            separateParticipantsController: separateParticipantsController,
+            graphModeController: graphModeController,
+            monthController: monthController,
+            yearController: yearController,
+            allTimeController: allTimeController,
+            chartTypeController: chartTypeController,
+            years: years,
+          ),
+    );
   }
 }

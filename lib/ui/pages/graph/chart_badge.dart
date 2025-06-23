@@ -4,6 +4,8 @@ class ChartBadge extends StatelessWidget {
   // Chat name if isChat == true, otherwise it will be the participant's name.
   final String title;
 
+  final Color color;
+
   final bool isChat;
 
   // null if isChat == true, otherwise it will be the chat name.
@@ -12,6 +14,7 @@ class ChartBadge extends StatelessWidget {
   const ChartBadge({
     super.key,
     required this.title,
+    required this.color,
     this.isChat = true,
     this.chatTitle,
   });
@@ -25,7 +28,7 @@ class ChartBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 8.0, 8.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 12.0, 8.0),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16.0),
@@ -44,7 +47,7 @@ class ChartBadge extends StatelessWidget {
             ),
           ),
 
-          const Icon(Icons.close, size: 16.0),
+          Container(width: 12, height: 12, color: color),
         ],
       ),
     );
