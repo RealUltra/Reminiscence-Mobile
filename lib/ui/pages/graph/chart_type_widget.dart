@@ -1,34 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
 
-class GraphModeDropdown extends StatefulWidget {
+class ChartTypeWidget extends StatefulWidget {
   final DropdownController controller;
 
-  const GraphModeDropdown({super.key, required this.controller});
+  const ChartTypeWidget({super.key, required this.controller});
 
   @override
-  State<GraphModeDropdown> createState() => _GraphModeDropdownState();
+  State<ChartTypeWidget> createState() => _ChartTypeWidgetState();
 }
 
-class _GraphModeDropdownState extends State<GraphModeDropdown> {
-  final graphModeOptions = ["Daily", "Monthly", "Yearly"];
-  final graphModeIcons = [
-    Icons.calendar_view_day,
-    Icons.calendar_view_month,
-    Icons.calendar_today,
-  ];
+class _ChartTypeWidgetState extends State<ChartTypeWidget> {
+  final chartTypeOptions = ["Line", "Bar"];
+  final chartTypeIcons = [Icons.show_chart, Icons.bar_chart];
 
   @override
   Widget build(BuildContext context) {
     return SegmentedButton(
       segments:
-          graphModeOptions.map((text) {
-            final index = graphModeOptions.indexOf(text);
+          chartTypeOptions.map((text) {
+            final index = chartTypeOptions.indexOf(text);
 
             return ButtonSegment<int>(
               value: index,
               label: Text(text),
-              icon: Icon(graphModeIcons[index]),
+              icon: Icon(chartTypeIcons[index]),
             );
           }).toList(),
 

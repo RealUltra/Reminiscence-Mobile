@@ -26,36 +26,58 @@ class ChatDao extends DatabaseAccessor<AppDatabase> with _$ChatDaoMixin {
             c.title,
             c.user_name,
             COUNT(m.id) AS message_count,
-            MAX(m.sent_at) AS last_message_sent_at
+            MAX(m.sent_at) AS last_message_sent_at,
+            p.name as participant_name
+
           FROM 
             chats c
+
           LEFT JOIN
             messages m
             ON m.chat_id = c.id
             AND m.no_emojis_content NOT IN ($placeholders)
+
+          LEFT JOIN
+            participants p
+            ON p.chat_id = c.id
+
           GROUP BY
-            c.id;
+            c.id, c.title, c.user_name, p.name;
           """, variables: variables).get();
 
-    final chatDtos =
-        rows.map((row) {
-          final id = row.read<int>('id');
-          final title = row.read<String>('title');
-          final userName = row.read<String?>('user_name');
-          final messageCount = row.read<int>('message_count');
-          final lastMessageTimestamp = row.read<int>('last_message_sent_at');
+    return _getChatDtos(rows);
+  }
 
-          return ChatDto(
-            id: id,
-            title: title,
-            userName: userName,
-            messageCount: messageCount,
-            lastMessageSentAt: DateTime.fromMillisecondsSinceEpoch(
-              lastMessageTimestamp,
-            ),
-          );
-        }).toList();
+  List<ChatDto> _getChatDtos(List<QueryRow> rows) {
+    final chatDtos = <int, ChatDto>{};
 
-    return chatDtos;
+    for (final row in rows) {
+      final id = row.read<int>('id');
+      final title = row.read<String>('title');
+      final userName = row.read<String?>('user_name');
+      final messageCount = row.read<int>('message_count');
+      final lastMessageTimestamp = row.read<int>('last_message_sent_at');
+
+      final participantName = row.read<String?>("participant_name");
+
+      if (!chatDtos.containsKey(id)) {
+        chatDtos[id] = ChatDto(
+          id: id,
+          title: title,
+          userName: userName,
+          messageCount: messageCount,
+          lastMessageSentAt: DateTime.fromMillisecondsSinceEpoch(
+            lastMessageTimestamp,
+          ),
+          participants: [],
+        );
+      }
+
+      if (participantName != null) {
+        chatDtos[id]!.participants.add(participantName);
+      }
+    }
+
+    return chatDtos.values.toList();
   }
 }

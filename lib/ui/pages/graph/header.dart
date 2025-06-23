@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/graph/badge_layout.dart';
+import 'package:reminiscence/ui/pages/graph/chart_type_widget.dart';
+import 'package:reminiscence/ui/pages/graph/charts_notifier.dart';
 import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
 import 'package:reminiscence/ui/pages/graph/graph_details_widget.dart';
 import 'package:reminiscence/ui/pages/graph/graph_mode_dropdown.dart';
@@ -10,97 +10,72 @@ import 'package:reminiscence/ui/pages/graph/separate_participants_switch.dart';
 import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
 class Header extends StatefulWidget {
-  const Header({super.key});
+  final List<int> years;
+
+  final SwitchController separateParticipantsController;
+  final DropdownController graphModeController;
+  final DropdownController monthController;
+  final DropdownController yearController;
+  final SwitchController allTimeController;
+  final DropdownController chartTypeController;
+
+  const Header({
+    super.key,
+    required this.years,
+    required this.separateParticipantsController,
+    required this.graphModeController,
+    required this.monthController,
+    required this.yearController,
+    required this.allTimeController,
+    required this.chartTypeController,
+  });
 
   @override
   State<Header> createState() => _HeaderState();
 }
 
 class _HeaderState extends State<Header> {
-  bool isReady = false;
-
-  final SwitchController switchController = SwitchController();
-  final DropdownController modeController = DropdownController(initialValue: 1);
-  final DropdownController detailsController = DropdownController(
-    initialValue: -1,
-  );
-
-  late final List<int> timestamps;
-
-  @override
-  void initState() {
-    super.initState();
-
-    switchController.addListener(_updateWidgetSafely);
-
-    modeController.addListener(() {
-      if (mounted) {
-        setState(() {
-          detailsController.selected = -1;
-        });
-      }
-    });
-
-    detailsController.addListener(_updateWidgetSafely);
-
-    fetchTimestamps();
-  }
-
-  Future<void> fetchTimestamps() async {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
-
-    timestamps = await data.db.messageDao.getMessageTimestamps(chat.id);
-
-    setState(() {
-      isReady = true;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (!isReady) {
-      return Container(color: Theme.of(context).colorScheme.surfaceContainer);
-    }
+    final chartsNotifier = Provider.of<ChartsNotifier>(context);
 
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainer,
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.fromLTRB(0.0, 16.0, 0.0, 12.0),
       width: double.infinity,
 
       child: Column(
         children: [
-          BadgeLayout(),
-
-          const SizedBox(height: 24.0),
-
-          GraphModeDropdown(controller: modeController),
+          BadgeLayout(charts: chartsNotifier.charts),
 
           const SizedBox(height: 8.0),
+          const Divider(),
 
-          Visibility(
-            visible: modeController.selected != 2,
-            child: Container(
-              margin: EdgeInsets.only(bottom: 8.0),
-              child: GraphDetailsWidget(
-                graphMode: modeController.selected,
-                timestamps: timestamps,
-                controller: detailsController,
-              ),
-            ),
+          SeparateParticipantsSwitch(
+            controller: widget.separateParticipantsController,
           ),
 
+          const Divider(),
           const SizedBox(height: 8.0),
 
-          SeparateParticipantsSwitch(controller: switchController),
+          GraphModeDropdown(controller: widget.graphModeController),
+
+          const SizedBox(height: 8.0),
+
+          GraphDetailsWidget(
+            graphMode: widget.graphModeController.selected,
+            years: widget.years,
+            monthController: widget.monthController,
+            yearController: widget.yearController,
+            allTimeController: widget.allTimeController,
+          ),
+
+          const Divider(),
+          const SizedBox(height: 4.0),
+
+          ChartTypeWidget(controller: widget.chartTypeController),
         ],
       ),
     );
-  }
-
-  void _updateWidgetSafely() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 }

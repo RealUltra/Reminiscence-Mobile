@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
 class GraphDetailsWidget extends StatefulWidget {
   final int graphMode;
-  final List<int> timestamps;
-  final DropdownController controller;
+  final List<int> years;
+  final DropdownController monthController;
+  final DropdownController yearController;
+  final SwitchController allTimeController;
 
   const GraphDetailsWidget({
     super.key,
     required this.graphMode,
-    required this.timestamps,
-    required this.controller,
+    required this.years,
+    required this.monthController,
+    required this.yearController,
+    required this.allTimeController,
   });
 
   @override
@@ -25,100 +30,9 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
   void initState() {
     super.initState();
 
-    yearOptions = _getYears().map((y) => y.toString()).toList();
-    monthOptions = _getMonths().map((m) => "${m.monthName} ${m.year}").toList();
-  }
+    yearOptions = widget.years.map((y) => y.toString()).toList();
 
-  @override
-  Widget build(BuildContext context) {
-    final options = widget.graphMode == 0 ? monthOptions : yearOptions;
-
-    if (widget.controller.selected < 0) {
-      widget.controller.setSelectedQuietly(
-        options.length + widget.controller.selected,
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16.0, 0, 0, 0),
-      width: 150.0,
-
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: options[widget.controller.selected],
-          dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-          items:
-              options.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(
-                    value,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                );
-              }).toList(),
-
-          onChanged: (value) {
-            setState(() {
-              widget.controller.selected = options.indexOf(value!);
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  List<int> _getYears() {
-    widget.timestamps.sort();
-
-    final years =
-        widget.timestamps
-            .map((t) => DateTime.fromMillisecondsSinceEpoch(t).year)
-            .toSet()
-            .toList();
-    years.sort();
-
-    return years;
-  }
-
-  List<MonthYear> _getMonths() {
-    widget.timestamps.sort();
-
-    final dateTimes =
-        widget.timestamps
-            .map((t) => DateTime.fromMillisecondsSinceEpoch(t))
-            .toList();
-
-    final monthYears =
-        dateTimes.map((dt) => MonthYear(dt.month, dt.year)).toSet().toList();
-
-    return monthYears;
-  }
-}
-
-class MonthYear {
-  final int month;
-  final int year;
-  const MonthYear(this.month, this.year);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is MonthYear &&
-          runtimeType == other.runtimeType &&
-          month == other.month &&
-          year == other.year;
-
-  @override
-  int get hashCode => "$month/$year".hashCode;
-
-  String get monthName {
-    final MONTHS = [
+    monthOptions = [
       "January",
       "February",
       "March",
@@ -133,6 +47,119 @@ class MonthYear {
       "December",
     ];
 
-    return MONTHS[month - 1];
+    widget.monthController.setSelectedQuietly(monthOptions.length - 1);
+    widget.yearController.setSelectedQuietly(yearOptions.length - 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? builtWidget;
+
+    if (widget.graphMode == 0) {
+      builtWidget = _buildDaily();
+    } else if (widget.graphMode == 1) {
+      builtWidget = _buildMonthly();
+    } else {
+      builtWidget = null;
+      widget.allTimeController.setValueQuietly(true);
+    }
+
+    final children = <Widget>[];
+
+    if (builtWidget != null) {
+      children.add(
+        Padding(padding: EdgeInsets.only(top: 8.0), child: builtWidget),
+      );
+    }
+
+    children.add(_buildAllTimeSwitch());
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8.0,
+      children: children,
+    );
+  }
+
+  Widget _buildDaily() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8.0,
+
+      children: [
+        _buildDropdown(widget.monthController, monthOptions),
+        _buildDropdown(widget.yearController, yearOptions),
+      ],
+    );
+  }
+
+  Widget _buildMonthly() {
+    return _buildDropdown(widget.yearController, yearOptions);
+  }
+
+  Widget _buildDropdown(DropdownController controller, List<String> options) {
+    final disabled = widget.allTimeController.value;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.0, 0.0, 4.0, 0.0),
+
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+
+      child: DropdownButton<int>(
+        value: controller.selected,
+        underline: Container(),
+
+        items:
+            options.map((text) {
+              final index = options.indexOf(text);
+              return DropdownMenuItem<int>(
+                value: index,
+                child: Text("$text   ", textAlign: TextAlign.center),
+              );
+            }).toList(),
+
+        onChanged:
+            disabled
+                ? null
+                : (int? value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    controller.selected = value;
+                  });
+                },
+      ),
+    );
+  }
+
+  Widget _buildAllTimeSwitch() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8.0,
+
+      children: [
+        Text(
+          "All Time:",
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        Switch(
+          value: widget.allTimeController.value,
+          onChanged: (bool value) {
+            if (widget.graphMode != 2) {
+              setState(() {
+                widget.allTimeController.value = value;
+              });
+            }
+          },
+        ),
+      ],
+    );
   }
 }

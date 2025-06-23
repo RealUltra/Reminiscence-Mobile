@@ -28,4 +28,8 @@ class SwitchController {
       listener();
     }
   }
+
+  void setValueQuietly(bool value) {
+    this.value = value;
+  }
 }

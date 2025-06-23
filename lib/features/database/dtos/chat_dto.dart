@@ -4,6 +4,7 @@ class ChatDto {
   final String? userName;
   final int messageCount;
   final DateTime lastMessageSentAt;
+  final List<String> participants;
 
   const ChatDto({
     required this.id,
@@ -11,5 +12,6 @@ class ChatDto {
     required this.userName,
     required this.messageCount,
     required this.lastMessageSentAt,
+    this.participants = const [],
   });
 }

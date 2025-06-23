@@ -25,20 +25,27 @@ class ChartBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      width: 100.0,
-
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 8.0, 8.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16.0),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8.0,
 
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelSmall!.copyWith(
-          color: Theme.of(context).colorScheme.onPrimary,
-          overflow: TextOverflow.ellipsis,
-        ),
+        children: [
+          Text(
+            text,
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              overflow: TextOverflow.ellipsis,
+              height: 1.0,
+            ),
+          ),
+
+          const Icon(Icons.close, size: 16.0),
+        ],
       ),
     );
   }

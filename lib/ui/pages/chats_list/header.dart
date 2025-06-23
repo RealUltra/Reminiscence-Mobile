@@ -24,9 +24,9 @@ class Header extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MySearchBar(onChanged: onSearchChanged),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12.0),
           SortByRow(onChanged: onSortByChanged),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12.0),
           OrderRow(onChanged: onOrderChanged),
         ],
       ),

@@ -17,6 +17,8 @@ class _SeparateParticipantsSwitchState
   Widget build(BuildContext context) {
     return Row(
       spacing: 8.0,
+      mainAxisSize: MainAxisSize.min,
+
       children: [
         Text(
           "Separate Participants:",
