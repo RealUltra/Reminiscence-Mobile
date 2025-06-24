@@ -95,7 +95,11 @@ class GraphDataLoader {
 
     for (final graphInfo in iterGraphs()) {
       final chat = graphInfo["chat"] as ChatDto;
-      final timestamps = await data.db.messageDao.getMessageTimestamps(chat.id);
+      final senderName = graphInfo["participant"];
+      final timestamps = await data.db.messageDao.getMessageTimestamps(
+        chat.id,
+        senderName: senderName,
+      );
       _allMessageTimestamps.addAll(timestamps);
       _messageCounts.add(timestamps.length);
     }
@@ -190,21 +194,17 @@ class GraphDataLoader {
 
     final graphs = <Map<String, dynamic>>[];
 
-    int i = 0;
-
     for (final chart in charts) {
       if (chart.separateParticipants) {
         for (final participant in chart.chat.participants) {
           graphs.add({
-            "index": i,
+            "index": graphs.length,
             "chat": chart.chat,
             "participant": participant,
           });
-          i++;
         }
       } else {
-        graphs.add({"index": i, "chat": chart.chat});
-        i++;
+        graphs.add({"index": graphs.length, "chat": chart.chat});
       }
     }
 
