@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/graph/selection_controller.dart';
 
 class GraphModeDropdown extends StatefulWidget {
-  final SelectionController controller;
+  final SelectionController<int> controller;
 
   const GraphModeDropdown({super.key, required this.controller});
 

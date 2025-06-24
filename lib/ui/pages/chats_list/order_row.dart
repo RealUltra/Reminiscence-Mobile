@@ -10,24 +10,15 @@ class OrderRow extends StatefulWidget {
 }
 
 class _OrderRowState extends State<OrderRow> {
-  final List<String> options = ['Ascending', 'Descending'];
+  final options = ['Ascending', 'Descending'];
+  final optionIcons = [Icons.arrow_upward, Icons.arrow_downward];
 
   int orderMode = 0;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text("Order:"),
-        const SizedBox(width: 19),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: DropdownButtonHideUnderline(
+    /*
+    DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: options[orderMode],
                 dropdownColor:
@@ -52,6 +43,61 @@ class _OrderRowState extends State<OrderRow> {
                     }
                   });
                 },
+              ),
+            ),
+    */
+    return Row(
+      children: [
+        const Text("Order:"),
+
+        const SizedBox(width: 16),
+
+        Expanded(
+          child: SegmentedButton(
+            segments:
+                options.map((String value) {
+                  int index = options.indexOf(value);
+
+                  return ButtonSegment<int>(
+                    value: index,
+                    label: Text(
+                      value,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    icon: Icon(optionIcons[index]),
+                  );
+                }).toList(),
+
+            selected: {orderMode},
+
+            onSelectionChanged: (Set<int> newSelection) {
+              setState(() {
+                orderMode = newSelection.first;
+              });
+
+              if (widget.onChanged != null) {
+                widget.onChanged!(orderMode);
+              }
+            },
+
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.resolveWith<Color?>((
+                states,
+              ) {
+                if (states.contains(WidgetState.selected)) {
+                  return null;
+                }
+                return Theme.of(context).colorScheme.surfaceContainerHighest;
+              }),
+
+              foregroundColor: WidgetStatePropertyAll(
+                Theme.of(context).colorScheme.onSurface,
+              ),
+
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
               ),
             ),
           ),

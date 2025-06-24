@@ -9,16 +9,11 @@ import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 class GraphDataLoader {
   final ReminiscenceData data;
   final GraphSettings settings;
-  final List<int> years;
 
   final _allMessageTimestamps = <int>[];
   final _messageCounts = <int>[];
 
-  GraphDataLoader({
-    required this.data,
-    required this.settings,
-    required this.years,
-  });
+  GraphDataLoader({required this.data, required this.settings});
 
   Future<List<List<DataPoint>>> getDataSources() async {
     List<List<DataPoint>> dataSources = [];
@@ -123,9 +118,6 @@ class GraphDataLoader {
 
     final labels = <String, int>{}; // label : timestamp
 
-    final month = settings.month + 1;
-    final year = years[settings.yearIndex];
-
     // All time
     if (settings.allTime) {
       final minimum = DateTime.fromMillisecondsSinceEpoch(
@@ -149,9 +141,9 @@ class GraphDataLoader {
     }
     // Daily mode
     else if (settings.mode == 0) {
-      for (int i = 0; i < _getDaysInMonth(month, year); i++) {
+      for (int i = 0; i < _getDaysInMonth(settings.month, settings.year); i++) {
         final day = i + 1;
-        final dt = DateTime(year, month, day);
+        final dt = DateTime(settings.year, settings.month, day);
         labels[_getDayLabel(dt)] = dt.millisecondsSinceEpoch;
       }
     }
@@ -159,13 +151,23 @@ class GraphDataLoader {
     else if (settings.mode == 1) {
       for (int i = 0; i < 12; i++) {
         final month = i + 1;
-        final dt = DateTime(year, month, 1);
+        final dt = DateTime(settings.year, month, 1);
         labels[_getMonthLabel(dt)] = dt.millisecondsSinceEpoch;
       }
     }
     // Yearly mode
     else {
-      for (final year in years) {
+      final minYear =
+          DateTime.fromMillisecondsSinceEpoch(
+            _allMessageTimestamps.reduce(min),
+          ).year;
+
+      final maxYear =
+          DateTime.fromMillisecondsSinceEpoch(
+            _allMessageTimestamps.reduce(max),
+          ).year;
+
+      for (int year = minYear; year < maxYear; year++) {
         final dt = DateTime(year, 1, 1);
         labels[year.toString()] = dt.millisecondsSinceEpoch;
       }
@@ -214,13 +216,10 @@ class GraphDataLoader {
       return true;
     }
 
-    final month = settings.month + 1;
-    final year = years[settings.yearIndex];
-
     if (settings.mode == 0) {
-      return (dt.month == month) && (dt.year == year);
+      return (dt.month == settings.month) && (dt.year == settings.year);
     } else if (settings.mode == 1) {
-      return dt.year == year;
+      return dt.year == settings.year;
     }
 
     return true;

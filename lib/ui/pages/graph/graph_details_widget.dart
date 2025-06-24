@@ -81,18 +81,15 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
       mainAxisSize: MainAxisSize.min,
       spacing: 8.0,
 
-      children: [
-        _buildDropdown(widget.monthController, monthOptions),
-        _buildDropdown(widget.yearController, yearOptions),
-      ],
+      children: [_buildMonthDropdown(), _buildYearDropdown()],
     );
   }
 
   Widget _buildMonthly() {
-    return _buildDropdown(widget.yearController, yearOptions);
+    return _buildYearDropdown();
   }
 
-  Widget _buildDropdown(SelectionController controller, List<String> options) {
+  Widget _buildYearDropdown() {
     final disabled = widget.allTimeController.value;
 
     return Container(
@@ -104,14 +101,13 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
       ),
 
       child: DropdownButton<int>(
-        value: controller.selected,
+        value: widget.yearController.selected,
         underline: Container(),
 
         items:
-            options.map((text) {
-              final index = options.indexOf(text);
+            widget.years.map((text) {
               return DropdownMenuItem<int>(
-                value: index,
+                value: text.toInt(),
                 child: Text("$text   ", textAlign: TextAlign.center),
               );
             }).toList(),
@@ -123,7 +119,46 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
                   if (value == null) return;
 
                   setState(() {
-                    controller.selected = value;
+                    widget.yearController.selected = value;
+                  });
+                },
+      ),
+    );
+  }
+
+  Widget _buildMonthDropdown() {
+    final disabled = widget.allTimeController.value;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.0, 0.0, 4.0, 0.0),
+
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+
+      child: DropdownButton<int>(
+        value: widget.monthController.selected,
+        underline: Container(),
+
+        items:
+            monthOptions.map((text) {
+              final value = monthOptions.indexOf(text) + 1;
+
+              return DropdownMenuItem<int>(
+                value: value,
+                child: Text("$text   ", textAlign: TextAlign.center),
+              );
+            }).toList(),
+
+        onChanged:
+            disabled
+                ? null
+                : (int? value) {
+                  if (value == null) return;
+
+                  setState(() {
+                    widget.monthController.selected = value;
                   });
                 },
       ),

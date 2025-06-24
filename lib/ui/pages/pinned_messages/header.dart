@@ -10,21 +10,8 @@ class Header extends StatefulWidget {
 }
 
 class _HeaderState extends State<Header> {
-  final List<String> sortByOptions = ["Old", "New"];
-  int sortByMode = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-
-      child: Row(
-        children: [
-          const Text("Sort By:"),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
+  /*
+  Container(
               padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -55,8 +42,46 @@ class _HeaderState extends State<Header> {
                 ),
               ),
             ),
-          ),
-        ],
+  */
+
+  final sortByOptions = ["Oldest First", "Newest First"];
+  final sortByIcons = [Icons.arrow_upward, Icons.arrow_downward];
+
+  int sortByMode = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      padding: EdgeInsets.fromLTRB(16.0, 0, 16.0, 12.0),
+
+      child: Center(
+        child: SegmentedButton(
+          segments:
+              sortByOptions.map((String value) {
+                final index = sortByOptions.indexOf(value);
+
+                return ButtonSegment<int>(
+                  value: index,
+
+                  label: Text(
+                    value,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+
+                  icon: Icon(sortByIcons[index]),
+                );
+              }).toList(),
+
+          selected: {sortByMode},
+
+          onSelectionChanged: (newSelection) {
+            setState(() {
+              sortByMode = newSelection.first;
+              widget.onSortByChanged(sortByMode);
+            });
+          },
+        ),
       ),
     );
   }

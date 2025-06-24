@@ -8,9 +8,8 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 class Graph extends StatefulWidget {
   final GraphSettings settings;
-  final List<int> years;
 
-  const Graph({super.key, required this.settings, required this.years});
+  const Graph({super.key, required this.settings});
 
   @override
   State<Graph> createState() => _GraphState();
@@ -22,11 +21,7 @@ class _GraphState extends State<Graph> {
     final sessionData = Provider.of<SessionData>(context);
     final data = sessionData.data!;
 
-    final dataLoader = GraphDataLoader(
-      data: data,
-      settings: widget.settings,
-      years: widget.years,
-    );
+    final dataLoader = GraphDataLoader(data: data, settings: widget.settings);
 
     return FutureBuilder<List<List<DataPoint>>>(
       future: dataLoader.getDataSources(),

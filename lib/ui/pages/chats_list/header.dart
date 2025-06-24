@@ -18,15 +18,15 @@ class Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 16.0),
+      padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 12.0),
       color: Theme.of(context).colorScheme.surfaceContainer,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           MySearchBar(onChanged: onSearchChanged),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 8.0),
           SortByRow(onChanged: onSortByChanged),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 4.0),
           OrderRow(onChanged: onOrderChanged),
         ],
       ),

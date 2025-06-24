@@ -26,7 +26,7 @@ class _SortByRowState extends State<SortByRow> {
         const SizedBox(width: 8),
         Expanded(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(10.0, 0, 0, 0),
+            padding: const EdgeInsets.fromLTRB(12.0, 0, 0, 0),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8.0),

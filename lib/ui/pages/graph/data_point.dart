@@ -6,11 +6,9 @@ class DataPoint {
   static final colors = <Color>[
     Colors.blue,
     Colors.red,
-    Colors.green,
+    Colors.greenAccent,
     Colors.yellow,
-    Colors.deepOrange,
     Colors.deepPurpleAccent,
-    Colors.pink,
   ];
 
   final String x;
@@ -27,6 +25,7 @@ class DataPoint {
       final newColor = Color(
         (Random().nextDouble() * 0xFFFFFF).toInt(),
       ).withAlpha(255);
+
       colors.add(newColor);
     }
 

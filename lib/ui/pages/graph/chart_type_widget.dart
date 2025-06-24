@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/graph/selection_controller.dart';
 
 class ChartTypeWidget extends StatefulWidget {
-  final SelectionController controller;
+  final SelectionController<int> controller;
 
   const ChartTypeWidget({super.key, required this.controller});
 

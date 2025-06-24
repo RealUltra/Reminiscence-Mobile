@@ -2,22 +2,22 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-class SelectionController {
-  late int _selected;
+class SelectionController<T> {
+  late T _selected;
   final List<VoidCallback> _listeners = [];
 
-  SelectionController({int initialValue = 0}) {
+  SelectionController(T initialValue) {
     _selected = initialValue;
   }
 
-  int get selected => _selected;
+  T get selected => _selected;
 
   set selected(value) {
     _selected = value;
     _notifyListeners();
   }
 
-  void setSelectedQuietly(int value) {
+  void setSelectedQuietly(T value) {
     _selected = value;
   }
 

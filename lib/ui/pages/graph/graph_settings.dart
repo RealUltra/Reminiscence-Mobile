@@ -4,7 +4,7 @@ class GraphSettings {
   bool separateParticipants;
   int mode;
   int month;
-  int yearIndex;
+  int year;
   bool allTime;
   int chartType;
   Map<int, ChartInfo> chartData;
@@ -13,7 +13,7 @@ class GraphSettings {
     required this.separateParticipants,
     required this.mode,
     required this.month,
-    required this.yearIndex,
+    required this.year,
     required this.allTime,
     required this.chartType,
     required this.chartData,

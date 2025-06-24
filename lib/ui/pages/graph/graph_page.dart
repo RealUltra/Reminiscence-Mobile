@@ -52,8 +52,8 @@ class _GraphPageState extends State<GraphPage> {
     settings = GraphSettings(
       separateParticipants: false,
       mode: 1,
-      month: 11,
-      yearIndex: years.length - 1,
+      month: 12,
+      year: years.last,
       allTime: false,
       chartType: 0,
       chartData: {chat.id: ChartInfo(chat: chat)},

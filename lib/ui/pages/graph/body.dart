@@ -28,10 +28,7 @@ class _BodyState extends State<Body> {
               child: Container(
                 padding: EdgeInsets.fromLTRB(12.0, 16.0, 24.0, 16.0),
 
-                child: Graph(
-                  settings: widget.graphSettings,
-                  years: widget.years,
-                ),
+                child: Graph(settings: widget.graphSettings),
               ),
             ),
 

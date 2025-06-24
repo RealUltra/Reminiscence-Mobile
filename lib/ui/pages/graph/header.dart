@@ -77,8 +77,8 @@ class _HeaderState extends State<Header> {
       "December",
     ];
 
-    final monthName = monthNames[widget.settings.month];
-    final year = widget.years[widget.settings.yearIndex];
+    final monthName = monthNames[widget.settings.month - 1];
+    final year = widget.settings.year;
 
     if (widget.settings.mode == 0) {
       return "$monthName $year";

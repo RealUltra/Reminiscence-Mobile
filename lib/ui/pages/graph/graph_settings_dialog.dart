@@ -27,11 +27,11 @@ class GraphSettingsDialog extends StatefulWidget {
 
 class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
   final SwitchController separateParticipantsController = SwitchController();
-  final SelectionController graphModeController = SelectionController();
-  final SelectionController monthController = SelectionController();
-  final SelectionController yearController = SelectionController();
+  final SelectionController<int> graphModeController = SelectionController(1);
+  final SelectionController<int> monthController = SelectionController(12);
+  late final SelectionController<int> yearController;
   final SwitchController allTimeController = SwitchController();
-  final SelectionController chartTypeController = SelectionController();
+  final SelectionController<int> chartTypeController = SelectionController(0);
 
   late final Map<int, ChartInfo> chartData;
 
@@ -40,12 +40,13 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
     super.initState();
 
     chartData = Map.from(widget.initialSettings.chartData);
+    yearController = SelectionController(widget.years.last);
 
     separateParticipantsController.value =
         widget.initialSettings.separateParticipants;
     graphModeController.selected = widget.initialSettings.mode;
     monthController.selected = widget.initialSettings.month;
-    yearController.selected = widget.initialSettings.yearIndex;
+    yearController.selected = widget.initialSettings.year;
     allTimeController.value = widget.initialSettings.allTime;
     chartTypeController.selected = widget.initialSettings.chartType;
 
@@ -129,7 +130,7 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
         separateParticipants: separateParticipantsController.value,
         mode: graphModeController.selected,
         month: monthController.selected,
-        yearIndex: yearController.selected,
+        year: yearController.selected,
         allTime: allTimeController.value,
         chartType: chartTypeController.selected,
         chartData: chartData,
