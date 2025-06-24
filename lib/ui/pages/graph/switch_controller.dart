@@ -12,7 +12,11 @@ class SwitchController {
 
   set value(bool value) {
     _value = value;
-    _notifyListeners();
+    notifyListeners();
+  }
+
+  void setValueQuietly(bool value) {
+    this.value = value;
   }
 
   void addListener(VoidCallback listener) {
@@ -23,13 +27,9 @@ class SwitchController {
     _listeners.remove(listener);
   }
 
-  void _notifyListeners() {
+  void notifyListeners() {
     for (final listener in _listeners) {
       listener();
     }
-  }
-
-  void setValueQuietly(bool value) {
-    this.value = value;
   }
 }

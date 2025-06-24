@@ -22,32 +22,39 @@ class AddChatDialog extends StatefulWidget {
 }
 
 class _AddChatDialogState extends State<AddChatDialog> {
-  String searchQuery = "";
+  final TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller.addListener(() => setState(() {}));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 120.0),
+    return Material(
+      color: Colors.transparent,
 
-      child: Material(
-        shape: RoundedRectangleBorder(
+      child: Container(
+        padding: EdgeInsets.only(top: 16.0),
+        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 60.0),
+
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12.0),
         ),
 
-        child: Container(
-          padding: EdgeInsets.only(top: 16.0),
-
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildSearchBar(context),
-              const SizedBox(height: 8.0),
-              const Divider(),
-              _buildChatsList(context),
-              const Divider(height: 1.0),
-              _buildDoneButton(context),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildSearchBar(context),
+            const SizedBox(height: 8.0),
+            const Divider(),
+            _buildChatsList(context),
+            const Divider(height: 1.0),
+            _buildDoneButton(context),
+          ],
         ),
       ),
     );
@@ -58,21 +65,26 @@ class _AddChatDialogState extends State<AddChatDialog> {
       padding: EdgeInsets.symmetric(horizontal: 16.0),
 
       child: TextField(
+        controller: controller,
+
         decoration: InputDecoration(
           hintText: 'Search',
           hintStyle: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
+
           filled: true,
           fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
             borderSide: BorderSide.none,
           ),
+
           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         ),
+
         style: const TextStyle(color: Colors.white),
-        onChanged: (query) => setState(() => searchQuery = query),
       ),
     );
   }
@@ -193,11 +205,12 @@ class _AddChatDialogState extends State<AddChatDialog> {
   }
 
   List<ChatDto> _getSearchResults() {
+    final query = controller.text;
+
     return widget.chats
         .where(
-          (c) => c.title.toLowerCase().trim().contains(
-            searchQuery.toLowerCase().trim(),
-          ),
+          (c) =>
+              c.title.toLowerCase().trim().contains(query.toLowerCase().trim()),
         )
         .toList();
   }

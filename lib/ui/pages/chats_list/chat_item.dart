@@ -10,21 +10,21 @@ class ChatItem extends StatelessWidget {
   final ReminiscenceData data;
   final ChatDto chat;
   final int index;
-  final int sortByMode;
+  final int sortMode;
 
   const ChatItem({
     super.key,
     required this.data,
     required this.chat,
     required this.index,
-    required this.sortByMode,
+    required this.sortMode,
   });
 
   @override
   Widget build(BuildContext context) {
     String? subtitle;
 
-    switch (sortByMode) {
+    switch (sortMode) {
       case 1:
         subtitle = "${formatNumber(chat.messageCount)} messages";
         break;

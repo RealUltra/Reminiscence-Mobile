@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/chats_list/order_row.dart';
 import 'package:reminiscence/ui/pages/chats_list/sort_by_row.dart';
 import 'package:reminiscence/ui/pages/chats_list/search_bar.dart';
 
 class Header extends StatelessWidget {
-  final void Function(String text)? onSearchChanged;
-  final void Function(int sortByMode)? onSortByChanged;
-  final void Function(int orderMode)? onOrderChanged;
+  final SelectionController<int> sortController;
+  final SelectionController<int> orderController;
+  final TextEditingController searchController;
 
   const Header({
     super.key,
-    this.onSearchChanged,
-    this.onSortByChanged,
-    this.onOrderChanged,
+    required this.sortController,
+    required this.orderController,
+    required this.searchController,
   });
 
   @override
@@ -23,11 +24,11 @@ class Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          MySearchBar(onChanged: onSearchChanged),
+          MySearchBar(controller: searchController),
           const SizedBox(height: 8.0),
-          SortByRow(onChanged: onSortByChanged),
+          SortByRow(controller: sortController),
           const SizedBox(height: 4.0),
-          OrderRow(onChanged: onOrderChanged),
+          OrderRow(controller: orderController),
         ],
       ),
     );

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 
 class OrderRow extends StatefulWidget {
-  final void Function(int orderMode)? onChanged;
+  final SelectionController<int> controller;
 
-  const OrderRow({super.key, this.onChanged});
+  const OrderRow({super.key, required this.controller});
 
   @override
   State<OrderRow> createState() => _OrderRowState();
@@ -17,35 +18,6 @@ class _OrderRowState extends State<OrderRow> {
 
   @override
   Widget build(BuildContext context) {
-    /*
-    DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: options[orderMode],
-                dropdownColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-                items:
-                    options.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      );
-                    }).toList(),
-
-                onChanged: (value) {
-                  setState(() {
-                    orderMode = options.indexOf(value!);
-
-                    if (widget.onChanged != null) {
-                      widget.onChanged!(orderMode);
-                    }
-                  });
-                },
-              ),
-            ),
-    */
     return Row(
       children: [
         const Text("Order:"),
@@ -55,29 +27,25 @@ class _OrderRowState extends State<OrderRow> {
         Expanded(
           child: SegmentedButton(
             segments:
-                options.map((String value) {
-                  int index = options.indexOf(value);
+                options.map((String text) {
+                  int index = options.indexOf(text);
 
                   return ButtonSegment<int>(
                     value: index,
                     label: Text(
-                      value,
+                      text,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                     icon: Icon(optionIcons[index]),
                   );
                 }).toList(),
 
-            selected: {orderMode},
+            selected: {widget.controller.selected},
 
             onSelectionChanged: (Set<int> newSelection) {
               setState(() {
-                orderMode = newSelection.first;
+                widget.controller.selected = newSelection.first;
               });
-
-              if (widget.onChanged != null) {
-                widget.onChanged!(orderMode);
-              }
             },
 
             style: ButtonStyle(

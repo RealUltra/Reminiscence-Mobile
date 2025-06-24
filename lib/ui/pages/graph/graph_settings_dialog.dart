@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 import 'package:reminiscence/ui/pages/graph/chart_type_widget.dart';
-import 'package:reminiscence/ui/pages/graph/selection_controller.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/graph/graph_details_widget.dart';
 import 'package:reminiscence/ui/pages/graph/graph_mode_dropdown.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';

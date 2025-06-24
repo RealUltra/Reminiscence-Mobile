@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/chats_list/chats_list.dart';
 import 'package:reminiscence/ui/pages/chats_list/header.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
@@ -16,10 +17,18 @@ class Body extends StatefulWidget {
 class _BodyState extends State<Body> {
   ScrollController controller = ScrollController();
 
-  String searchQuery = "";
+  SelectionController<int> sortController = SelectionController(0);
+  SelectionController<int> orderController = SelectionController(0);
+  TextEditingController searchController = TextEditingController();
 
-  int sortByMode = 0;
-  int orderMode = 0;
+  @override
+  void initState() {
+    super.initState();
+
+    sortController.addListener(() => setState(() {}));
+    orderController.addListener(() => setState(() {}));
+    searchController.addListener(() => setState(() {}));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,25 +48,15 @@ class _BodyState extends State<Body> {
         child: Column(
           children: [
             Header(
-              onSearchChanged: (query) => setState(() => searchQuery = query),
-
-              onSortByChanged: (m) {
-                setState(() {
-                  sortByMode = m;
-                });
-              },
-
-              onOrderChanged: (m) {
-                setState(() {
-                  orderMode = m;
-                });
-              },
+              searchController: searchController,
+              sortController: sortController,
+              orderController: orderController,
             ),
 
             ChatsList(
               chats: filteredChats,
               scrollController: controller,
-              sortByMode: sortByMode,
+              sortMode: sortController.selected,
             ),
           ],
         ),
@@ -69,11 +68,13 @@ class _BodyState extends State<Body> {
     final sessionData = Provider.of<SessionData>(context, listen: false);
     final chats = sessionData.chats!;
 
+    final query = searchController.text;
+
     chatsToFilter =
         chats
             .where(
               (c) => c.title.toLowerCase().trim().contains(
-                searchQuery.toLowerCase().trim(),
+                query.toLowerCase().trim(),
               ),
             )
             .toList();
@@ -85,13 +86,13 @@ class _BodyState extends State<Body> {
 
   void _sortChats(List<ChatDto> chats, {scrollUp = true}) {
     chats.sort((chat1, chat2) {
-      if (orderMode == 1) {
+      if (orderController.selected == 1) {
         [chat2, chat1] = [chat1, chat2];
       }
 
-      if (sortByMode == 0) {
+      if (sortController.selected == 0) {
         return chat1.title.toLowerCase().compareTo(chat2.title.toLowerCase());
-      } else if (sortByMode == 1) {
+      } else if (sortController.selected == 1) {
         return chat1.messageCount.compareTo(chat2.messageCount);
       } else {
         return chat1.lastMessageSentAt.compareTo(chat2.lastMessageSentAt);

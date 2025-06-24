@@ -12,9 +12,9 @@ class SelectionController<T> {
 
   T get selected => _selected;
 
-  set selected(value) {
+  set selected(T value) {
     _selected = value;
-    _notifyListeners();
+    notifyListeners();
   }
 
   void setSelectedQuietly(T value) {
@@ -29,7 +29,7 @@ class SelectionController<T> {
     _listeners.remove(listener);
   }
 
-  void _notifyListeners() {
+  void notifyListeners() {
     for (final listener in _listeners) {
       listener();
     }

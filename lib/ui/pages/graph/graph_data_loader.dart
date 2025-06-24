@@ -100,6 +100,7 @@ class GraphDataLoader {
         chat.id,
         senderName: senderName,
       );
+
       _allMessageTimestamps.addAll(timestamps);
       _messageCounts.add(timestamps.length);
     }

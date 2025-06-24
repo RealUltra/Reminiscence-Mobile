@@ -8,13 +8,13 @@ import 'package:reminiscence/ui/providers/session_data.dart';
 class ChatsList extends StatelessWidget {
   final List<ChatDto> chats;
   final ScrollController? scrollController;
-  final int sortByMode;
+  final int sortMode;
 
   const ChatsList({
     super.key,
     required this.chats,
     required this.scrollController,
-    this.sortByMode = 0,
+    this.sortMode = 0,
   });
 
   @override
@@ -42,7 +42,7 @@ class ChatsList extends StatelessWidget {
               data: data,
               chat: chat,
               index: index,
-              sortByMode: sortByMode,
+              sortMode: sortMode,
             );
           },
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/messages_list.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/header.dart';
 
@@ -16,11 +17,15 @@ class Body extends StatefulWidget {
 class _BodyState extends State<Body> {
   ScrollController controller = ScrollController();
 
+  SelectionController<int> sortController = SelectionController(1);
+
   @override
   void initState() {
     super.initState();
 
-    sortMessages(1);
+    sortMessages();
+
+    sortController.addListener(() => sortMessages());
   }
 
   @override
@@ -28,7 +33,7 @@ class _BodyState extends State<Body> {
     return SafeArea(
       child: Column(
         children: [
-          Header(onSortByChanged: sortMessages),
+          Header(sortController: sortController),
 
           Expanded(
             child: Container(
@@ -44,7 +49,7 @@ class _BodyState extends State<Body> {
     );
   }
 
-  void sortMessages(int sortByMode) {
+  void sortMessages() {
     final pinnedMessages = Provider.of<List<MessageDto>>(
       context,
       listen: false,
@@ -52,7 +57,7 @@ class _BodyState extends State<Body> {
 
     setState(() {
       pinnedMessages.sort((message1, message2) {
-        if (sortByMode == 1) {
+        if (sortController.selected == 1) {
           [message1, message2] = [message2, message1];
         }
         return message1.sentAt.compareTo(message2.sentAt);

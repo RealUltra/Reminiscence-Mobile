@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 
 class Header extends StatefulWidget {
-  final void Function(int) onSortByChanged;
+  final SelectionController<int> sortController;
 
-  const Header({super.key, required this.onSortByChanged});
+  const Header({super.key, required this.sortController});
 
   @override
   State<Header> createState() => _HeaderState();
@@ -47,8 +48,6 @@ class _HeaderState extends State<Header> {
   final sortByOptions = ["Oldest First", "Newest First"];
   final sortByIcons = [Icons.arrow_upward, Icons.arrow_downward];
 
-  int sortByMode = 1;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -58,14 +57,14 @@ class _HeaderState extends State<Header> {
       child: Center(
         child: SegmentedButton(
           segments:
-              sortByOptions.map((String value) {
-                final index = sortByOptions.indexOf(value);
+              sortByOptions.map((String text) {
+                final index = sortByOptions.indexOf(text);
 
                 return ButtonSegment<int>(
                   value: index,
 
                   label: Text(
-                    value,
+                    text,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
@@ -73,12 +72,11 @@ class _HeaderState extends State<Header> {
                 );
               }).toList(),
 
-          selected: {sortByMode},
+          selected: {widget.sortController.selected},
 
           onSelectionChanged: (newSelection) {
             setState(() {
-              sortByMode = newSelection.first;
-              widget.onSortByChanged(sortByMode);
+              widget.sortController.selected = newSelection.first;
             });
           },
         ),
