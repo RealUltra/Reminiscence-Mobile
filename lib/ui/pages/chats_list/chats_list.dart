@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/chats_list/chat_item.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class ChatsList extends StatelessWidget {
   final List<ChatDto> chats;
@@ -19,7 +19,8 @@ class ChatsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = Provider.of<ReminiscenceData>(context);
+    final sessionData = Provider.of<SessionData>(context);
+    final data = sessionData.data!;
 
     return Expanded(
       child: Container(
@@ -36,6 +37,7 @@ class ChatsList extends StatelessWidget {
           itemCount: chats.length,
           itemBuilder: (context, index) {
             final chat = chats[index];
+
             return ChatItem(
               data: data,
               chat: chat,

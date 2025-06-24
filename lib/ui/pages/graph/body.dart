@@ -1,28 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/graph/Graph.dart';
-import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/pages/graph/header.dart';
-import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
 class Body extends StatefulWidget {
-  final SwitchController separateParticipantsController;
-  final DropdownController graphModeController;
-  final DropdownController monthController;
-  final DropdownController yearController;
-  final SwitchController allTimeController;
-  final DropdownController chartTypeController;
+  final GraphSettings graphSettings;
   final List<int> years;
 
-  const Body({
-    super.key,
-    required this.separateParticipantsController,
-    required this.graphModeController,
-    required this.monthController,
-    required this.yearController,
-    required this.allTimeController,
-    required this.chartTypeController,
-    required this.years,
-  });
+  const Body({super.key, required this.graphSettings, required this.years});
 
   @override
   State<Body> createState() => _BodyState();
@@ -37,18 +22,15 @@ class _BodyState extends State<Body> {
 
         child: Column(
           children: [
-            Header(),
+            Header(settings: widget.graphSettings, years: widget.years),
 
             Expanded(
               child: Container(
                 padding: EdgeInsets.fromLTRB(12.0, 16.0, 24.0, 16.0),
 
                 child: Graph(
-                  mode: widget.graphModeController.selected,
-                  month: widget.monthController.selected + 1,
-                  year: widget.years[widget.yearController.selected],
-                  allTime: widget.allTimeController.value,
-                  chartType: widget.chartTypeController.selected,
+                  settings: widget.graphSettings,
+                  years: widget.years,
                 ),
               ),
             ),

@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_storage/pinned_messages.dart';
 import 'package:reminiscence/features/data_storage/system_messages.dart';
@@ -12,6 +13,7 @@ import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
 import 'package:reminiscence/ui/pages/chat/view_reactions_widget.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MessageWidget extends StatefulWidget {
   final ReminiscenceData data;
@@ -19,12 +21,14 @@ class MessageWidget extends StatefulWidget {
   final MessageDto message;
   final MessageDto? previousMessage;
   final bool startHighlighted;
+  final VoidCallback? refreshWidget;
 
   const MessageWidget({
     super.key,
     required this.data,
     required this.userName,
     required this.message,
+    this.refreshWidget,
     this.previousMessage,
     this.startHighlighted = false,
   });
@@ -394,15 +398,19 @@ class _MessageWidgetState extends State<MessageWidget> {
       case "markAsSystem":
         {
           // Mark as system message here
+          final sessionData = Provider.of<SessionData>(context, listen: false);
+
           await markAsSystemMessage(widget.message.noEmojisContent);
 
-          if (!context.mounted) return;
+          await sessionData.loadChats();
 
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            "/chats",
-            ModalRoute.withName("/"),
-            arguments: widget.data,
+          sessionData.setChat(
+            sessionData.chats!.where((c) => c.id == sessionData.chat!.id).first,
           );
+
+          if (widget.refreshWidget != null) {
+            widget.refreshWidget!();
+          }
         }
     }
   }

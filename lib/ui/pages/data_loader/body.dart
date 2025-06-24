@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
@@ -21,6 +22,7 @@ import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry_dialog.dart';
 import 'package:reminiscence/ui/pages/data_loader/files_list.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen_args.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Body extends StatefulWidget {
@@ -202,9 +204,15 @@ class BodyState extends State<Body> {
       return;
     }
 
-    debugPrint("REM FILE LOADED!");
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    sessionData.setData(data);
 
-    await Navigator.of(context).pushNamed("/chats", arguments: data);
+    if (!context.mounted) {
+      await data.closeDatabase();
+      return;
+    }
+
+    await Navigator.of(context).pushNamed("/chats");
   }
 
   Future<void> loadZipData(BuildContext context, String filePath) async {

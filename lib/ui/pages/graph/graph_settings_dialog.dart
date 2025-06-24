@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 import 'package:reminiscence/ui/pages/graph/chart_type_widget.dart';
-import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/selection_controller.dart';
 import 'package:reminiscence/ui/pages/graph/graph_details_widget.dart';
 import 'package:reminiscence/ui/pages/graph/graph_mode_dropdown.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
@@ -9,11 +11,13 @@ import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
 class GraphSettingsDialog extends StatefulWidget {
   final GraphSettings initialSettings;
+  final ChatDto chat;
   final List<int> years;
 
   const GraphSettingsDialog({
     super.key,
     required this.initialSettings,
+    required this.chat,
     required this.years,
   });
 
@@ -23,15 +27,19 @@ class GraphSettingsDialog extends StatefulWidget {
 
 class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
   final SwitchController separateParticipantsController = SwitchController();
-  final DropdownController graphModeController = DropdownController();
-  final DropdownController monthController = DropdownController();
-  final DropdownController yearController = DropdownController();
+  final SelectionController graphModeController = SelectionController();
+  final SelectionController monthController = SelectionController();
+  final SelectionController yearController = SelectionController();
   final SwitchController allTimeController = SwitchController();
-  final DropdownController chartTypeController = DropdownController();
+  final SelectionController chartTypeController = SelectionController();
+
+  late final Map<int, ChartInfo> chartData;
 
   @override
   void initState() {
     super.initState();
+
+    chartData = Map.from(widget.initialSettings.chartData);
 
     separateParticipantsController.value =
         widget.initialSettings.separateParticipants;
@@ -41,15 +49,8 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
     allTimeController.value = widget.initialSettings.allTime;
     chartTypeController.selected = widget.initialSettings.chartType;
 
-    graphModeController.addListener(() {
-      if (mounted) {
-        setState(() {
-          if (graphModeController.selected == 2) {
-            allTimeController.value = true;
-          }
-        });
-      }
-    });
+    graphModeController.addListener(onModeChanged);
+    separateParticipantsController.addListener(onParticipantsSeparated);
   }
 
   @override
@@ -58,7 +59,7 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
       insetPadding: EdgeInsets.symmetric(horizontal: 20.0),
 
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
 
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -92,19 +93,7 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
             const SizedBox(height: 4.0),
 
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(
-                  context,
-                  GraphSettings(
-                    separateParticipants: separateParticipantsController.value,
-                    mode: graphModeController.selected,
-                    month: monthController.selected,
-                    yearIndex: yearController.selected,
-                    allTime: allTimeController.value,
-                    chartType: chartTypeController.selected,
-                  ),
-                );
-              },
+              onPressed: close,
 
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
@@ -131,5 +120,39 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
         ),
       ),
     );
+  }
+
+  void close() {
+    Navigator.pop(
+      context,
+      GraphSettings(
+        separateParticipants: separateParticipantsController.value,
+        mode: graphModeController.selected,
+        month: monthController.selected,
+        yearIndex: yearController.selected,
+        allTime: allTimeController.value,
+        chartType: chartTypeController.selected,
+        chartData: chartData,
+      ),
+    );
+  }
+
+  void onModeChanged() {
+    if (mounted) {
+      setState(() {
+        if (graphModeController.selected == 2) {
+          allTimeController.value = true;
+        }
+      });
+    }
+  }
+
+  void onParticipantsSeparated() {
+    if (mounted) {
+      setState(() {
+        chartData[widget.chat.id]?.separateParticipants =
+            separateParticipantsController.value;
+      });
+    }
   }
 }

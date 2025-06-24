@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/selection_controller.dart';
 
 class ChartTypeWidget extends StatefulWidget {
-  final DropdownController controller;
+  final SelectionController controller;
 
   const ChartTypeWidget({super.key, required this.controller});
 

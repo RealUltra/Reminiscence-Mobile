@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
+import 'package:reminiscence/ui/pages/graph/selection_controller.dart';
 import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
 
 class GraphDetailsWidget extends StatefulWidget {
   final int graphMode;
   final List<int> years;
-  final DropdownController monthController;
-  final DropdownController yearController;
+  final SelectionController monthController;
+  final SelectionController yearController;
   final SwitchController allTimeController;
 
   const GraphDetailsWidget({
@@ -60,15 +60,14 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
       builtWidget = null;
     }
 
-    final children = <Widget>[];
+    final children = <Widget>[_buildAllTimeSwitch()];
 
     if (builtWidget != null) {
-      children.add(
+      children.insert(
+        0,
         Padding(padding: EdgeInsets.only(top: 8.0), child: builtWidget),
       );
     }
-
-    children.add(_buildAllTimeSwitch());
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -93,7 +92,7 @@ class _GraphDetailsWidgetState extends State<GraphDetailsWidget> {
     return _buildDropdown(widget.yearController, yearOptions);
   }
 
-  Widget _buildDropdown(DropdownController controller, List<String> options) {
+  Widget _buildDropdown(SelectionController controller, List<String> options) {
     final disabled = widget.allTimeController.value;
 
     return Container(

@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/app_bar.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/body.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class PinnedMessagesPage extends StatefulWidget {
-  final ReminiscenceData data;
-  final ChatDto chat;
-
-  const PinnedMessagesPage({super.key, required this.data, required this.chat});
+  const PinnedMessagesPage({super.key});
 
   @override
   State<PinnedMessagesPage> createState() => _PinnedMessagesPageState();
@@ -28,7 +24,11 @@ class _PinnedMessagesPageState extends State<PinnedMessagesPage> {
   }
 
   Future<void> updatePinnedMessages() async {
-    pinnedMessages = await widget.data.db.messageDao.getPinned(widget.chat.id);
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final data = sessionData.data!;
+    final chat = sessionData.chat!;
+
+    pinnedMessages = await data.db.messageDao.getPinned(chat.id);
     setState(() {
       isReady = true;
     });
@@ -40,13 +40,8 @@ class _PinnedMessagesPageState extends State<PinnedMessagesPage> {
       return Scaffold();
     }
 
-    return MultiProvider(
-      providers: [
-        Provider<ReminiscenceData>.value(value: widget.data),
-        Provider<ChatDto>.value(value: widget.chat),
-        Provider<List<MessageDto>>.value(value: pinnedMessages),
-      ],
-
+    return Provider<List<MessageDto>>.value(
+      value: pinnedMessages,
       child: Scaffold(
         appBar: MyAppBar(),
         body: Body(updatePinnedMessages: updatePinnedMessages),

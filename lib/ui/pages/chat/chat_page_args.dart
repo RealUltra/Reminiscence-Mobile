@@ -1,16 +1,6 @@
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-
 class ChatPageArgs {
-  final ReminiscenceData data;
-  final ChatDto chat;
-  final int startIndex;
+  final String? initialMessageId;
   final bool disabled;
 
-  const ChatPageArgs({
-    required this.data,
-    required this.chat,
-    this.startIndex = -1,
-    this.disabled = false,
-  });
+  const ChatPageArgs({this.initialMessageId, this.disabled = false});
 }

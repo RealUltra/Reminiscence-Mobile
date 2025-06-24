@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-class DropdownController {
+class SelectionController {
   late int _selected;
   final List<VoidCallback> _listeners = [];
 
-  DropdownController({int initialValue = 0}) {
+  SelectionController({int initialValue = 0}) {
     _selected = initialValue;
   }
 

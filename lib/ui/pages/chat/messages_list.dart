@@ -1,13 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/pages/chat/message_reader.dart';
 import 'package:reminiscence/ui/pages/chat/message_widget.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class MessagesList extends StatefulWidget {
@@ -36,17 +33,43 @@ class _MessagesListState extends State<MessagesList> {
 
     itemPositionsListener.itemPositions.addListener(onScroll);
 
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final data = sessionData.data!;
+    final chat = sessionData.chat!;
 
     messageReader = MessageReader(data: data, chat: chat);
+    messageReader.initialize();
+
+    initialJump();
+  }
+
+  Future<void> initialJump() async {
+    final initialMessageId = Provider.of<String?>(context, listen: false);
+
+    if (initialMessageId == null) {
+      return;
+    }
+
+    while (!itemScrollController.isAttached || !messageReader.isReady) {
+      await Future.delayed(const Duration(microseconds: 5));
+    }
+
+    final index = messageReader.allMessageIds.indexOf(initialMessageId);
+
+    if (index <= 0) {
+      return;
+    }
+
+    itemScrollController.jumpTo(index: index, alignment: 0.5);
   }
 
   @override
   Widget build(BuildContext context) {
-    final data = Provider.of<ReminiscenceData>(context);
-    final chat = Provider.of<ChatDto>(context);
-    final startIndex = Provider.of<int>(context);
+    final sessionData = Provider.of<SessionData>(context);
+    final data = sessionData.data!;
+    final chat = sessionData.chat!;
+
+    final initialMessageId = Provider.of<String?>(context);
     final disabled = Provider.of<bool>(context);
 
     return Stack(
@@ -55,8 +78,6 @@ class _MessagesListState extends State<MessagesList> {
           itemCount: chat.messageCount,
           reverse: true,
           padding: EdgeInsets.symmetric(vertical: 16),
-          initialScrollIndex: max(startIndex, 0),
-          initialAlignment: startIndex < 0 ? 0 : 0.5,
           minCacheExtent: 1000.0,
 
           itemScrollController: itemScrollController,
@@ -75,7 +96,8 @@ class _MessagesListState extends State<MessagesList> {
                 userName: chat.userName,
                 message: message,
                 previousMessage: previousMessage,
-                startHighlighted: index == startIndex,
+                startHighlighted: message.id == initialMessageId,
+                refreshWidget: _refreshWidget,
               );
             }
 
@@ -115,7 +137,8 @@ class _MessagesListState extends State<MessagesList> {
                     userName: chat.userName,
                     message: messages[0],
                     previousMessage: messages[1],
-                    startHighlighted: index == startIndex,
+                    startHighlighted: messages[0].id == initialMessageId,
+                    refreshWidget: _refreshWidget,
                   );
                 }
               },
@@ -131,12 +154,7 @@ class _MessagesListState extends State<MessagesList> {
             right: 0,
             child: Center(
               child: FloatingActionButton(
-                onPressed:
-                    () => itemScrollController.scrollTo(
-                      index: 0,
-                      duration: const Duration(milliseconds: 300),
-                      alignment: 0.5,
-                    ),
+                onPressed: scrollToBottom,
                 child: const Icon(Icons.arrow_downward),
               ),
             ),
@@ -184,20 +202,30 @@ class _MessagesListState extends State<MessagesList> {
     }
   }
 
+  void scrollToBottom() {
+    itemScrollController.scrollTo(
+      index: 0,
+      duration: const Duration(milliseconds: 300),
+      alignment: 0.5,
+    );
+  }
+
   Future<void> jumpHere(BuildContext context) async {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
-    final startIndex = Provider.of<int>(context, listen: false);
+    final initialMessageId = Provider.of<String?>(context, listen: false);
 
     await Navigator.of(context).pushNamedAndRemoveUntil(
       "/chat",
       ModalRoute.withName("/chats"),
       arguments: ChatPageArgs(
-        data: data,
-        chat: chat,
-        startIndex: startIndex,
+        initialMessageId: initialMessageId,
         disabled: false,
       ),
     );
+  }
+
+  Future<void> _refreshWidget() async {
+    await messageReader.initialize();
+    scrollToBottom();
+    setState(() {});
   }
 }

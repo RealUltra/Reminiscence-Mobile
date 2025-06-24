@@ -21,6 +21,17 @@ class MessageReader {
 
   MessageReader({required this.data, required this.chat});
 
+  Future<void> initialize() async {
+    loading = true;
+
+    allMessageIds = await data.db.messageDao.getMessageIds(chat.id);
+    cache.clear();
+    cacheIndexes.clear();
+
+    isReady = true;
+    loading = false;
+  }
+
   Future<MessageDto?> messageAt(int index) async {
     // Invalid index
     if (index < 0 || index >= chat.messageCount) {
@@ -55,8 +66,7 @@ class MessageReader {
 
     // If the system messages and message ids haven't been loaded, load them.
     if (!isReady) {
-      allMessageIds = await data.db.messageDao.getMessageIds(chat.id);
-      isReady = true;
+      initialize();
     }
 
     // Ids to retrieve

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/pages/chats_list/utils.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class ChatItem extends StatelessWidget {
   final ReminiscenceData data;
@@ -42,11 +43,7 @@ class ChatItem extends StatelessWidget {
                   .surfaceContainerHighest // Light
               : Theme.of(context).colorScheme.surfaceContainer, // Dark
       child: ListTile(
-        onTap: () async {
-          await Navigator.of(
-            context,
-          ).pushNamed("/chat", arguments: ChatPageArgs(data: data, chat: chat));
-        },
+        onTap: () => openChat(context),
 
         title: Text(
           chat.title,
@@ -66,5 +63,14 @@ class ChatItem extends StatelessWidget {
                 : null,
       ),
     );
+  }
+
+  Future<void> openChat(BuildContext context) async {
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    sessionData.setChat(chat);
+
+    if (context.mounted) {
+      await Navigator.of(context).pushNamed("/chat");
+    }
   }
 }

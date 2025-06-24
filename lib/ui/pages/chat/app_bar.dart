@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-import 'package:reminiscence/ui/pages/graph/graph_page_args.dart';
-import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MyAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final chat = Provider.of<ChatDto>(context);
+    final sessionData = Provider.of<SessionData>(context);
+    final chat = sessionData.chat!;
 
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       foregroundColor: Theme.of(context).colorScheme.onSurface,
+      scrolledUnderElevation: 0.0,
+
       title: GestureDetector(
         onTap: () {
           // Display user info
@@ -43,6 +43,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
       ),
+
       actions: [
         IconButton(
           icon: Icon(Icons.search, size: 22.0),
@@ -66,16 +67,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   Future<void> goToPins(BuildContext context) async {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
     final disabled = Provider.of<bool>(context, listen: false);
 
     if (!disabled) {
       // List pinned messages
-      Navigator.of(context).pushNamed(
-        "/pins",
-        arguments: PinnedMessagesPageArgs(data: data, chat: chat),
-      );
+      Navigator.of(context).pushNamed("/pins");
     } else {
       // Show message saying that you can't go to pins right now.
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,15 +90,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Future<void> goToGraph(BuildContext context) async {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
     final disabled = Provider.of<bool>(context, listen: false);
 
     if (!disabled) {
       // List pinned messages
-      Navigator.of(
-        context,
-      ).pushNamed("/graph", arguments: GraphPageArgs(data: data, chat: chat));
+      Navigator.of(context).pushNamed("/graph");
     } else {
       // Show message saying that you can't go to pins right now.
       ScaffoldMessenger.of(context).showSnackBar(

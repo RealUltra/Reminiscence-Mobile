@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_storage/pinned_messages.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/components/message_card.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MessagesList extends StatelessWidget {
   final ScrollController scrollController;
@@ -19,8 +18,10 @@ class MessagesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = Provider.of<ReminiscenceData>(context);
-    final chat = Provider.of<ChatDto>(context);
+    final sessionData = Provider.of<SessionData>(context);
+    final data = sessionData.data!;
+    final chat = sessionData.chat!;
+
     final pinnedMessages = Provider.of<List<MessageDto>>(context);
 
     return ListView.separated(
@@ -34,8 +35,10 @@ class MessagesList extends StatelessWidget {
 
         return GestureDetector(
           onTap: () => onMessagePressed(context, message),
+
           onLongPressStart:
               (details) => showContextMenu(context, details, message),
+
           child: MessageCard(
             data: data,
             userName: chat.userName,
@@ -49,17 +52,9 @@ class MessagesList extends StatelessWidget {
   }
 
   void onMessagePressed(BuildContext context, MessageDto message) {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
-
     Navigator.of(context).pushNamed(
       "/chat",
-      arguments: ChatPageArgs(
-        data: data,
-        chat: chat,
-        startIndex: message.index,
-        disabled: true,
-      ),
+      arguments: ChatPageArgs(initialMessageId: message.id, disabled: true),
     );
   }
 

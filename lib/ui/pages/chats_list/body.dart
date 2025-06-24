@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/chats_list/chats_list.dart';
 import 'package:reminiscence/ui/pages/chats_list/header.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -14,27 +14,20 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  List<ChatDto> filteredChats = [];
-
   ScrollController controller = ScrollController();
+
+  String searchQuery = "";
 
   int sortByMode = 0;
   int orderMode = 0;
 
   @override
-  void initState() {
-    super.initState();
-
-    filteredChats = Provider.of<List<ChatDto>>(context, listen: false);
-
-    setState(() {
-      _sortChats(scrollUp: false);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final data = Provider.of<ReminiscenceData>(context);
+    final sessionData = Provider.of<SessionData>(context);
+    final data = sessionData.data!;
+
+    final filteredChats = _filterChatsBySearch(sessionData.chats!);
+    _sortChats(filteredChats, scrollUp: false);
 
     return PopScope(
       onPopInvokedWithResult: (bool didPop, _) {
@@ -46,19 +39,17 @@ class _BodyState extends State<Body> {
         child: Column(
           children: [
             Header(
-              onSearchChanged: _filterChatsBySearch,
+              onSearchChanged: (query) => setState(() => searchQuery = query),
 
               onSortByChanged: (m) {
                 setState(() {
                   sortByMode = m;
-                  _sortChats();
                 });
               },
 
               onOrderChanged: (m) {
                 setState(() {
                   orderMode = m;
-                  _sortChats();
                 });
               },
             ),
@@ -74,25 +65,26 @@ class _BodyState extends State<Body> {
     );
   }
 
-  void _filterChatsBySearch(String text) {
-    final chats = Provider.of<List<ChatDto>>(context);
+  List<ChatDto> _filterChatsBySearch(List<ChatDto> chatsToFilter) {
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final chats = sessionData.chats!;
 
-    setState(() {
-      filteredChats =
-          chats
-              .where(
-                (c) => c.title.toLowerCase().trim().contains(
-                  text.toLowerCase().trim(),
-                ),
-              )
-              .toList();
+    chatsToFilter =
+        chats
+            .where(
+              (c) => c.title.toLowerCase().trim().contains(
+                searchQuery.toLowerCase().trim(),
+              ),
+            )
+            .toList();
 
-      _sortChats();
-    });
+    _sortChats(chatsToFilter);
+
+    return chatsToFilter;
   }
 
-  void _sortChats({scrollUp = true}) {
-    filteredChats.sort((chat1, chat2) {
+  void _sortChats(List<ChatDto> chats, {scrollUp = true}) {
+    chats.sort((chat1, chat2) {
       if (orderMode == 1) {
         [chat2, chat1] = [chat1, chat2];
       }
@@ -106,7 +98,7 @@ class _BodyState extends State<Body> {
       }
     });
 
-    if (scrollUp) {
+    if (scrollUp && controller.hasClients) {
       controller.animateTo(
         0.0,
         duration: const Duration(milliseconds: 300),

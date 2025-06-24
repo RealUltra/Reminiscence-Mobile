@@ -1,33 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/pages/graph/add_chat_dialog.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
-import 'package:reminiscence/ui/pages/graph/charts_notifier.dart';
-import 'package:reminiscence/ui/pages/graph/dropdown_controller.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings_dialog.dart';
-import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final SwitchController separateParticipantsController;
-  final DropdownController graphModeController;
-  final DropdownController monthController;
-  final DropdownController yearController;
-  final SwitchController allTimeController;
-  final DropdownController chartTypeController;
+  final GraphSettings graphSettings;
   final List<int> years;
+  final void Function(GraphSettings)? onSettingsUpdated;
 
   const MyAppBar({
     super.key,
-    required this.separateParticipantsController,
-    required this.graphModeController,
-    required this.monthController,
-    required this.yearController,
-    required this.allTimeController,
-    required this.chartTypeController,
+    required this.graphSettings,
     required this.years,
+    this.onSettingsUpdated,
   });
 
   @override
@@ -58,12 +46,12 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   Future<void> addNewChat(BuildContext context) async {
-    final data = Provider.of<ReminiscenceData>(context, listen: false);
-    final chat = Provider.of<ChatDto>(context, listen: false);
-    final chats = Provider.of<List<ChatDto>>(context, listen: false);
-    final chartsNotifier = Provider.of<ChartsNotifier>(context, listen: false);
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final data = sessionData.data!;
+    final chat = sessionData.chat!;
+    final chats = sessionData.chats!;
 
-    final charts = await showDialog<Map<int, ChartInfo>>(
+    final newChartData = await showDialog<Map<int, ChartInfo>>(
       context: context,
       barrierDismissible: false,
       builder:
@@ -71,29 +59,27 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             data: data,
             chat: chat,
             chats: chats,
-            charts: chartsNotifier.charts,
+            chartData: Map.from(graphSettings.chartData),
           ),
     );
 
-    if (charts != null) {
-      chartsNotifier.setCharts(charts);
+    if (newChartData != null && onSettingsUpdated != null) {
+      graphSettings.chartData = newChartData;
+      onSettingsUpdated!(graphSettings);
     }
   }
 
   Future<void> openGraphSettings(BuildContext context) async {
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final chat = sessionData.chat!;
+
     final updatedSettings = await showDialog<GraphSettings>(
       context: context,
       barrierDismissible: false,
       builder:
           (BuildContext context) => GraphSettingsDialog(
-            initialSettings: GraphSettings(
-              separateParticipants: separateParticipantsController.value,
-              mode: graphModeController.selected,
-              month: monthController.selected,
-              yearIndex: yearController.selected,
-              allTime: allTimeController.value,
-              chartType: chartTypeController.selected,
-            ),
+            initialSettings: graphSettings,
+            chat: chat,
             years: years,
           ),
     );
@@ -102,11 +88,8 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       return;
     }
 
-    separateParticipantsController.value = updatedSettings.separateParticipants;
-    graphModeController.selected = updatedSettings.mode;
-    monthController.selected = updatedSettings.month;
-    yearController.selected = updatedSettings.yearIndex;
-    allTimeController.value = updatedSettings.allTime;
-    chartTypeController.selected = updatedSettings.chartType;
+    if (onSettingsUpdated != null) {
+      onSettingsUpdated!(updatedSettings);
+    }
   }
 }

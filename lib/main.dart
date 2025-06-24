@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
-import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/pages/graph/graph_page.dart';
-import 'package:reminiscence/ui/pages/graph/graph_page_args.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page.dart';
-import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page_args.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
 import 'package:reminiscence/ui/pages/chats_list/chats_list_page.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
@@ -33,13 +32,16 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Reminiscence",
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      initialRoute: "/",
-      onGenerateRoute: onGenerateRoute,
+    return ChangeNotifierProvider(
+      create: (context) => SessionData(),
+      child: MaterialApp(
+        title: "Reminiscence",
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
+        initialRoute: "/",
+        onGenerateRoute: onGenerateRoute,
+      ),
     );
   }
 
@@ -63,44 +65,39 @@ class App extends StatelessWidget {
             ),
       );
     } else if (settings.name == "/chats") {
-      final data = settings.arguments as ReminiscenceData;
-
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
-          return ChatsListPage(data);
+          return ChatsListPage();
         },
       );
     } else if (settings.name == "/chat") {
-      final args = settings.arguments as ChatPageArgs;
+      final args =
+          settings.arguments == null
+              ? ChatPageArgs()
+              : settings.arguments as ChatPageArgs;
 
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
           return ChatPage(
-            data: args.data,
-            chat: args.chat,
-            startIndex: args.startIndex,
+            initialMessageId: args.initialMessageId,
             disabled: args.disabled,
           );
         },
       );
     } else if (settings.name == "/pins") {
-      final args = settings.arguments as PinnedMessagesPageArgs;
-
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
-          return PinnedMessagesPage(data: args.data, chat: args.chat);
+          return PinnedMessagesPage();
         },
       );
     } else if (settings.name == "/graph") {
-      final args = settings.arguments as GraphPageArgs;
-
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
-          return GraphPage(data: args.data, chat: args.chat);
+          return GraphPage();
         },
       );
     }

@@ -7,14 +7,14 @@ class AddChatDialog extends StatefulWidget {
   final ReminiscenceData data;
   final ChatDto chat;
   final List<ChatDto> chats;
-  final Map<int, ChartInfo> charts;
+  final Map<int, ChartInfo> chartData;
 
   const AddChatDialog({
     super.key,
     required this.data,
     required this.chat,
     required this.chats,
-    required this.charts,
+    required this.chartData,
   });
 
   @override
@@ -22,6 +22,8 @@ class AddChatDialog extends StatefulWidget {
 }
 
 class _AddChatDialogState extends State<AddChatDialog> {
+  String searchQuery = "";
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -70,23 +72,28 @@ class _AddChatDialogState extends State<AddChatDialog> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
         ),
         style: const TextStyle(color: Colors.white),
-        onChanged: (text) {},
+        onChanged: (query) => setState(() => searchQuery = query),
       ),
     );
   }
 
   Widget _buildChatsList(BuildContext context) {
+    final filteredChats = _getSearchResults();
+    _sortChats(filteredChats);
+
     return Expanded(
       child: Container(
         color: Theme.of(context).colorScheme.surface,
 
         child: ListView.separated(
           padding: EdgeInsets.zero,
-          itemCount: widget.chats.length,
+          itemCount: filteredChats.length,
+
           itemBuilder: (context, index) {
-            final chat = widget.chats[index];
+            final chat = filteredChats[index];
             return _buildChatCard(context, chat);
           },
+
           separatorBuilder:
               (BuildContext context, int index) => const Divider(),
         ),
@@ -97,13 +104,21 @@ class _AddChatDialogState extends State<AddChatDialog> {
   Widget _buildChatCard(BuildContext context, ChatDto chat) {
     return ListTile(
       minTileHeight: 0.0,
+
       title: Text(chat.title, style: Theme.of(context).textTheme.bodyMedium),
+      subtitle: Text(
+        "${chat.messageCount} messages",
+        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+
       trailing:
-          (widget.charts.containsKey(chat.id))
+          (widget.chartData.containsKey(chat.id))
               ? Icon(Icons.check, size: 16.0)
               : null,
 
-      onTap: () => _toggleChat(context, chat),
+      onTap: () => chatPressed(context, chat),
     );
   }
 
@@ -113,7 +128,7 @@ class _AddChatDialogState extends State<AddChatDialog> {
 
       child: ElevatedButton(
         onPressed: () {
-          Navigator.pop(context, widget.charts);
+          Navigator.pop(context, widget.chartData);
         },
 
         style: ElevatedButton.styleFrom(
@@ -140,10 +155,10 @@ class _AddChatDialogState extends State<AddChatDialog> {
     );
   }
 
-  Future<void> _toggleChat(BuildContext context, ChatDto chat) async {
-    if (widget.charts.containsKey(chat.id)) {
+  Future<void> chatPressed(BuildContext context, ChatDto chat) async {
+    if (widget.chartData.containsKey(chat.id)) {
       if (chat.id != widget.chat.id) {
-        setState(() => widget.charts.remove(chat.id));
+        setState(() => widget.chartData.remove(chat.id));
       }
       return;
     }
@@ -170,10 +185,34 @@ class _AddChatDialogState extends State<AddChatDialog> {
     );
 
     setState(() {
-      widget.charts[chat.id] = ChartInfo(
+      widget.chartData[chat.id] = ChartInfo(
         chat: chat,
         separateParticipants: result == true,
       );
     });
+  }
+
+  List<ChatDto> _getSearchResults() {
+    return widget.chats
+        .where(
+          (c) => c.title.toLowerCase().trim().contains(
+            searchQuery.toLowerCase().trim(),
+          ),
+        )
+        .toList();
+  }
+
+  void _sortChats(List<ChatDto> chats) {
+    chats.sort((a, b) => b.messageCount.compareTo(a.messageCount));
+
+    for (final chat in List.of(chats).reversed) {
+      if (widget.chartData.containsKey(chat.id)) {
+        chats.remove(chat);
+        chats.insert(0, chat);
+      }
+    }
+
+    chats.remove(widget.chat);
+    chats.insert(0, widget.chat);
   }
 }
