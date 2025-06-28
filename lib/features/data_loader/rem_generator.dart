@@ -299,19 +299,18 @@ Future<void> insertMediaFiles(
     updateProgress(attachmentsDone / attachments.length);
 
     if (archiveFile != null) {
-      InputStream fileStream;
+      InputStream fileStream = archiveFile.rawContent!.getStream();
+
       final tempPath = path.join(tempDir.path, "attachment.dat");
 
       if (derivedKey != null) {
         await encryptStream(
-          inputStream: archiveFile.getContent()!,
+          inputStream: fileStream,
           outputPath: tempPath,
           secretKey: derivedKey.secretKey,
         );
 
         fileStream = InputFileStream(tempPath);
-      } else {
-        fileStream = archiveFile.getContent() ?? InputMemoryStream.empty();
       }
 
       remEncoder.addArchiveFile(ArchiveFile.stream(targetPath, fileStream));

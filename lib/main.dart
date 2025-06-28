@@ -7,6 +7,7 @@ import 'package:reminiscence/ui/pages/chat/chat_page.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/pages/graph/graph_page.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page.dart';
+import 'package:reminiscence/ui/pages/search/search_page.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
 import 'package:reminiscence/ui/pages/chats_list/chats_list_page.dart';
@@ -98,6 +99,13 @@ class App extends StatelessWidget {
         settings: settings,
         builder: (context) {
           return GraphPage();
+        },
+      );
+    } else if (settings.name == "/search") {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) {
+          return SearchPage();
         },
       );
     }

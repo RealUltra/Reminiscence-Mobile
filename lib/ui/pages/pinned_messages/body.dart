@@ -33,6 +33,8 @@ class _BodyState extends State<Body> {
     return SafeArea(
       child: Column(
         children: [
+          const Divider(height: 1.0, indent: 0.0, endIndent: 0.0),
+
           Header(sortController: sortController),
 
           Expanded(
@@ -62,12 +64,14 @@ class _BodyState extends State<Body> {
         }
         return message1.sentAt.compareTo(message2.sentAt);
       });
+    });
 
+    if (controller.hasClients) {
       controller.animateTo(
         0.0,
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    });
+    }
   }
 }

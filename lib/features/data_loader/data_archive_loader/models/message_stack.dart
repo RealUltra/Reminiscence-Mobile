@@ -86,11 +86,14 @@ class MessageStack {
   }
 
   Map<String, dynamic> _getJsonData() {
-    InputStream stream = archiveFile.getContent()!;
+    InputStream stream = archiveFile.rawContent!.getStream();
+
     String jsonString = utf8.decode(
       stream.readBytes(stream.length).toUint8List(),
     );
+
     Map<String, dynamic> jsonData = jsonDecode(jsonString);
+
     return jsonData;
   }
 }

@@ -47,17 +47,15 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: Icon(Icons.search, size: 22.0),
-          onPressed: () async {
-            // Open search page
-          },
+          onPressed: () => goToPage(context, "/search"),
         ),
         IconButton(
           icon: Icon(Icons.push_pin, size: 22.0),
-          onPressed: () => goToPins(context),
+          onPressed: () => goToPage(context, "/pins"),
         ),
         IconButton(
           icon: Icon(Icons.bar_chart, size: 22.0),
-          onPressed: () => goToGraph(context),
+          onPressed: () => goToPage(context, "/graph"),
         ),
       ],
     );
@@ -66,35 +64,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
-  Future<void> goToPins(BuildContext context) async {
+  Future<void> goToPage(BuildContext context, String route) async {
     final disabled = Provider.of<bool>(context, listen: false);
 
     if (!disabled) {
-      // List pinned messages
-      Navigator.of(context).pushNamed("/pins");
-    } else {
-      // Show message saying that you can't go to pins right now.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Jump to the message to use this feature!",
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: Theme.of(context).colorScheme.onErrorContainer,
-            ),
-          ),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Future<void> goToGraph(BuildContext context) async {
-    final disabled = Provider.of<bool>(context, listen: false);
-
-    if (!disabled) {
-      // List pinned messages
-      Navigator.of(context).pushNamed("/graph");
+      Navigator.of(context).pushNamed(route);
     } else {
       // Show message saying that you can't go to pins right now.
       ScaffoldMessenger.of(context).showSnackBar(
