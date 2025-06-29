@@ -16,6 +16,8 @@ class OptionsList extends StatelessWidget {
           final option = options[index];
 
           return GestureDetector(
+            key: ValueKey(option),
+
             onTap: () => onClick(option),
 
             child: Container(

@@ -32,7 +32,11 @@ class _BodyState extends State<Body> {
   void initState() {
     super.initState();
 
-    sortController.addListener(() => setState(() {}));
+    sortController.addListener(() async {
+      setState(() {});
+      await Future.delayed(const Duration(milliseconds: 200));
+      scrollToTop();
+    });
   }
 
   @override
@@ -71,7 +75,10 @@ class _BodyState extends State<Body> {
       return message1.sentAt.compareTo(message2.sentAt);
     });
 
-    /*
+    return sortedMessages;
+  }
+
+  void scrollToTop() {
     if (widget.scrollController.hasClients) {
       widget.scrollController.animateTo(
         0.0,
@@ -79,8 +86,5 @@ class _BodyState extends State<Body> {
         curve: Curves.easeInOut,
       );
     }
-    */
-
-    return sortedMessages;
   }
 }

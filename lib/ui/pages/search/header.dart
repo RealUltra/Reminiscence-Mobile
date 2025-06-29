@@ -27,26 +27,40 @@ class Header extends StatefulWidget {
 class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
+    final hasFilters = widget.filterController.value.isNotEmpty;
+
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainer,
       width: double.infinity,
-      padding: EdgeInsets.only(top: 12.0, bottom: 12.0),
+      padding: EdgeInsets.only(top: hasFilters ? 12.0 : 8.0, bottom: 8.0),
 
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
-          if (widget.filterController.value.isNotEmpty) ...{
+          if (hasFilters) ...{
             FiltersLayout(controller: widget.filterController),
 
             const SizedBox(height: 12.0),
             const Divider(height: 1.0),
-            SizedBox(height: 12.0),
+            SizedBox(height: 8.0),
           },
 
-          SortSelector(controller: widget.sortController),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.0),
 
-          ResultsLabel(
-            isSearching: widget.isSearching,
-            numResults: widget.numResults,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+              children: [
+                SortSelector(controller: widget.sortController),
+
+                ResultsLabel(
+                  isSearching: widget.isSearching,
+                  numResults: widget.numResults,
+                ),
+              ],
+            ),
           ),
         ],
       ),

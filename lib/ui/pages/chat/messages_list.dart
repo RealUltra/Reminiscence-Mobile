@@ -34,11 +34,14 @@ class _MessagesListState extends State<MessagesList> {
     itemPositionsListener.itemPositions.addListener(onScroll);
 
     final sessionData = Provider.of<SessionData>(context, listen: false);
-    final data = sessionData.data!;
     final chat = sessionData.chat!;
+    final messageReader = sessionData.messageReader;
 
-    messageReader = MessageReader(data: data, chat: chat);
-    messageReader.initialize();
+    if (messageReader == null || messageReader.chat.id != chat.id) {
+      sessionData.loadMessageReader();
+    }
+
+    this.messageReader = sessionData.messageReader!;
 
     initialJump();
   }

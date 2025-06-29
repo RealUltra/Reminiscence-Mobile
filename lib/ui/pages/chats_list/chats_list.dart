@@ -39,6 +39,7 @@ class ChatsList extends StatelessWidget {
             final chat = chats[index];
 
             return ChatItem(
+              key: ValueKey(chat.id),
               data: data,
               chat: chat,
               index: index,

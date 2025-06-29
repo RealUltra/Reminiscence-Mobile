@@ -31,6 +31,8 @@ class MessagesList extends StatelessWidget {
         final message = messages[index];
 
         return GestureDetector(
+          key: ValueKey(message.id),
+
           onTap: () => onMessagePressed(context, message),
 
           child: MessageCard(

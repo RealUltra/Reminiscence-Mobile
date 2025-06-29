@@ -115,6 +115,7 @@ class _AddChatDialogState extends State<AddChatDialog> {
 
   Widget _buildChatCard(BuildContext context, ChatDto chat) {
     return ListTile(
+      key: ValueKey(chat.id),
       minTileHeight: 0.0,
 
       title: Text(chat.title, style: Theme.of(context).textTheme.bodyMedium),

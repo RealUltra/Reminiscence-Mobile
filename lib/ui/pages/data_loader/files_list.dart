@@ -43,6 +43,8 @@ class _FilesListState extends State<FilesList> {
               itemCount: filePaths.length,
               itemBuilder: (BuildContext context, int index) {
                 return Column(
+                  key: ValueKey(filePaths[index]),
+
                   children: [
                     FileCard(
                       filePath: filePaths[index],

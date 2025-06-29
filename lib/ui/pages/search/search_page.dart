@@ -48,26 +48,34 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> search() async {
+    // Empty the search results
     searchResults.clear();
 
-    final query = searchController.text;
-
+    // Remove the search results from the widget and change the results label to Searching...
     setState(() => isSearching = true);
 
+    // Fetch the search query
+    final query = searchController.text;
+
+    // Fetch the filters
     final filters = filterController.value.values.toList();
 
+    // Add the search query as a filter if it isn't empty
     if (query.trim().isNotEmpty) {
       filters.add(Filter(type: FilterType.query, value: query));
     }
 
+    // Search for all matching messages
     final sessionData = Provider.of<SessionData>(context, listen: false);
     final data = sessionData.data!;
     final chat = sessionData.chat!;
 
     searchResults = await data.db.messageDao.searchByFilters(chat.id, filters);
 
+    // Stop searching and show search results
     setState(() => isSearching = false);
 
+    // Scroll to the top
     if (scrollController.hasClients) {
       await Future.delayed(const Duration(milliseconds: 200));
 

@@ -11,32 +11,36 @@ class SortSelector extends StatefulWidget {
 }
 
 class _SortSelectorState extends State<SortSelector> {
-  final sortByOptions = ["Oldest First", "Newest First"];
+  final sortByOptions = ["Oldest", "Newest"];
   final sortByIcons = [Icons.arrow_upward, Icons.arrow_downward];
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton(
-      segments:
-          sortByOptions.map((String text) {
-            final index = sortByOptions.indexOf(text);
+    return IntrinsicWidth(
+      child: SegmentedButton(
+        expandedInsets: EdgeInsets.zero,
 
-            return ButtonSegment<int>(
-              value: index,
+        segments:
+            sortByOptions.map((String text) {
+              final index = sortByOptions.indexOf(text);
 
-              label: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+              return ButtonSegment<int>(
+                value: index,
 
-              icon: Icon(sortByIcons[index]),
-            );
-          }).toList(),
+                label: Text(text, style: Theme.of(context).textTheme.bodySmall),
 
-      selected: {widget.controller.selected},
+                icon: Icon(sortByIcons[index]),
+              );
+            }).toList(),
 
-      onSelectionChanged: (newSelection) {
-        setState(() {
-          widget.controller.selected = newSelection.first;
-        });
-      },
+        selected: {widget.controller.selected},
+
+        onSelectionChanged: (newSelection) {
+          setState(() {
+            widget.controller.selected = newSelection.first;
+          });
+        },
+      ),
     );
   }
 }

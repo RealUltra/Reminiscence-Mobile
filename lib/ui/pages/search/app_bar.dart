@@ -22,6 +22,8 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasFilters = filterController.value.isNotEmpty;
+
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.surface,
       foregroundColor: Theme.of(context).colorScheme.onSurface,
@@ -52,7 +54,12 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       actions: [
         IconButton(
-          icon: Icon(Icons.filter_alt_off_rounded, size: 22.0),
+          icon: Icon(
+            hasFilters
+                ? Icons.filter_alt_rounded
+                : Icons.filter_alt_off_rounded,
+            size: 22.0,
+          ),
           onPressed: () => showFiltersMenu(context),
         ),
       ],

@@ -13,26 +13,16 @@ class ResultsLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 12.0),
-        const Divider(height: 1.0),
-        const SizedBox(height: 16.0),
+    return Text(
+      getText(),
 
-        Text(
-          getText(),
+      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+        color: Theme.of(context).colorScheme.secondary,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1.2,
+      ),
 
-          style: Theme.of(context).textTheme.titleMedium!.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 4.0),
-      ],
+      textAlign: TextAlign.center,
     );
   }
 
@@ -40,6 +30,6 @@ class ResultsLabel extends StatelessWidget {
     if (isSearching) {
       return "Searching...";
     }
-    return "Loaded ${formatNumber(numResults)} messages";
+    return "${formatNumber(numResults)} messages";
   }
 }

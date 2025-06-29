@@ -273,7 +273,22 @@ Future<void> insertMediaFiles(
   final results =
       await db
           .customSelect(
-            'SELECT a.id, a.uri FROM attachments a JOIN messages m ON a.message_id = m.id WHERE m.chat_id = ? AND a.type <> ?',
+            """
+              SELECT 
+                a.id, 
+                a.uri 
+              
+              FROM 
+                attachments a 
+              
+              JOIN 
+                messages m 
+                ON a.message_id = m.id 
+                
+              WHERE 
+                m.chat_id = ? AND 
+                a.type <> ?
+            """,
             variables: [
               Variable.withInt(chatId),
               Variable.withString(AttachmentType.link.name),

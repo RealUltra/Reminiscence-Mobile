@@ -11,47 +11,48 @@ class FilterBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 12.0, 8.0),
+    return GestureDetector(
+      onTap: onRemove,
 
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16.0),
-      ),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 12.0, 8.0),
 
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8.0,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
 
-        children: [
-          Text(
-            getFilterTypeText(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8.0,
 
-            style: Theme.of(context).textTheme.labelMedium!.copyWith(
-              color: Theme.of(context).colorScheme.secondary,
-              overflow: TextOverflow.ellipsis,
-              fontWeight: FontWeight.bold,
+          children: [
+            Text(
+              getFilterTypeText(),
+
+              style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+                overflow: TextOverflow.ellipsis,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
 
-          Text(
-            getFilterValueText(),
+            Text(
+              getFilterValueText(),
 
-            style: Theme.of(context).textTheme.labelMedium!.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
 
-          GestureDetector(
-            onTap: onRemove,
-            child: Icon(
+            Icon(
               Icons.close,
               size: 14.0,
               color: Theme.of(context).colorScheme.secondary,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
