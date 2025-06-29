@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/pages/chats_list/utils.dart';
 
 class ResultsLabel extends StatelessWidget {
-  const ResultsLabel({super.key});
+  final bool isSearching;
+  final int numResults;
+
+  const ResultsLabel({
+    super.key,
+    required this.isSearching,
+    required this.numResults,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +20,7 @@ class ResultsLabel extends StatelessWidget {
         const SizedBox(height: 16.0),
 
         Text(
-          "Loaded 10,000 messages",
+          getText(),
 
           style: Theme.of(context).textTheme.titleMedium!.copyWith(
             color: Theme.of(context).colorScheme.primary,
@@ -26,5 +34,12 @@ class ResultsLabel extends StatelessWidget {
         const SizedBox(height: 4.0),
       ],
     );
+  }
+
+  String getText() {
+    if (isSearching) {
+      return "Searching...";
+    }
+    return "Loaded ${formatNumber(numResults)} messages";
   }
 }

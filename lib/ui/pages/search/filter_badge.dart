@@ -5,8 +5,9 @@ import 'package:reminiscence/ui/pages/search/filter_type.dart';
 
 class FilterBadge extends StatelessWidget {
   final Filter filter;
+  final VoidCallback? onRemove;
 
-  const FilterBadge(this.filter, {super.key});
+  const FilterBadge(this.filter, {super.key, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,15 @@ class FilterBadge extends StatelessWidget {
             style: Theme.of(context).textTheme.labelMedium!.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
               overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          GestureDetector(
+            onTap: onRemove,
+            child: Icon(
+              Icons.close,
+              size: 14.0,
+              color: Theme.of(context).colorScheme.secondary,
             ),
           ),
         ],

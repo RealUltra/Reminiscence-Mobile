@@ -1,28 +1,86 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/database/dtos/message_dto.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
+import 'package:reminiscence/ui/pages/search/messages_list.dart';
+import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/header.dart';
+import 'package:reminiscence/ui/pages/search/value_controller.dart';
 
 class Body extends StatefulWidget {
-  const Body({super.key});
+  final ValueController<Map<String, Filter>> filterController;
+  final ScrollController scrollController;
+  final bool isSearching;
+  final List<MessageDto> searchResults;
+
+  const Body({
+    super.key,
+    required this.filterController,
+    required this.scrollController,
+    required this.isSearching,
+    required this.searchResults,
+  });
 
   @override
   State<Body> createState() => _BodyState();
 }
 
 class _BodyState extends State<Body> {
+  final SelectionController<int> sortController = SelectionController(1);
+
+  @override
+  void initState() {
+    super.initState();
+
+    sortController.addListener(() => setState(() {}));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sortedMessages = sortMessages();
+
     return SafeArea(
       child: Column(
         children: [
-          Header(),
+          Header(
+            filterController: widget.filterController,
+            sortController: sortController,
+            isSearching: widget.isSearching,
+            numResults: widget.searchResults.length,
+          ),
 
           Expanded(
             child: Container(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: MessagesList(
+                scrollController: widget.scrollController,
+                messages: sortedMessages,
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  List<MessageDto> sortMessages() {
+    final sortedMessages = widget.searchResults.sorted((message1, message2) {
+      if (sortController.selected == 1) {
+        [message1, message2] = [message2, message1];
+      }
+      return message1.sentAt.compareTo(message2.sentAt);
+    });
+
+    /*
+    if (widget.scrollController.hasClients) {
+      widget.scrollController.animateTo(
+        0.0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+    */
+
+    return sortedMessages;
   }
 }

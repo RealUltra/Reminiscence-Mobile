@@ -16,6 +16,7 @@ class _MyDatePickerDialogState extends State<MyDatePickerDialog> {
 
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 120.0),
+        padding: EdgeInsets.all(16.0),
 
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,

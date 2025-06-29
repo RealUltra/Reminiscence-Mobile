@@ -2,14 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/database/models/attachment_type.dart';
 import 'package:reminiscence/ui/pages/search/date_picker_dialog/date_picker_dialog.dart';
-import 'package:reminiscence/ui/pages/search/filter_controller.dart';
+import 'package:reminiscence/ui/pages/search/filter.dart';
+import 'package:reminiscence/ui/pages/search/filter_type.dart';
+import 'package:reminiscence/ui/pages/search/value_controller.dart';
 import 'package:reminiscence/ui/pages/search/list_dialog/list_dialog.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final FilterController filterController;
+  final ValueController<Map<String, Filter>> filterController;
+  final TextEditingController searchController;
+  final VoidCallback onSearch;
 
-  const MyAppBar({super.key, required this.filterController});
+  const MyAppBar({
+    super.key,
+    required this.filterController,
+    required this.searchController,
+    required this.onSearch,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +33,8 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
         margin: EdgeInsets.symmetric(vertical: 8.0),
 
         child: TextField(
+          controller: searchController,
+
           decoration: InputDecoration(
             hintText: 'Search',
             contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -34,6 +45,8 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
               borderSide: BorderSide.none,
             ),
           ),
+
+          onSubmitted: (_) => onSearch(),
         ),
       ),
 
@@ -146,6 +159,13 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           if (senderName == null || !context.mounted) {
             return;
           }
+
+          filterController.value[FilterType.sender.name] = Filter(
+            type: FilterType.sender,
+            value: senderName,
+          );
+
+          break;
         }
 
       case "attachment":
@@ -165,6 +185,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           final index = options.indexOf(attachmentTypeName);
           final attachmentType = AttachmentType.values[index];
 
+          filterController.value[FilterType.attachment.name] = Filter(
+            type: FilterType.attachment,
+            value: attachmentType,
+          );
+
           break;
         }
 
@@ -179,6 +204,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           if (date == null || !context.mounted) {
             return;
           }
+
+          filterController.value[FilterType.sentBefore.name] = Filter(
+            type: FilterType.sentBefore,
+            value: date,
+          );
 
           break;
         }
@@ -195,6 +225,11 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             return;
           }
 
+          filterController.value[FilterType.sentOn.name] = Filter(
+            type: FilterType.sentOn,
+            value: date,
+          );
+
           break;
         }
 
@@ -210,8 +245,15 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
             return;
           }
 
+          filterController.value[FilterType.sentAfter.name] = Filter(
+            type: FilterType.sentAfter,
+            value: date,
+          );
+
           break;
         }
     }
+
+    filterController.notifyListeners();
   }
 }

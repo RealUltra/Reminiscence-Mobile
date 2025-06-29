@@ -1,18 +1,19 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/search/filter.dart';
 
-class FilterController {
-  late Map<String, Filter> _filters;
+class ValueController<T> {
+  late T _value;
   final List<VoidCallback> _listeners = [];
 
-  FilterController(this._filters);
+  ValueController(T initialValue) {
+    _value = initialValue;
+  }
 
-  Map<String, Filter> get filters => _filters;
+  T get value => _value;
 
-  set filters(Map<String, Filter> filters) {
-    _filters = filters;
+  set value(T value) {
+    _value = value;
     notifyListeners();
   }
 

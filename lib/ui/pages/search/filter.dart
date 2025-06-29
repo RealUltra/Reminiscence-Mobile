@@ -7,6 +7,14 @@ class Filter {
 
   const Filter({required this.type, required this.value});
 
+  String? get query {
+    if (type == FilterType.query) {
+      return value as String;
+    }
+
+    return null;
+  }
+
   String? get senderName {
     if (type == FilterType.sender) {
       return value as String;

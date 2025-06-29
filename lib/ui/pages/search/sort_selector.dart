@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
 
 class SortSelector extends StatefulWidget {
-  const SortSelector({super.key});
+  final SelectionController<int> controller;
+
+  const SortSelector({super.key, required this.controller});
 
   @override
   State<SortSelector> createState() => _SortSelectorState();
@@ -27,9 +30,13 @@ class _SortSelectorState extends State<SortSelector> {
             );
           }).toList(),
 
-      selected: {1},
+      selected: {widget.controller.selected},
 
-      onSelectionChanged: (newSelection) {},
+      onSelectionChanged: (newSelection) {
+        setState(() {
+          widget.controller.selected = newSelection.first;
+        });
+      },
     );
   }
 }

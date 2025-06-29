@@ -7,6 +7,8 @@ import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/features/database/models/attachment.dart';
 import 'package:reminiscence/features/database/models/message.dart';
+import 'package:reminiscence/ui/pages/search/filter.dart';
+import 'package:reminiscence/ui/pages/search/filter_type.dart';
 
 part 'message_dao.g.dart';
 
@@ -167,6 +169,82 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
           """, variables: variables).get();
 
     return rows.map((r) => r.read<int>("sent_at")).toList();
+  }
+
+  Future<List<MessageDto>> searchByFilters(
+    int chatId,
+    List<Filter> filters,
+  ) async {
+    final whereClauses = ["m.chat_id = ?"];
+    final variables = <Variable>[Variable.withInt(chatId)];
+
+    for (final filter in filters) {
+      if (filter.type == FilterType.query) {
+        whereClauses.add("m.content LIKE ?");
+        variables.add(Variable.withString("%${filter.query!}%"));
+        //
+      } else if (filter.type == FilterType.sender) {
+        whereClauses.add("m.sender_name = ?");
+        variables.add(Variable.withString(filter.senderName!));
+        //
+      } else if (filter.type == FilterType.attachment) {
+        whereClauses.add("a.type = ?");
+        variables.add(Variable.withString(filter.attachmentType!.name));
+        //
+      } else if (filter.type == FilterType.sentBefore) {
+        whereClauses.add("m.sent_at < ?");
+        variables.add(Variable.withInt(filter.date!.millisecondsSinceEpoch));
+        //
+      } else if (filter.type == FilterType.sentOn) {
+        final startOfDay = DateTime(
+          filter.date!.year,
+          filter.date!.month,
+          filter.date!.day,
+        );
+        final endOfDay = startOfDay.add(const Duration(days: 1));
+
+        whereClauses.add("m.sent_at >= ? AND m.sent_at < ?");
+
+        variables.addAll([
+          Variable.withInt(startOfDay.millisecondsSinceEpoch),
+          Variable.withInt(endOfDay.millisecondsSinceEpoch),
+        ]);
+        //
+      } else {
+        whereClauses.add("m.sent_at > ?");
+        variables.add(Variable.withInt(filter.date!.millisecondsSinceEpoch));
+        //
+      }
+    }
+
+    final whereSql = whereClauses.join(" AND ");
+
+    final rows =
+        await customSelect("""
+            SELECT
+              m.id,
+              m.chat_id,
+              m."index",
+              m.raw_data,
+              m.sent_at,
+              m.sender_name,
+              m.content,
+              m.no_emojis_content,
+              a.id as attachment_id,
+              a.type as attachment_type,
+              a.uri as attachment_uri
+
+            FROM
+              messages m
+
+            LEFT JOIN
+              attachments a
+              ON a.message_id = m.id
+
+            WHERE $whereSql
+          """, variables: variables).get();
+
+    return _getMessageDtos(rows);
   }
 
   List<MessageDto> _getMessageDtos(List<QueryRow> rows) {
