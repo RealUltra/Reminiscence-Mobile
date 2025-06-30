@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
-import 'package:reminiscence/ui/pages/chat/message_reader.dart';
 import 'package:reminiscence/ui/pages/chat/message_widget.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -23,8 +22,6 @@ class _MessagesListState extends State<MessagesList> {
   final ScrollOffsetListener scrollOffsetListener =
       ScrollOffsetListener.create();
 
-  late final MessageReader messageReader;
-
   bool showScrollToBottom = false;
 
   @override
@@ -41,8 +38,6 @@ class _MessagesListState extends State<MessagesList> {
       sessionData.loadMessageReader();
     }
 
-    this.messageReader = sessionData.messageReader!;
-
     initialJump();
   }
 
@@ -52,6 +47,9 @@ class _MessagesListState extends State<MessagesList> {
     if (initialMessageId == null) {
       return;
     }
+
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final messageReader = sessionData.messageReader!;
 
     while (!itemScrollController.isAttached || !messageReader.isReady) {
       await Future.delayed(const Duration(microseconds: 5));
@@ -71,6 +69,7 @@ class _MessagesListState extends State<MessagesList> {
     final sessionData = Provider.of<SessionData>(context);
     final data = sessionData.data!;
     final chat = sessionData.chat!;
+    final messageReader = sessionData.messageReader!;
 
     final initialMessageId = Provider.of<String?>(context);
     final disabled = Provider.of<bool>(context);
@@ -151,10 +150,12 @@ class _MessagesListState extends State<MessagesList> {
 
         Visibility(
           visible: !disabled && showScrollToBottom,
+
           child: Positioned(
             bottom: 16.0,
             left: 0,
             right: 0,
+
             child: Center(
               child: FloatingActionButton(
                 onPressed: scrollToBottom,
@@ -166,12 +167,15 @@ class _MessagesListState extends State<MessagesList> {
 
         Visibility(
           visible: disabled,
+
           child: Positioned(
             bottom: 0.0,
             left: 0,
             right: 0,
+
             child: GestureDetector(
               onTap: () => jumpHere(context),
+
               child: Container(
                 padding: EdgeInsets.all(12.0),
                 color: Theme.of(context).colorScheme.primaryContainer,
@@ -227,8 +231,11 @@ class _MessagesListState extends State<MessagesList> {
   }
 
   Future<void> _refreshWidget() async {
-    await messageReader.initialize();
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    sessionData.loadMessageReader();
+
     scrollToBottom();
+
     setState(() {});
   }
 }

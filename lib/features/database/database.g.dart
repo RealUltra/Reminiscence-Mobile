@@ -1334,6 +1334,261 @@ class AttachmentsCompanion extends UpdateCompanion<Attachment> {
   }
 }
 
+class $SearchTokensTable extends SearchTokens
+    with TableInfo<$SearchTokensTable, SearchToken> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SearchTokensTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _messageIdMeta = const VerificationMeta(
+    'messageId',
+  );
+  @override
+  late final GeneratedColumn<String> messageId = GeneratedColumn<String>(
+    'message_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES messages (id)',
+    ),
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, messageId, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'search_tokens';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SearchToken> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('message_id')) {
+      context.handle(
+        _messageIdMeta,
+        messageId.isAcceptableOrUnknown(data['message_id']!, _messageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageIdMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SearchToken map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SearchToken(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      messageId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}message_id'],
+          )!,
+      value:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}value'],
+          )!,
+    );
+  }
+
+  @override
+  $SearchTokensTable createAlias(String alias) {
+    return $SearchTokensTable(attachedDatabase, alias);
+  }
+}
+
+class SearchToken extends DataClass implements Insertable<SearchToken> {
+  final int id;
+  final String messageId;
+  final String value;
+  const SearchToken({
+    required this.id,
+    required this.messageId,
+    required this.value,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['message_id'] = Variable<String>(messageId);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  SearchTokensCompanion toCompanion(bool nullToAbsent) {
+    return SearchTokensCompanion(
+      id: Value(id),
+      messageId: Value(messageId),
+      value: Value(value),
+    );
+  }
+
+  factory SearchToken.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SearchToken(
+      id: serializer.fromJson<int>(json['id']),
+      messageId: serializer.fromJson<String>(json['messageId']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'messageId': serializer.toJson<String>(messageId),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  SearchToken copyWith({int? id, String? messageId, String? value}) =>
+      SearchToken(
+        id: id ?? this.id,
+        messageId: messageId ?? this.messageId,
+        value: value ?? this.value,
+      );
+  SearchToken copyWithCompanion(SearchTokensCompanion data) {
+    return SearchToken(
+      id: data.id.present ? data.id.value : this.id,
+      messageId: data.messageId.present ? data.messageId.value : this.messageId,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SearchToken(')
+          ..write('id: $id, ')
+          ..write('messageId: $messageId, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, messageId, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SearchToken &&
+          other.id == this.id &&
+          other.messageId == this.messageId &&
+          other.value == this.value);
+}
+
+class SearchTokensCompanion extends UpdateCompanion<SearchToken> {
+  final Value<int> id;
+  final Value<String> messageId;
+  final Value<String> value;
+  const SearchTokensCompanion({
+    this.id = const Value.absent(),
+    this.messageId = const Value.absent(),
+    this.value = const Value.absent(),
+  });
+  SearchTokensCompanion.insert({
+    this.id = const Value.absent(),
+    required String messageId,
+    required String value,
+  }) : messageId = Value(messageId),
+       value = Value(value);
+  static Insertable<SearchToken> custom({
+    Expression<int>? id,
+    Expression<String>? messageId,
+    Expression<String>? value,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (messageId != null) 'message_id': messageId,
+      if (value != null) 'value': value,
+    });
+  }
+
+  SearchTokensCompanion copyWith({
+    Value<int>? id,
+    Value<String>? messageId,
+    Value<String>? value,
+  }) {
+    return SearchTokensCompanion(
+      id: id ?? this.id,
+      messageId: messageId ?? this.messageId,
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (messageId.present) {
+      map['message_id'] = Variable<String>(messageId.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SearchTokensCompanion(')
+          ..write('id: $id, ')
+          ..write('messageId: $messageId, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1341,6 +1596,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ParticipantsTable participants = $ParticipantsTable(this);
   late final $MessagesTable messages = $MessagesTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
+  late final $SearchTokensTable searchTokens = $SearchTokensTable(this);
   late final ChatDao chatDao = ChatDao(this as AppDatabase);
   late final MessageDao messageDao = MessageDao(this as AppDatabase);
   @override
@@ -1352,6 +1608,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     participants,
     messages,
     attachments,
+    searchTokens,
   ];
 }
 
@@ -2036,6 +2293,24 @@ final class $$MessagesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$SearchTokensTable, List<SearchToken>>
+  _searchTokensRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.searchTokens,
+    aliasName: $_aliasNameGenerator(db.messages.id, db.searchTokens.messageId),
+  );
+
+  $$SearchTokensTableProcessedTableManager get searchTokensRefs {
+    final manager = $$SearchTokensTableTableManager(
+      $_db,
+      $_db.searchTokens,
+    ).filter((f) => f.messageId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_searchTokensRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$MessagesTableFilterComposer
@@ -2121,6 +2396,31 @@ class $$MessagesTableFilterComposer
           }) => $$AttachmentsTableFilterComposer(
             $db: $db,
             $table: $db.attachments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> searchTokensRefs(
+    Expression<bool> Function($$SearchTokensTableFilterComposer f) f,
+  ) {
+    final $$SearchTokensTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.searchTokens,
+      getReferencedColumn: (t) => t.messageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SearchTokensTableFilterComposer(
+            $db: $db,
+            $table: $db.searchTokens,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2280,6 +2580,31 @@ class $$MessagesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> searchTokensRefs<T extends Object>(
+    Expression<T> Function($$SearchTokensTableAnnotationComposer a) f,
+  ) {
+    final $$SearchTokensTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.searchTokens,
+      getReferencedColumn: (t) => t.messageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SearchTokensTableAnnotationComposer(
+            $db: $db,
+            $table: $db.searchTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$MessagesTableTableManager
@@ -2295,7 +2620,11 @@ class $$MessagesTableTableManager
           $$MessagesTableUpdateCompanionBuilder,
           (Message, $$MessagesTableReferences),
           Message,
-          PrefetchHooks Function({bool chatId, bool attachmentsRefs})
+          PrefetchHooks Function({
+            bool chatId,
+            bool attachmentsRefs,
+            bool searchTokensRefs,
+          })
         > {
   $$MessagesTableTableManager(_$AppDatabase db, $MessagesTable table)
     : super(
@@ -2362,10 +2691,17 @@ class $$MessagesTableTableManager
                         ),
                       )
                       .toList(),
-          prefetchHooksCallback: ({chatId = false, attachmentsRefs = false}) {
+          prefetchHooksCallback: ({
+            chatId = false,
+            attachmentsRefs = false,
+            searchTokensRefs = false,
+          }) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (attachmentsRefs) db.attachments],
+              explicitlyWatchedTables: [
+                if (attachmentsRefs) db.attachments,
+                if (searchTokensRefs) db.searchTokens,
+              ],
               addJoins: <
                 T extends TableManagerState<
                   dynamic,
@@ -2420,6 +2756,28 @@ class $$MessagesTableTableManager
                           ),
                       typedResults: items,
                     ),
+                  if (searchTokensRefs)
+                    await $_getPrefetchedData<
+                      Message,
+                      $MessagesTable,
+                      SearchToken
+                    >(
+                      currentTable: table,
+                      referencedTable: $$MessagesTableReferences
+                          ._searchTokensRefsTable(db),
+                      managerFromTypedResult:
+                          (p0) =>
+                              $$MessagesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).searchTokensRefs,
+                      referencedItemsForCurrentItem:
+                          (item, referencedItems) => referencedItems.where(
+                            (e) => e.messageId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
                 ];
               },
             );
@@ -2440,7 +2798,11 @@ typedef $$MessagesTableProcessedTableManager =
       $$MessagesTableUpdateCompanionBuilder,
       (Message, $$MessagesTableReferences),
       Message,
-      PrefetchHooks Function({bool chatId, bool attachmentsRefs})
+      PrefetchHooks Function({
+        bool chatId,
+        bool attachmentsRefs,
+        bool searchTokensRefs,
+      })
     >;
 typedef $$AttachmentsTableCreateCompanionBuilder =
     AttachmentsCompanion Function({
@@ -2740,6 +3102,284 @@ typedef $$AttachmentsTableProcessedTableManager =
       Attachment,
       PrefetchHooks Function({bool messageId})
     >;
+typedef $$SearchTokensTableCreateCompanionBuilder =
+    SearchTokensCompanion Function({
+      Value<int> id,
+      required String messageId,
+      required String value,
+    });
+typedef $$SearchTokensTableUpdateCompanionBuilder =
+    SearchTokensCompanion Function({
+      Value<int> id,
+      Value<String> messageId,
+      Value<String> value,
+    });
+
+final class $$SearchTokensTableReferences
+    extends BaseReferences<_$AppDatabase, $SearchTokensTable, SearchToken> {
+  $$SearchTokensTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $MessagesTable _messageIdTable(_$AppDatabase db) =>
+      db.messages.createAlias(
+        $_aliasNameGenerator(db.searchTokens.messageId, db.messages.id),
+      );
+
+  $$MessagesTableProcessedTableManager get messageId {
+    final $_column = $_itemColumn<String>('message_id')!;
+
+    final manager = $$MessagesTableTableManager(
+      $_db,
+      $_db.messages,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_messageIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SearchTokensTableFilterComposer
+    extends Composer<_$AppDatabase, $SearchTokensTable> {
+  $$SearchTokensTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$MessagesTableFilterComposer get messageId {
+    final $$MessagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.messageId,
+      referencedTable: $db.messages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MessagesTableFilterComposer(
+            $db: $db,
+            $table: $db.messages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SearchTokensTableOrderingComposer
+    extends Composer<_$AppDatabase, $SearchTokensTable> {
+  $$SearchTokensTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$MessagesTableOrderingComposer get messageId {
+    final $$MessagesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.messageId,
+      referencedTable: $db.messages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MessagesTableOrderingComposer(
+            $db: $db,
+            $table: $db.messages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SearchTokensTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SearchTokensTable> {
+  $$SearchTokensTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  $$MessagesTableAnnotationComposer get messageId {
+    final $$MessagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.messageId,
+      referencedTable: $db.messages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MessagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.messages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SearchTokensTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SearchTokensTable,
+          SearchToken,
+          $$SearchTokensTableFilterComposer,
+          $$SearchTokensTableOrderingComposer,
+          $$SearchTokensTableAnnotationComposer,
+          $$SearchTokensTableCreateCompanionBuilder,
+          $$SearchTokensTableUpdateCompanionBuilder,
+          (SearchToken, $$SearchTokensTableReferences),
+          SearchToken,
+          PrefetchHooks Function({bool messageId})
+        > {
+  $$SearchTokensTableTableManager(_$AppDatabase db, $SearchTokensTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$SearchTokensTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$SearchTokensTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () =>
+                  $$SearchTokensTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> messageId = const Value.absent(),
+                Value<String> value = const Value.absent(),
+              }) => SearchTokensCompanion(
+                id: id,
+                messageId: messageId,
+                value: value,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String messageId,
+                required String value,
+              }) => SearchTokensCompanion.insert(
+                id: id,
+                messageId: messageId,
+                value: value,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          $$SearchTokensTableReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: ({messageId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                T extends TableManagerState<
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic,
+                  dynamic
+                >
+              >(state) {
+                if (messageId) {
+                  state =
+                      state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.messageId,
+                            referencedTable: $$SearchTokensTableReferences
+                                ._messageIdTable(db),
+                            referencedColumn:
+                                $$SearchTokensTableReferences
+                                    ._messageIdTable(db)
+                                    .id,
+                          )
+                          as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SearchTokensTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SearchTokensTable,
+      SearchToken,
+      $$SearchTokensTableFilterComposer,
+      $$SearchTokensTableOrderingComposer,
+      $$SearchTokensTableAnnotationComposer,
+      $$SearchTokensTableCreateCompanionBuilder,
+      $$SearchTokensTableUpdateCompanionBuilder,
+      (SearchToken, $$SearchTokensTableReferences),
+      SearchToken,
+      PrefetchHooks Function({bool messageId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2752,4 +3392,6 @@ class $AppDatabaseManager {
       $$MessagesTableTableManager(_db, _db.messages);
   $$AttachmentsTableTableManager get attachments =>
       $$AttachmentsTableTableManager(_db, _db.attachments);
+  $$SearchTokensTableTableManager get searchTokens =>
+      $$SearchTokensTableTableManager(_db, _db.searchTokens);
 }

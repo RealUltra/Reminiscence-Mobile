@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/ui/pages/search/date_picker_dialog/date_picker_dialog.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';

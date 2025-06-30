@@ -3,8 +3,8 @@ import 'package:reminiscence/features/data_storage/system_messages.dart';
 
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-import 'package:reminiscence/features/database/models/chat.dart';
-import 'package:reminiscence/features/database/models/message.dart';
+import 'package:reminiscence/features/database/tables/chats.dart';
+import 'package:reminiscence/features/database/tables/messages.dart';
 
 part 'chat_dao.g.dart';
 

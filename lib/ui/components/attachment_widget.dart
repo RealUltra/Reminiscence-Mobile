@@ -8,7 +8,7 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
-import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/ui/components/audio_player_widget.dart';
 import 'package:reminiscence/ui/components/file_widget.dart';

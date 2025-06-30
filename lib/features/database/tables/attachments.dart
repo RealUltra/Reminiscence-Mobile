@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
-import 'package:reminiscence/features/database/models/message.dart';
-import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/tables/messages.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 
 class Attachments extends Table {
   IntColumn get id => integer().autoIncrement()();

@@ -5,12 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:reminiscence/features/database/daos/chat_dao.dart';
 import 'package:reminiscence/features/database/daos/message_dao.dart';
 
-import 'package:reminiscence/features/database/models/chat.dart';
-import 'package:reminiscence/features/database/models/participant.dart';
-import 'package:reminiscence/features/database/models/message.dart';
-import 'package:reminiscence/features/database/models/attachment.dart';
-import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/tables/chats.dart';
+import 'package:reminiscence/features/database/tables/participants.dart';
+import 'package:reminiscence/features/database/tables/messages.dart';
+import 'package:reminiscence/features/database/tables/attachments.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/features/database/sqlcipher.dart';
+import 'package:reminiscence/features/database/tables/search_tokens.dart';
 
 part 'database.g.dart';
 
@@ -21,7 +22,7 @@ String escapeString(String source) {
 }
 
 @DriftDatabase(
-  tables: [Chats, Participants, Messages, Attachments],
+  tables: [Chats, Participants, Messages, Attachments, SearchTokens],
   daos: [ChatDao, MessageDao],
 )
 class AppDatabase extends _$AppDatabase {

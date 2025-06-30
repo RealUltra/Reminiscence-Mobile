@@ -1,4 +1,4 @@
-import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';
 
 class Filter {

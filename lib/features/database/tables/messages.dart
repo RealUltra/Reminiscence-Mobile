@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-import 'package:reminiscence/features/database/models/chat.dart';
+import 'package:reminiscence/features/database/tables/chats.dart';
 
 class Messages extends Table {
   TextColumn get id => text()();

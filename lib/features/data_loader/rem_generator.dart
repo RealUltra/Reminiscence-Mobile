@@ -15,13 +15,7 @@ import 'package:reminiscence/features/database/database.dart';
 
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart'
     as archive_loader;
-import 'package:reminiscence/features/data_loader/data_archive_loader/models/message_stack.dart'
-    as archive_loader;
-import 'package:reminiscence/features/data_loader/data_archive_loader/models/message.dart'
-    as archive_loader;
-import 'package:reminiscence/features/data_loader/data_archive_loader/models/attachment.dart'
-    as archive_loader;
-import 'package:reminiscence/features/database/models/attachment_type.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
@@ -112,7 +106,7 @@ Future<String?> createRemFile({
 
   final messageReader = MessageReader(chats);
 
-  for (var chat in chats) {
+  for (final chat in chats) {
     debugPrint("Chat Title: ${chat.title}");
 
     final stacksMid = chat.messageStacks.length / 2;
@@ -217,14 +211,12 @@ Future<void> insertArchiveChat(
 
   messageReader.initialize(archiveChat);
 
-  for (archive_loader.MessageStack messageStack in archiveChat.messageStacks) {
+  for (final messageStack in archiveChat.messageStacks) {
     updateProgress(stacksDone);
 
     // Efficiently inserting all the messages and attachments into the database.
     await db.batch((batch) {
-      for (archive_loader.Message archiveMessage in messageReader.messages(
-        messageStack,
-      )) {
+      for (final archiveMessage in messageReader.messages(messageStack)) {
         MessagesCompanion message = MessagesCompanion(
           id: Value(archiveMessage.id),
           chatId: chat.id,
@@ -243,8 +235,7 @@ Future<void> insertArchiveChat(
         index++;
 
         // Add attachments to database
-        for (archive_loader.Attachment archiveAttachment
-            in archiveMessage.attachments) {
+        for (final archiveAttachment in archiveMessage.attachments) {
           AttachmentsCompanion attachment = AttachmentsCompanion(
             messageId: message.id,
             type: Value(archiveAttachment.type),
@@ -252,6 +243,16 @@ Future<void> insertArchiveChat(
           );
 
           batch.insert(db.attachments, attachment);
+        }
+
+        // Add search tokens to database
+        for (final token in archiveMessage.searchTokens) {
+          SearchTokensCompanion searchToken = SearchTokensCompanion(
+            messageId: message.id,
+            value: Value(token),
+          );
+
+          batch.insert(db.searchTokens, searchToken);
         }
       }
     });

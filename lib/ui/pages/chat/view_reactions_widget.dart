@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
 
 class ViewReactionsWidget extends StatefulWidget {
-  late final List<Map<String, dynamic>> tabs;
+  final List<Map<String, dynamic>> tabs;
 
-  ViewReactionsWidget(this.tabs, {super.key});
+  const ViewReactionsWidget(this.tabs, {super.key});
 
   @override
   State<ViewReactionsWidget> createState() => _ViewReactionsWidgetState();
 
-  ViewReactionsWidget.fromData(List<dynamic> reactions, {super.key}) {
-    tabs = ViewReactionsWidget.getReactionsInfo(reactions);
+  static ViewReactionsWidget fromData(List<dynamic> reactions) {
+    final tabs = ViewReactionsWidget.getReactionsInfo(reactions);
+    return ViewReactionsWidget(tabs);
   }
 
   static List<Map<String, dynamic>> getReactionsInfo(List<dynamic> reactions) {

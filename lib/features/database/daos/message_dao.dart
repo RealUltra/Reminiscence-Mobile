@@ -5,8 +5,9 @@ import 'package:reminiscence/features/data_storage/system_messages.dart';
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
-import 'package:reminiscence/features/database/models/attachment.dart';
-import 'package:reminiscence/features/database/models/message.dart';
+import 'package:reminiscence/features/database/tables/attachments.dart';
+import 'package:reminiscence/features/database/tables/messages.dart';
+import 'package:reminiscence/features/tokenizer/tokenizer.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';
 
@@ -56,14 +57,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     final rows =
         await customSelect("""
             SELECT
-              m.id,
-              m.chat_id,
-              m."index",
-              m.raw_data,
-              m.sent_at,
-              m.sender_name,
-              m.content,
-              m.no_emojis_content,
+              m.*,
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -101,14 +95,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     final rows =
         await customSelect("""
             SELECT
-              m.id,
-              m.chat_id,
-              m."index",
-              m.raw_data,
-              m.sent_at,
-              m.sender_name,
-              m.content,
-              m.no_emojis_content,
+              m.*,
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -180,8 +167,17 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
     for (final filter in filters) {
       if (filter.type == FilterType.query) {
-        whereClauses.add("m.content LIKE ?");
-        variables.add(Variable.withString("%${filter.query!}%"));
+        final tokens = tokenize(filter.query!);
+
+        final placeholders = List.generate(
+          tokens.length,
+          (i) => '?',
+        ).join(', ');
+
+        whereClauses.add("st.value IN ($placeholders)");
+
+        variables.addAll(tokens.map((t) => Variable.withString(t)));
+
         //
       } else if (filter.type == FilterType.sender) {
         whereClauses.add("m.sender_name = ?");
@@ -222,14 +218,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     final rows =
         await customSelect("""
             SELECT
-              m.id,
-              m.chat_id,
-              m."index",
-              m.raw_data,
-              m.sent_at,
-              m.sender_name,
-              m.content,
-              m.no_emojis_content,
+              m.*,
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -240,6 +229,10 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
             LEFT JOIN
               attachments a
               ON a.message_id = m.id
+
+            JOIN
+              search_tokens st
+              ON st.message_id = m.id
 
             WHERE $whereSql
           """, variables: variables).get();
