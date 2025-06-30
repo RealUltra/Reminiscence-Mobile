@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 
-class GraphModeDropdown extends StatefulWidget {
+class GraphModeSelector extends StatefulWidget {
   final SelectionController<int> controller;
 
-  const GraphModeDropdown({super.key, required this.controller});
+  const GraphModeSelector({super.key, required this.controller});
 
   @override
-  State<GraphModeDropdown> createState() => _GraphModeDropdownState();
+  State<GraphModeSelector> createState() => _GraphModeSelectorState();
 }
 
-class _GraphModeDropdownState extends State<GraphModeDropdown> {
+class _GraphModeSelectorState extends State<GraphModeSelector> {
   final graphModeOptions = ["Daily", "Monthly", "Yearly"];
   final graphModeIcons = [
     Icons.calendar_view_day,

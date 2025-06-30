@@ -14,6 +14,8 @@ class MessagesList extends StatefulWidget {
 }
 
 class _MessagesListState extends State<MessagesList> {
+  bool isReady = false;
+
   final ItemScrollController itemScrollController = ItemScrollController();
   final ScrollOffsetController scrollOffsetController =
       ScrollOffsetController();
@@ -30,15 +32,32 @@ class _MessagesListState extends State<MessagesList> {
 
     itemPositionsListener.itemPositions.addListener(onScroll);
 
+    initMessageReader();
+  }
+
+  Future<void> initMessageReader() async {
+    final initialMessageId = Provider.of<String?>(context, listen: false);
+
     final sessionData = Provider.of<SessionData>(context, listen: false);
     final chat = sessionData.chat!;
-    final messageReader = sessionData.messageReader;
 
-    if (messageReader == null || messageReader.chat.id != chat.id) {
-      sessionData.loadMessageReader();
+    if (sessionData.messageReader == null ||
+        sessionData.messageReader!.chat.id != chat.id) {
+      await sessionData.loadMessageReader();
     }
 
-    initialJump();
+    final messageReader = sessionData.messageReader!;
+
+    if (initialMessageId != null) {
+      final index = messageReader.indexOf(initialMessageId);
+      await messageReader.load(index);
+    } else {
+      await messageReader.load(0);
+    }
+
+    setState(() => isReady = true);
+
+    await initialJump();
   }
 
   Future<void> initialJump() async {
@@ -55,7 +74,7 @@ class _MessagesListState extends State<MessagesList> {
       await Future.delayed(const Duration(microseconds: 5));
     }
 
-    final index = messageReader.allMessageIds.indexOf(initialMessageId);
+    final index = messageReader.indexOf(initialMessageId);
 
     if (index <= 0) {
       return;
@@ -66,6 +85,10 @@ class _MessagesListState extends State<MessagesList> {
 
   @override
   Widget build(BuildContext context) {
+    if (!isReady) {
+      return Container();
+    }
+
     final sessionData = Provider.of<SessionData>(context);
     final data = sessionData.data!;
     final chat = sessionData.chat!;

@@ -19,31 +19,55 @@ class ChatDao extends DatabaseAccessor<AppDatabase> with _$ChatDaoMixin {
     final variables =
         systemMessages.map((msg) => Variable.withString(msg)).toList();
 
-    final rows =
-        await customSelect("""
+    final query = """
+      SELECT 
+        c.id, 
+        c.title,
+        c.user_name,
+
+        (
           SELECT 
-            c.id, 
-            c.title,
-            c.user_name,
-            COUNT(m.id) AS message_count,
-            MAX(m.sent_at) AS last_message_sent_at,
-            p.name as participant_name
-
+            COUNT(*)
+          
           FROM 
-            chats c
-
-          LEFT JOIN
             messages m
-            ON m.chat_id = c.id
+            
+          WHERE 
+            m.chat_id = c.id
             AND m.no_emojis_content NOT IN ($placeholders)
+          ) AS message_count,
+          
+          (
+            SELECT 
+              sent_at
 
-          LEFT JOIN
-            participants p
-            ON p.chat_id = c.id
+            FROM 
+              messages m
+            
+            WHERE 
+              m.chat_id = c.id
+              AND m.no_emojis_content NOT IN ($placeholders)
 
-          GROUP BY
-            c.id, c.title, c.user_name, p.name;
-          """, variables: variables).get();
+            ORDER BY
+              sent_at DESC
+            
+            LIMIT 1
+          ) AS last_message_sent_at,
+
+        GROUP_CONCAT(p.name, ', ') AS participant_names
+
+      FROM 
+        chats c
+
+      LEFT JOIN
+        participants p
+        ON p.chat_id = c.id
+
+      GROUP BY
+        c.id
+    """;
+
+    final rows = await customSelect(query, variables: variables).get();
 
     return _getChatDtos(rows);
   }
@@ -58,7 +82,12 @@ class ChatDao extends DatabaseAccessor<AppDatabase> with _$ChatDaoMixin {
       final messageCount = row.read<int>('message_count');
       final lastMessageTimestamp = row.read<int>('last_message_sent_at');
 
-      final participantName = row.read<String?>("participant_name");
+      final participantNames =
+          row
+              .read<String>("participant_names")
+              .split(", ")
+              .where((x) => x.trim().isNotEmpty)
+              .toList();
 
       if (!chatDtos.containsKey(id)) {
         chatDtos[id] = ChatDto(
@@ -69,12 +98,8 @@ class ChatDao extends DatabaseAccessor<AppDatabase> with _$ChatDaoMixin {
           lastMessageSentAt: DateTime.fromMillisecondsSinceEpoch(
             lastMessageTimestamp,
           ),
-          participants: [],
+          participants: participantNames,
         );
-      }
-
-      if (participantName != null) {
-        chatDtos[id]!.participants.add(participantName);
       }
     }
 

@@ -4,7 +4,7 @@ import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 import 'package:reminiscence/ui/pages/graph/chart_type_widget.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/graph/graph_details_widget.dart';
-import 'package:reminiscence/ui/pages/graph/graph_mode_dropdown.dart';
+import 'package:reminiscence/ui/pages/graph/graph_mode_selector.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/pages/graph/separate_participants_switch.dart';
 import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
@@ -73,7 +73,7 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
             const Divider(),
             const SizedBox(height: 8.0),
 
-            GraphModeDropdown(controller: graphModeController),
+            GraphModeSelector(controller: graphModeController),
 
             const SizedBox(height: 8.0),
 

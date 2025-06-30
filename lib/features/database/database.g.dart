@@ -1597,6 +1597,42 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MessagesTable messages = $MessagesTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
   late final $SearchTokensTable searchTokens = $SearchTokensTable(this);
+  late final Index idxChatsId = Index(
+    'idx_chats_id',
+    'CREATE INDEX idx_chats_id ON chats (id)',
+  );
+  late final Index idxParticipantsChatId = Index(
+    'idx_participants_chat_id',
+    'CREATE INDEX idx_participants_chat_id ON participants (chat_id)',
+  );
+  late final Index idxMessagesId = Index(
+    'idx_messages_id',
+    'CREATE INDEX idx_messages_id ON messages (id)',
+  );
+  late final Index idxMessagesChatId = Index(
+    'idx_messages_chat_id',
+    'CREATE INDEX idx_messages_chat_id ON messages (chat_id)',
+  );
+  late final Index idxMessagesSenderName = Index(
+    'idx_messages_sender_name',
+    'CREATE INDEX idx_messages_sender_name ON messages (sender_name)',
+  );
+  late final Index idxMessagesChatTimeDesc = Index(
+    'idx_messages_chat_time_desc',
+    'CREATE INDEX idx_messages_chat_time_desc ON messages (chat_id, sent_at DESC)',
+  );
+  late final Index idxAttachmentsMessageId = Index(
+    'idx_attachments_message_id',
+    'CREATE INDEX idx_attachments_message_id ON attachments (message_id)',
+  );
+  late final Index idxAttachmentsType = Index(
+    'idx_attachments_type',
+    'CREATE INDEX idx_attachments_type ON attachments (type)',
+  );
+  late final Index idxSearchTokensMessageId = Index(
+    'idx_search_tokens_message_id',
+    'CREATE INDEX idx_search_tokens_message_id ON search_tokens (message_id)',
+  );
   late final ChatDao chatDao = ChatDao(this as AppDatabase);
   late final MessageDao messageDao = MessageDao(this as AppDatabase);
   @override
@@ -1609,6 +1645,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     messages,
     attachments,
     searchTokens,
+    idxChatsId,
+    idxParticipantsChatId,
+    idxMessagesId,
+    idxMessagesChatId,
+    idxMessagesSenderName,
+    idxMessagesChatTimeDesc,
+    idxAttachmentsMessageId,
+    idxAttachmentsType,
+    idxSearchTokensMessageId,
   ];
 }
 

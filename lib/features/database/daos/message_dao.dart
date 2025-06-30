@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:reminiscence/features/data_storage/pinned_messages.dart';
 import 'package:reminiscence/features/data_storage/system_messages.dart';
+import 'package:reminiscence/features/database/daos/message_column.dart';
 
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
@@ -17,85 +18,125 @@ part 'message_dao.g.dart';
 class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   MessageDao(super.db);
 
-  Future<List<String>> getMessageIds(int chatId) async {
+  // All messages, but partial columns. Used in message reader to get only the timestamps and ids.
+  Future<List<MessageDto>> getAllMessages(
+    int chatId, {
+    List<MessageColumn> columns = allColumns,
+  }) async {
     final systemMessages = await getSystemMessages();
+    final systemPlaceholders = _getPlaceholders(systemMessages.length);
 
-    final placeholders = List.generate(
-      systemMessages.length,
-      (i) => '?',
-    ).join(', ');
+    final columnNames = getColumnNames(columns);
+    final selectSql = columnNames.join(", ");
 
     final variables = [
       Variable.withInt(chatId),
-      ...systemMessages.map((msg) => Variable.withString(msg)),
+      ...systemMessages.map(Variable.withString),
     ];
 
-    final rows =
-        await customSelect("""
-            SELECT
-              id
+    final joinAttachmentsSql =
+        includesAttachment(columns)
+            ? "LEFT JOIN attachments a ON a.message_id = m.id"
+            : "";
 
-            FROM
-              messages
+    final query = """
+        SELECT 
+          $selectSql
 
-            WHERE
-              chat_id = ?
-              AND no_emojis_content NOT IN ($placeholders)
+        FROM 
+          messages m
 
-            ORDER BY
-              sent_at DESC
-          """, variables: variables).get();
+        $joinAttachmentsSql
 
-    return rows.map((r) => r.read<String>("id")).toList();
-  }
+        WHERE
+          m.chat_id = ?
+          AND m.no_emojis_content NOT IN ($systemPlaceholders)
 
-  Future<List<MessageDto>> getMessages(List<String> messageIds) async {
-    final placeholders = List.filled(messageIds.length, '?').join(',');
+        ORDER BY
+          m.sent_at DESC
+      """;
 
-    final variables = messageIds.map((id) => Variable.withString(id)).toList();
-
-    final rows =
-        await customSelect("""
-            SELECT
-              m.*,
-              a.id as attachment_id,
-              a.type as attachment_type,
-              a.uri as attachment_uri
-
-            FROM
-              messages m
-
-            LEFT JOIN
-              attachments a
-              ON a.message_id = m.id
-
-            WHERE
-              m.id IN ($placeholders)
-
-            ORDER BY
-              m.sent_at DESC
-          """, variables: variables).get();
+    final rows = await customSelect(query, variables: variables).get();
 
     return _getMessageDtos(rows);
   }
 
-  Future<List<MessageDto>> getPinned(int chatId) async {
-    final allPinnedMessages = await getPinnedMessages();
-
-    final placeholders = List.generate(
-      allPinnedMessages.length,
-      (i) => '?',
-    ).join(', ');
+  // Used to lazy load messages by the message reader.
+  Future<List<MessageDto>> getMessages(
+    int chatId,
+    int startTimestamp,
+    int limit,
+  ) async {
+    final systemMessages = await getSystemMessages();
+    final placeholders = _getPlaceholders(systemMessages.length);
 
     final variables = [
-      ...allPinnedMessages.map((id) => Variable.withString(id)),
+      Variable.withInt(chatId),
+      ...systemMessages.map(Variable.withString),
+      Variable.withInt(startTimestamp),
+      Variable.withInt(limit),
+    ];
+
+    final query = """
+        SELECT
+          m.id,
+          m.chat_id,
+          m."index",
+          m.raw_data,
+          m.sent_at,
+          m.sender_name,
+          m.content,
+          m.no_emojis_content,
+
+          a.id as attachment_id,
+          a.type as attachment_type,
+          a.uri as attachment_uri
+
+        FROM
+          messages m
+
+        LEFT JOIN
+          attachments a
+          ON a.message_id = m.id
+
+        WHERE
+          m.chat_id = ?
+          AND m.no_emojis_content NOT IN ($placeholders)
+          AND m.sent_at <= ?
+
+        ORDER BY 
+          m.sent_at DESC
+
+        LIMIT ?
+      """;
+
+    final rows = await customSelect(query, variables: variables).get();
+
+    return _getMessageDtos(rows);
+  }
+
+  // Used for retrieving pinned messages
+  Future<List<MessageDto>> getPinned(int chatId) async {
+    final allPinnedMessages = await getPinnedMessages();
+    final placeholders = _getPlaceholders(allPinnedMessages.length);
+
+    final variables = [
+      ...allPinnedMessages.map(Variable.withString),
       Variable.withInt(chatId),
     ];
 
     final rows =
         await customSelect("""
             SELECT
-              m.*,
+              m.id,
+              m.chat_id,
+              m."index",
+              m.raw_data,
+              m.sent_at,
+              m.sender_name,
+              m.content,
+              m.no_emojis_content,
+
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -110,26 +151,22 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
             WHERE
               m.id IN ($placeholders) AND
               m.chat_id = ?
-
           """, variables: variables).get();
 
     return _getMessageDtos(rows);
   }
 
+  // Used for getting all the message timestamps from a chat and from a particular sender. Used in the graph.
   Future<List<int>> getMessageTimestamps(
     int chatId, {
     String? senderName,
   }) async {
     final systemMessages = await getSystemMessages();
-
-    final placeholders = List.generate(
-      systemMessages.length,
-      (i) => '?',
-    ).join(', ');
+    final placeholders = _getPlaceholders(systemMessages.length);
 
     final variables = [
       Variable.withInt(chatId),
-      ...systemMessages.map((msg) => Variable.withString(msg)),
+      ...systemMessages.map(Variable.withString),
     ];
 
     final includeSender = senderName != null;
@@ -140,24 +177,25 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
     final rows =
         await customSelect("""
-            SELECT
-              sent_at
+        SELECT
+          sent_at
 
-            FROM
-              messages
+        FROM
+          messages
 
-            WHERE
-              chat_id = ?
-              AND no_emojis_content NOT IN ($placeholders)
-              ${includeSender ? 'AND sender_name = ?' : ''}
+        WHERE
+          chat_id = ?
+          AND no_emojis_content NOT IN ($placeholders)
+          ${includeSender ? 'AND sender_name = ?' : ''}
 
-            ORDER BY
-              sent_at DESC
-          """, variables: variables).get();
+        ORDER BY
+          sent_at DESC
+      """, variables: variables).get();
 
     return rows.map((r) => r.read<int>("sent_at")).toList();
   }
 
+  // Used for searching wiht custom filters.
   Future<List<MessageDto>> searchByFilters(
     int chatId,
     List<Filter> filters,
@@ -168,30 +206,28 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     for (final filter in filters) {
       if (filter.type == FilterType.query) {
         final tokens = tokenize(filter.query!);
-
-        final placeholders = List.generate(
-          tokens.length,
-          (i) => '?',
-        ).join(', ');
+        final placeholders = _getPlaceholders(tokens.length);
 
         whereClauses.add("st.value IN ($placeholders)");
+        variables.addAll(tokens.map(Variable.withString));
+      }
 
-        variables.addAll(tokens.map((t) => Variable.withString(t)));
-
-        //
-      } else if (filter.type == FilterType.sender) {
+      if (filter.type == FilterType.sender) {
         whereClauses.add("m.sender_name = ?");
         variables.add(Variable.withString(filter.senderName!));
-        //
-      } else if (filter.type == FilterType.attachment) {
+      }
+
+      if (filter.type == FilterType.attachment) {
         whereClauses.add("a.type = ?");
         variables.add(Variable.withString(filter.attachmentType!.name));
-        //
-      } else if (filter.type == FilterType.sentBefore) {
+      }
+
+      if (filter.type == FilterType.sentBefore) {
         whereClauses.add("m.sent_at < ?");
         variables.add(Variable.withInt(filter.date!.millisecondsSinceEpoch));
-        //
-      } else if (filter.type == FilterType.sentOn) {
+      }
+
+      if (filter.type == FilterType.sentOn) {
         final startOfDay = DateTime(
           filter.date!.year,
           filter.date!.month,
@@ -205,11 +241,11 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
           Variable.withInt(startOfDay.millisecondsSinceEpoch),
           Variable.withInt(endOfDay.millisecondsSinceEpoch),
         ]);
-        //
-      } else {
+      }
+
+      if (filter.type == FilterType.sentAfter) {
         whereClauses.add("m.sent_at > ?");
         variables.add(Variable.withInt(filter.date!.millisecondsSinceEpoch));
-        //
       }
     }
 
@@ -218,7 +254,15 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     final rows =
         await customSelect("""
             SELECT
-              m.*,
+              m.id,
+              m.chat_id,
+              m."index",
+              m.raw_data,
+              m.sent_at,
+              m.sender_name,
+              m.content,
+              m.no_emojis_content,
+
               a.id as attachment_id,
               a.type as attachment_type,
               a.uri as attachment_uri
@@ -240,18 +284,19 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     return _getMessageDtos(rows);
   }
 
+  // Used for converting the rows into message dtos.
   List<MessageDto> _getMessageDtos(List<QueryRow> rows) {
     final messageDtos = <String, MessageDto>{};
 
     for (final row in rows) {
-      final id = row.read<String>("id");
-      final chatId = row.read<int>("chat_id");
-      final index = row.read<int>("index");
-      final rawData = row.read<String>("raw_data");
-      final sentAt = row.read<int>("sent_at");
-      final senderName = row.read<String>("sender_name");
-      final content = row.read<String>("content");
-      final noEmojisContent = row.read<String>("no_emojis_content");
+      final id = row.read<String?>("id") ?? "";
+      final chatId = row.read<int?>("chat_id") ?? -1;
+      final index = row.read<int?>("index") ?? -1;
+      final rawData = row.read<String?>("raw_data") ?? "";
+      final sentAt = row.read<int?>("sent_at") ?? -1;
+      final senderName = row.read<String?>("sender_name") ?? "";
+      final content = row.read<String?>("content") ?? "";
+      final noEmojisContent = row.read<String?>("no_emojis_content") ?? "";
 
       final attachmentId = row.read<int?>("attachment_id");
       final attachmentType = row.read<String?>("attachment_type");
@@ -286,5 +331,10 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     }
 
     return messageDtos.values.toList();
+  }
+
+  // Used for creating a placeholder string of a certain length.
+  String _getPlaceholders(int length) {
+    return List.generate(length, (i) => '?').join(', ');
   }
 }

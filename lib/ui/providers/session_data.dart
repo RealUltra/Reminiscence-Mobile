@@ -29,9 +29,9 @@ class SessionData extends ChangeNotifier {
     notifyListeners();
   }
 
-  void loadMessageReader() {
+  Future<void> loadMessageReader() async {
     _messageReader = MessageReader(data: data!, chat: chat!);
-    _messageReader!.initialize();
+    await _messageReader!.initialize();
     notifyListeners();
   }
 }
