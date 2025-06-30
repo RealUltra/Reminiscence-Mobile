@@ -70,7 +70,7 @@ class _MessagesListState extends State<MessagesList> {
     final sessionData = Provider.of<SessionData>(context, listen: false);
     final messageReader = sessionData.messageReader!;
 
-    while (!itemScrollController.isAttached || !messageReader.isReady) {
+    while (!itemScrollController.isAttached || !messageReader.ready) {
       await Future.delayed(const Duration(microseconds: 5));
     }
 
