@@ -251,6 +251,11 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
     final whereSql = whereClauses.join(" AND ");
 
+    final joinTokensClause =
+        whereSql.contains("st.value")
+            ? "LEFT JOIN search_tokens st ON st.message_id = m.id"
+            : "";
+
     final rows =
         await customSelect("""
             SELECT
@@ -274,9 +279,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
               attachments a
               ON a.message_id = m.id
 
-            JOIN
-              search_tokens st
-              ON st.message_id = m.id
+            $joinTokensClause
 
             WHERE $whereSql
           """, variables: variables).get();
