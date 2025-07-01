@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/ui/pages/graph/add_chat_dialog.dart';
+import 'package:reminiscence/ui/pages/graph/add_chat/add_chat_dialog.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
-import 'package:reminiscence/ui/pages/graph/graph_settings_dialog.dart';
+import 'package:reminiscence/ui/pages/graph/settings/graph_settings_dialog.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {

@@ -65,11 +65,17 @@ class _SearchPageState extends State<SearchPage> {
       filters.add(Filter(type: FilterType.query, value: query));
     }
 
+    // If there are no filters, do not search
+    if (filters.isEmpty) {
+      return;
+    }
+
     // Search for all matching messages
     final sessionData = Provider.of<SessionData>(context, listen: false);
     final data = sessionData.data!;
     final chat = sessionData.chat!;
 
+    // Fetch relevant search results from the database.
     searchResults = await data.db.messageDao.searchByFilters(chat.id, filters);
 
     // Stop searching and show search results

@@ -42,6 +42,7 @@ class ChatItem extends StatelessWidget {
                   .colorScheme
                   .surfaceContainerHighest // Light
               : Theme.of(context).colorScheme.surfaceContainer, // Dark
+
       child: ListTile(
         onTap: () => openChat(context),
 
