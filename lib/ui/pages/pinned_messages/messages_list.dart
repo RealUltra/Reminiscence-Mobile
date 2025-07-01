@@ -53,11 +53,25 @@ class MessagesList extends StatelessWidget {
     );
   }
 
-  void onMessagePressed(BuildContext context, MessageDto message) {
-    Navigator.of(context).pushNamed(
-      "/chat",
-      arguments: ChatPageArgs(initialMessageId: message.id, disabled: true),
-    );
+  Future<void> onMessagePressed(
+    BuildContext context,
+    MessageDto message,
+  ) async {
+    final result =
+        await Navigator.of(context).pushNamed(
+              "/chat",
+              arguments: ChatPageArgs(
+                initialMessageId: message.id,
+                disabled: true,
+              ),
+            )
+            as String?;
+
+    if (result == null || !context.mounted) {
+      return;
+    }
+
+    Navigator.of(context).pop(message.id);
   }
 
   Future<void> showContextMenu(

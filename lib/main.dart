@@ -5,12 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
+import 'package:reminiscence/ui/pages/data_viewer/data_viewer_page.dart';
 import 'package:reminiscence/ui/pages/graph/graph_page.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page.dart';
 import 'package:reminiscence/ui/pages/search/search_page.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
-import 'package:reminiscence/ui/pages/chats_list/chats_list_page.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen_args.dart';
@@ -54,7 +54,9 @@ class App extends StatelessWidget {
           return DataLoaderPage();
         },
       );
-    } else if (settings.name == "/loading") {
+    }
+
+    if (settings.name == "/loading") {
       final args = settings.arguments as LoadingScreenArgs;
 
       return MaterialPageRoute(
@@ -65,14 +67,18 @@ class App extends StatelessWidget {
               operationParams: args.operationParams,
             ),
       );
-    } else if (settings.name == "/chats") {
+    }
+
+    if (settings.name == "/viewer") {
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
-          return ChatsListPage();
+          return DataViewerPage();
         },
       );
-    } else if (settings.name == "/chat") {
+    }
+
+    if (settings.name == "/chat") {
       final args =
           settings.arguments == null
               ? ChatPageArgs()
@@ -87,21 +93,27 @@ class App extends StatelessWidget {
           );
         },
       );
-    } else if (settings.name == "/pins") {
+    }
+
+    if (settings.name == "/pins") {
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
           return PinnedMessagesPage();
         },
       );
-    } else if (settings.name == "/graph") {
+    }
+
+    if (settings.name == "/graph") {
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {
           return GraphPage();
         },
       );
-    } else if (settings.name == "/search") {
+    }
+
+    if (settings.name == "/search") {
       return MaterialPageRoute(
         settings: settings,
         builder: (context) {

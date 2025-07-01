@@ -21,14 +21,14 @@ class MessageWidget extends StatefulWidget {
   final MessageDto message;
   final MessageDto? previousMessage;
   final bool startHighlighted;
-  final VoidCallback? refreshWidget;
+  final VoidCallback? onNewSystemMessage;
 
   const MessageWidget({
     super.key,
     required this.data,
     required this.userName,
     required this.message,
-    this.refreshWidget,
+    this.onNewSystemMessage,
     this.previousMessage,
     this.startHighlighted = false,
   });
@@ -408,8 +408,8 @@ class _MessageWidgetState extends State<MessageWidget> {
             sessionData.chats!.where((c) => c.id == sessionData.chat!.id).first,
           );
 
-          if (widget.refreshWidget != null) {
-            widget.refreshWidget!();
+          if (widget.onNewSystemMessage != null) {
+            widget.onNewSystemMessage!();
           }
         }
     }

@@ -11,7 +11,7 @@ class Header extends StatefulWidget {
 }
 
 class _HeaderState extends State<Header> {
-  final sortByOptions = ["Oldest First", "Newest First"];
+  final sortByOptions = ["Oldest", "Newest"];
   final sortByIcons = [Icons.arrow_upward, Icons.arrow_downward];
 
   @override
@@ -31,7 +31,7 @@ class _HeaderState extends State<Header> {
 
                   label: Text(
                     text,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
 
                   icon: Icon(sortByIcons[index]),

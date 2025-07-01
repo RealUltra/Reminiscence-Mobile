@@ -4,7 +4,7 @@ import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filters_layout.dart';
 import 'package:reminiscence/ui/pages/search/results_label.dart';
 import 'package:reminiscence/ui/pages/search/sort_selector.dart';
-import 'package:reminiscence/ui/pages/search/value_controller.dart';
+import 'package:reminiscence/ui/components/value_controller.dart';
 
 class Header extends StatefulWidget {
   final ValueController<Map<String, Filter>> filterController;

@@ -4,7 +4,7 @@ import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/ui/pages/search/date_picker_dialog/date_picker_dialog.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';
-import 'package:reminiscence/ui/pages/search/value_controller.dart';
+import 'package:reminiscence/ui/components/value_controller.dart';
 import 'package:reminiscence/ui/pages/search/list_dialog/list_dialog.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 

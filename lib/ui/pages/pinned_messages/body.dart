@@ -33,8 +33,6 @@ class _BodyState extends State<Body> {
     return SafeArea(
       child: Column(
         children: [
-          const Divider(height: 1.0, indent: 0.0, endIndent: 0.0),
-
           Header(sortController: sortController),
 
           Expanded(

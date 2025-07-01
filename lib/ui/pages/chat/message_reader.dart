@@ -53,7 +53,7 @@ class MessageReader {
   }
 
   int indexOf(String messageId) {
-    return messageIdLookup[messageId]!;
+    return messageIdLookup[messageId] ?? -1;
   }
 
   Future<MessageDto?> messageAt(int index) async {
@@ -82,8 +82,11 @@ class MessageReader {
       await Future.delayed(const Duration(microseconds: 5));
     }
 
-    // If the cache contains the required message, move on.
-    if (cache.containsKey(startIndex)) {
+    // Generate indicies for every message in the target batch.
+    final batchIndicies = List.generate(batchSize, (i) => startIndex + i);
+
+    // If the cache contains every message in the target batch, move on.
+    if (batchIndicies.every((i) => cache.containsKey(i))) {
       return;
     }
 

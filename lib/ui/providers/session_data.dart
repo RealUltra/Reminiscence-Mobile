@@ -24,7 +24,7 @@ class SessionData extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setChat(ChatDto chat) {
+  void setChat(ChatDto? chat) {
     _chat = chat;
     notifyListeners();
   }

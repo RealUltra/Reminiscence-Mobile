@@ -206,13 +206,14 @@ class BodyState extends State<Body> {
 
     final sessionData = Provider.of<SessionData>(context, listen: false);
     sessionData.setData(data);
+    sessionData.setChat(null);
 
     if (!context.mounted) {
       await data.closeDatabase();
       return;
     }
 
-    await Navigator.of(context).pushNamed("/chats");
+    await Navigator.of(context).pushNamed("/viewer");
   }
 
   Future<void> loadZipData(BuildContext context, String filePath) async {

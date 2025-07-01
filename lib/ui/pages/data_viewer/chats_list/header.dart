@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
-import 'package:reminiscence/ui/pages/chats_list/dropdown.dart';
-import 'package:reminiscence/ui/pages/chats_list/search_bar.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/dropdown.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/search_bar.dart';
 
 class Header extends StatelessWidget {
   final SelectionController<int> sortController;

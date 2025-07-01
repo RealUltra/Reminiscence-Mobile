@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
-import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/pages/chat/message_widget.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -14,8 +13,6 @@ class MessagesList extends StatefulWidget {
 }
 
 class _MessagesListState extends State<MessagesList> {
-  bool isReady = false;
-
   final ItemScrollController itemScrollController = ItemScrollController();
   final ScrollOffsetController scrollOffsetController =
       ScrollOffsetController();
@@ -32,32 +29,7 @@ class _MessagesListState extends State<MessagesList> {
 
     itemPositionsListener.itemPositions.addListener(onScroll);
 
-    initMessageReader();
-  }
-
-  Future<void> initMessageReader() async {
-    final initialMessageId = Provider.of<String?>(context, listen: false);
-
-    final sessionData = Provider.of<SessionData>(context, listen: false);
-    final chat = sessionData.chat!;
-
-    if (sessionData.messageReader == null ||
-        sessionData.messageReader!.chat.id != chat.id) {
-      await sessionData.loadMessageReader();
-    }
-
-    final messageReader = sessionData.messageReader!;
-
-    if (initialMessageId != null) {
-      final index = messageReader.indexOf(initialMessageId);
-      await messageReader.load(index);
-    } else {
-      await messageReader.load(0);
-    }
-
-    setState(() => isReady = true);
-
-    await initialJump();
+    initialJump();
   }
 
   Future<void> initialJump() async {
@@ -85,16 +57,15 @@ class _MessagesListState extends State<MessagesList> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isReady) {
+    final sessionData = Provider.of<SessionData>(context);
+
+    if (sessionData.chat == null) {
       return Container();
     }
 
-    final sessionData = Provider.of<SessionData>(context);
-    final data = sessionData.data!;
     final chat = sessionData.chat!;
     final messageReader = sessionData.messageReader!;
 
-    final initialMessageId = Provider.of<String?>(context);
     final disabled = Provider.of<bool>(context);
 
     return Stack(
@@ -116,14 +87,7 @@ class _MessagesListState extends State<MessagesList> {
             final previousMessage = messageReader.cachedMessageAt(index + 1);
 
             if (message != null && previousMessage != null) {
-              return MessageWidget(
-                data: data,
-                userName: chat.userName,
-                message: message,
-                previousMessage: previousMessage,
-                startHighlighted: message.id == initialMessageId,
-                refreshWidget: _refreshWidget,
-              );
+              return _buildMessageWidget(message, previousMessage);
             }
 
             // Load the message if it is not already cached.
@@ -157,14 +121,7 @@ class _MessagesListState extends State<MessagesList> {
                     return Text("message was null; index: $index");
                   }
 
-                  return MessageWidget(
-                    data: data,
-                    userName: chat.userName,
-                    message: messages[0],
-                    previousMessage: messages[1],
-                    startHighlighted: messages[0].id == initialMessageId,
-                    refreshWidget: _refreshWidget,
-                  );
+                  return _buildMessageWidget(messages[0], messages[1]);
                 }
               },
             );
@@ -219,6 +176,24 @@ class _MessagesListState extends State<MessagesList> {
     );
   }
 
+  Widget _buildMessageWidget(MessageDto message, MessageDto? previousMessage) {
+    final sessionData = Provider.of<SessionData>(context);
+    final data = sessionData.data!;
+    final chat = sessionData.chat!;
+
+    final initialMessageId = Provider.of<String?>(context);
+
+    return MessageWidget(
+      key: Key(message.id),
+      data: data,
+      userName: chat.userName,
+      message: message,
+      previousMessage: previousMessage,
+      startHighlighted: message.id == initialMessageId,
+      onNewSystemMessage: _onNewSystemMessage,
+    );
+  }
+
   void onScroll() {
     int bottomItemIndex = itemPositionsListener.itemPositions.value.first.index;
 
@@ -243,21 +218,16 @@ class _MessagesListState extends State<MessagesList> {
   Future<void> jumpHere(BuildContext context) async {
     final initialMessageId = Provider.of<String?>(context, listen: false);
 
-    await Navigator.of(context).pushNamedAndRemoveUntil(
-      "/chat",
-      ModalRoute.withName("/chats"),
-      arguments: ChatPageArgs(
-        initialMessageId: initialMessageId,
-        disabled: false,
-      ),
-    );
+    if (initialMessageId == null) {
+      return;
+    }
+
+    Navigator.of(context).pop(initialMessageId);
   }
 
-  Future<void> _refreshWidget() async {
+  Future<void> _onNewSystemMessage() async {
     final sessionData = Provider.of<SessionData>(context, listen: false);
     sessionData.loadMessageReader();
-
-    scrollToBottom();
 
     setState(() {});
   }

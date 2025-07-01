@@ -3,7 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-import 'package:reminiscence/ui/pages/chats_list/utils.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/utils.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class ChatItem extends StatelessWidget {
@@ -67,11 +68,14 @@ class ChatItem extends StatelessWidget {
   }
 
   Future<void> openChat(BuildContext context) async {
+    final pageController = Provider.of<SelectionController<int>>(
+      context,
+      listen: false,
+    );
+
     final sessionData = Provider.of<SessionData>(context, listen: false);
     sessionData.setChat(chat);
 
-    if (context.mounted) {
-      await Navigator.of(context).pushNamed("/chat");
-    }
+    pageController.selected = 1;
   }
 }

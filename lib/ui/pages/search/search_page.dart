@@ -5,7 +5,7 @@ import 'package:reminiscence/ui/pages/search/app_bar.dart';
 import 'package:reminiscence/ui/pages/search/body.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';
-import 'package:reminiscence/ui/pages/search/value_controller.dart';
+import 'package:reminiscence/ui/components/value_controller.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class SearchPage extends StatefulWidget {
@@ -51,9 +51,6 @@ class _SearchPageState extends State<SearchPage> {
     // Empty the search results
     searchResults.clear();
 
-    // Remove the search results from the widget and change the results label to Searching...
-    setState(() => isSearching = true);
-
     // Fetch the search query
     final query = searchController.text;
 
@@ -69,6 +66,9 @@ class _SearchPageState extends State<SearchPage> {
     if (filters.isEmpty) {
       return;
     }
+
+    // Remove the search results from the widget and change the results label to Searching...
+    setState(() => isSearching = true);
 
     // Search for all matching messages
     final sessionData = Provider.of<SessionData>(context, listen: false);

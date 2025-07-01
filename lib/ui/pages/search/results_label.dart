@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/chats_list/utils.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/utils.dart';
 
 class ResultsLabel extends StatelessWidget {
   final bool isSearching;

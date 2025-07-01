@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/components/selection_controller.dart';
+import 'package:reminiscence/ui/pages/data_viewer/navigation_bar.dart';
+import 'package:reminiscence/ui/components/value_controller.dart';
+import 'package:reminiscence/ui/providers/session_data.dart';
+
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/app_bar.dart'
+    as chats_list_page;
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/body.dart'
+    as chats_list_page;
+
+import 'package:reminiscence/ui/pages/chat/app_bar.dart' as chat_page;
+import 'package:reminiscence/ui/pages/chat/body.dart' as chat_page;
+
+import 'package:reminiscence/ui/pages/settings/app_bar.dart' as settings_page;
+import 'package:reminiscence/ui/pages/settings/body.dart' as settings_page;
+
+class DataViewerPage extends StatefulWidget {
+  const DataViewerPage({super.key});
+
+  @override
+  State<DataViewerPage> createState() => _DataViewerPageState();
+}
+
+class _DataViewerPageState extends State<DataViewerPage> {
+  bool chatsListReady = false;
+
+  final pageController = SelectionController<int>(0);
+  final jumpController = ValueController<String?>(null);
+
+  late final List<PreferredSizeWidget> appBars;
+  late final List<Widget> bodies;
+
+  ChatDto? currentChat;
+
+  @override
+  void initState() {
+    super.initState();
+
+    pageController.addListener(() => pageChanged());
+    jumpController.addListener(() => jumpToMessage());
+
+    appBars = [
+      chats_list_page.MyAppBar(),
+      chat_page.MyAppBar(jumpController: jumpController),
+      settings_page.MyAppBar(),
+    ];
+
+    bodies = [chats_list_page.Body(), chat_page.Body(), settings_page.Body()];
+
+    initChats();
+  }
+
+  Future<void> initChats() async {
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    await sessionData.loadChats();
+    setState(() => chatsListReady = true);
+  }
+
+  Future<void> initMessages() async {
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final chat = sessionData.chat!;
+    final messageReader = sessionData.messageReader;
+
+    if (messageReader == null || messageReader.chat.id != chat.id) {
+      await sessionData.loadMessageReader();
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!chatsListReady) {
+      return Scaffold();
+    }
+
+    final pageIndex = pageController.selected;
+
+    return MultiProvider(
+      providers: [
+        Provider<SelectionController<int>>.value(value: pageController),
+        Provider<String?>.value(value: jumpController.value),
+        Provider<bool>.value(value: false),
+      ],
+
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) => goBack(context, didPop),
+
+        child: Scaffold(
+          appBar: appBars[pageIndex],
+
+          body: IndexedStack(index: pageIndex, children: bodies),
+
+          bottomNavigationBar: MyNavigationBar(
+            pageController: pageController,
+            messagesEnabled: currentChat != null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void goBack(BuildContext context, bool didPop) {
+    if (didPop) {
+      return;
+    }
+
+    final currentPage = pageController.selected;
+
+    // If you are on the chat page or settings page, go to the main page.
+    if (currentPage != 0) {
+      pageController.selected = 0;
+      return;
+    }
+
+    // Go back to the data loader
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final data = sessionData.data!;
+
+    data.closeDatabase();
+
+    Navigator.of(context).pop();
+  }
+
+  void jumpToMessage() {
+    if (jumpController.value == null) {
+      return;
+    }
+
+    setState(() {
+      bodies[1] = chat_page.Body(key: UniqueKey());
+    });
+  }
+
+  void pageChanged() {
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final pageIndex = pageController.selected;
+
+    if (sessionData.chat != currentChat && pageIndex == 1) {
+      currentChat = sessionData.chat;
+      jumpController.setValueQuietly(null);
+      bodies[1] = chat_page.Body(key: UniqueKey());
+      initMessages();
+    }
+
+    setState(() {});
+  }
+}

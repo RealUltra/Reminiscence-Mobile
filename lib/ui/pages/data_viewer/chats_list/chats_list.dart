@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-import 'package:reminiscence/ui/pages/chats_list/chat_item.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/chat_item.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class ChatsList extends StatelessWidget {

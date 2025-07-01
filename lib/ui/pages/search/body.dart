@@ -5,7 +5,7 @@ import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/search/messages_list.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/header.dart';
-import 'package:reminiscence/ui/pages/search/value_controller.dart';
+import 'package:reminiscence/ui/components/value_controller.dart';
 
 class Body extends StatefulWidget {
   final ValueController<Map<String, Filter>> filterController;

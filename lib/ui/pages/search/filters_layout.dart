@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_badge.dart';
-import 'package:reminiscence/ui/pages/search/value_controller.dart';
+import 'package:reminiscence/ui/components/value_controller.dart';
 
 class FiltersLayout extends StatelessWidget {
   final ValueController<Map<String, Filter>> controller;

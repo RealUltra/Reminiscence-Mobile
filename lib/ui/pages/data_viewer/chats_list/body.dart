@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
-import 'package:reminiscence/ui/pages/chats_list/chats_list.dart';
-import 'package:reminiscence/ui/pages/chats_list/header.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/chats_list.dart';
+import 'package:reminiscence/ui/pages/data_viewer/chats_list/header.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class Body extends StatefulWidget {
@@ -33,33 +33,26 @@ class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     final sessionData = Provider.of<SessionData>(context);
-    final data = sessionData.data!;
 
     final filteredChats = _filterChatsBySearch(sessionData.chats!);
     _sortChats(filteredChats, scrollUp: false);
 
-    return PopScope(
-      onPopInvokedWithResult: (bool didPop, _) {
-        data.closeDatabase();
-      },
+    return SafeArea(
+      top: false,
+      child: Column(
+        children: [
+          Header(
+            searchController: searchController,
+            sortController: sortController,
+            orderController: orderController,
+          ),
 
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            Header(
-              searchController: searchController,
-              sortController: sortController,
-              orderController: orderController,
-            ),
-
-            ChatsList(
-              chats: filteredChats,
-              scrollController: controller,
-              sortMode: sortController.selected,
-            ),
-          ],
-        ),
+          ChatsList(
+            chats: filteredChats,
+            scrollController: controller,
+            sortMode: sortController.selected,
+          ),
+        ],
       ),
     );
   }

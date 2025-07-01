@@ -18,15 +18,20 @@ class _LinkPreviewState extends State<LinkPreview> {
 
       child: AnyLinkPreview(
         link: widget.link,
+
+        cache: const Duration(days: 1),
+
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-        cache: const Duration(days: 30),
+
         titleStyle: Theme.of(context).textTheme.titleSmall!.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.bold,
         ),
+
         bodyStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
+
         displayDirection: UIDirection.uiDirectionHorizontal,
       ),
     );

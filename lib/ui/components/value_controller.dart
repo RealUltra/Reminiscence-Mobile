@@ -17,6 +17,10 @@ class ValueController<T> {
     notifyListeners();
   }
 
+  void setValueQuietly(T value) {
+    _value = value;
+  }
+
   void addListener(VoidCallback listener) {
     _listeners.add(listener);
   }
