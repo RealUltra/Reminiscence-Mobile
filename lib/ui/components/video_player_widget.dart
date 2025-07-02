@@ -135,17 +135,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                                   : Container(),
 
                               IconButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => FullScreenVideoPlayer(
-                                            controller,
-                                            onShare: widget.onShare,
-                                          ),
-                                    ),
-                                  );
-                                },
+                                onPressed: () => _fullScreen(),
                                 icon: Icon(Icons.fullscreen),
                               ),
                             ],
@@ -197,6 +187,16 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         showControls = false;
       });
     });
+  }
+
+  void _fullScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) =>
+                FullScreenVideoPlayer(controller, onShare: widget.onShare),
+      ),
+    );
   }
 
   String _formatDuration(Duration duration) {

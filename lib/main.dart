@@ -9,11 +9,15 @@ import 'package:reminiscence/ui/pages/data_viewer/data_viewer_page.dart';
 import 'package:reminiscence/ui/pages/graph/graph_page.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page.dart';
 import 'package:reminiscence/ui/pages/search/search_page.dart';
+import 'package:reminiscence/ui/providers/pinned_messages_provider.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
+import 'package:reminiscence/ui/providers/system_messages_provider.dart';
+import 'package:reminiscence/ui/providers/theme_mode_provider.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen_args.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +29,21 @@ Future<void> main() async {
 
   await requestPermissions();
 
-  runApp(const App());
+  final prefs = await SharedPreferences.getInstance();
+  final themeModeProvider = ThemeModeProvider(prefs: prefs);
+  final systemMessagesProvider = SystemMessagesProvider(prefs: prefs);
+  final pinnedMessagesProvider = PinnedMessagesProvider(prefs: prefs);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => themeModeProvider),
+        ChangeNotifierProvider(create: (context) => systemMessagesProvider),
+        ChangeNotifierProvider(create: (context) => pinnedMessagesProvider),
+      ],
+      child: App(),
+    ),
+  );
 }
 
 class App extends StatelessWidget {
@@ -33,13 +51,15 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeModeProvider = Provider.of<ThemeModeProvider>(context);
+
     return ChangeNotifierProvider(
       create: (context) => SessionData(),
       child: MaterialApp(
         title: "Reminiscence",
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
+        themeMode: themeModeProvider.themeMode,
         initialRoute: "/",
         onGenerateRoute: onGenerateRoute,
       ),

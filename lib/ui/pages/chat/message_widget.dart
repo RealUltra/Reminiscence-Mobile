@@ -8,12 +8,13 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_storage/pinned_messages.dart';
-import 'package:reminiscence/features/data_storage/system_messages.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
 import 'package:reminiscence/ui/pages/chat/view_reactions_widget.dart';
+import 'package:reminiscence/ui/providers/pinned_messages_provider.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
+import 'package:reminiscence/ui/providers/system_messages_provider.dart';
 
 class MessageWidget extends StatefulWidget {
   final ReminiscenceData data;
@@ -80,11 +81,11 @@ class _MessageWidgetState extends State<MessageWidget> {
 
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            curve: Curves.easeOutQuad,
             color:
                 isHighlighted
-                    ? Theme.of(context).colorScheme.surfaceContainerHigh
-                    : Colors.transparent,
+                    ? Theme.of(context).colorScheme.surfaceDim
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
 
             margin: EdgeInsets.fromLTRB(0, topPadding, 0, 0),
             padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
@@ -362,6 +363,17 @@ class _MessageWidgetState extends State<MessageWidget> {
       return;
     }
 
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final systemMessagesProvider = Provider.of<SystemMessagesProvider>(
+      context,
+      listen: false,
+    );
+
+    final pinnedMessagesProvider = Provider.of<PinnedMessagesProvider>(
+      context,
+      listen: false,
+    );
+
     switch (result) {
       case "viewReactions":
         {
@@ -385,22 +397,22 @@ class _MessageWidgetState extends State<MessageWidget> {
 
       case "pinMessage":
         {
-          await pinMessage(widget.message.id);
+          await pinnedMessagesProvider.pinMessage(widget.message.id);
           break;
         }
 
       case "unpinMessage":
         {
-          await unpinMessage(widget.message.id);
+          await pinnedMessagesProvider.unpinMessage(widget.message.id);
           break;
         }
 
       case "markAsSystem":
         {
           // Mark as system message here
-          final sessionData = Provider.of<SessionData>(context, listen: false);
-
-          await markAsSystemMessage(widget.message.noEmojisContent);
+          await systemMessagesProvider.markAsSystem(
+            widget.message.noEmojisContent,
+          );
 
           await sessionData.loadChats();
 

@@ -1,19 +1,16 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<String>> getPinnedMessages({SharedPreferences? prefs}) async {
-  prefs ??= await SharedPreferences.getInstance();
-
+List<String> getPinnedMessages(SharedPreferences prefs) {
   String pinnedMessagesJson = prefs.getString('pinnedMessages') ?? "[]";
   List<String> pinnedMessages = jsonDecode(pinnedMessagesJson).cast<String>();
-
   return pinnedMessages;
 }
 
 Future<void> pinMessage(String messageId) async {
   final prefs = await SharedPreferences.getInstance();
 
-  final pinnedMessages = await getPinnedMessages(prefs: prefs);
+  final pinnedMessages = getPinnedMessages(prefs);
 
   if (!pinnedMessages.contains(messageId)) {
     pinnedMessages.add(messageId);
@@ -25,7 +22,7 @@ Future<void> pinMessage(String messageId) async {
 Future<void> unpinMessage(String messageId) async {
   final prefs = await SharedPreferences.getInstance();
 
-  final pinnedMessages = await getPinnedMessages(prefs: prefs);
+  final pinnedMessages = getPinnedMessages(prefs);
 
   if (pinnedMessages.contains(messageId)) {
     pinnedMessages.remove(messageId);
@@ -35,7 +32,8 @@ Future<void> unpinMessage(String messageId) async {
 }
 
 Future<bool> isPinned(String messageId) async {
-  final pinnedMessages = await getPinnedMessages();
+  final prefs = await SharedPreferences.getInstance();
+  final pinnedMessages = getPinnedMessages(prefs);
   return pinnedMessages.contains(messageId);
 }
 

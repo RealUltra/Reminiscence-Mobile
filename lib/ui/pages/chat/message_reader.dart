@@ -82,11 +82,8 @@ class MessageReader {
       await Future.delayed(const Duration(microseconds: 5));
     }
 
-    // Generate indicies for every message in the target batch.
-    final batchIndicies = List.generate(batchSize, (i) => startIndex + i);
-
-    // If the cache contains every message in the target batch, move on.
-    if (batchIndicies.every((i) => cache.containsKey(i))) {
+    // If the cache contains the target index, move on.
+    if (cache.containsKey(index)) {
       return;
     }
 
@@ -113,13 +110,19 @@ class MessageReader {
     );
 
     // Add the new batch's indexes to the cache.
-    cacheKeyOrder.addAll(batch.map((m) => messageIdLookup[m.id]!).toList());
+    final batchIndicies = batch.map((m) => messageIdLookup[m.id]!).toList();
+
+    // Remove each index from the order if it was previously loaded, and readd it to the order at the very end of it.
+    for (final index in batchIndicies) {
+      cacheKeyOrder.remove(index);
+      cacheKeyOrder.add(index);
+    }
 
     // If the cache exceeds its limit, remove the oldest additions to the cache.
     if (cache.length > cacheSize) {
       final numKeysToRemove = cache.length - cacheSize;
       final keysToRemove = cacheKeyOrder.sublist(0, numKeysToRemove);
-      cache.removeWhere((id, m) => keysToRemove.contains(id));
+      cache.removeWhere((idx, m) => keysToRemove.contains(idx));
       cacheKeyOrder.removeRange(0, numKeysToRemove);
     }
 

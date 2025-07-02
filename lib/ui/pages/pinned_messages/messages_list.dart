@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:reminiscence/features/data_storage/pinned_messages.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
 import 'package:reminiscence/ui/components/message_card.dart';
+import 'package:reminiscence/ui/providers/pinned_messages_provider.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
 class MessagesList extends StatelessWidget {
@@ -112,7 +112,12 @@ class MessagesList extends StatelessWidget {
       return;
     }
 
-    await unpinMessage(message.id);
+    final pinnedMessagesProvider = Provider.of<PinnedMessagesProvider>(
+      context,
+      listen: false,
+    );
+
+    await pinnedMessagesProvider.unpinMessage(message.id);
 
     await updatePinnedMessages();
   }

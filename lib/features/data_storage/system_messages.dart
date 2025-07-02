@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<String>> getSystemMessages({SharedPreferences? prefs}) async {
-  prefs ??= await SharedPreferences.getInstance();
-
+List<String> getSystemMessages(SharedPreferences prefs) {
   String systemMessagesJson = prefs.getString('systemMessages') ?? "[]";
   List<String> systemMessages = jsonDecode(systemMessagesJson).cast<String>();
 
@@ -15,7 +13,7 @@ Future<void> markAsSystemMessage(String content) async {
 
   final prefs = await SharedPreferences.getInstance();
 
-  final systemMessages = await getSystemMessages(prefs: prefs);
+  final systemMessages = getSystemMessages(prefs);
 
   if (!systemMessages.contains(content)) {
     systemMessages.add(content);
@@ -27,7 +25,7 @@ Future<void> markAsSystemMessage(String content) async {
 Future<void> unmarkAsSystemMessage(String content) async {
   final prefs = await SharedPreferences.getInstance();
 
-  final systemMessages = await getSystemMessages(prefs: prefs);
+  final systemMessages = getSystemMessages(prefs);
 
   if (systemMessages.contains(content)) {
     systemMessages.remove(content);
@@ -37,7 +35,8 @@ Future<void> unmarkAsSystemMessage(String content) async {
 }
 
 Future<bool> isSystemMessage(String content) async {
-  final systemMessages = await getSystemMessages();
+  final prefs = await SharedPreferences.getInstance();
+  final systemMessages = getSystemMessages(prefs);
   return systemMessages.contains(content);
 }
 
