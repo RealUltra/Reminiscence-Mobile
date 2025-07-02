@@ -9,7 +9,7 @@ class Filter {
 
   String? get query {
     if (type == FilterType.query) {
-      return value as String;
+      return (value as String).trim();
     }
 
     return null;

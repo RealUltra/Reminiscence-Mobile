@@ -41,8 +41,6 @@ class BodyState extends State<Body> {
 
     listener(value) {
       if (value.isNotEmpty) {
-        debugPrint("Received a path: ${value.first.path}");
-
         if (mounted) {
           loadData(context, value.first.path);
         }
@@ -316,7 +314,6 @@ class BodyState extends State<Body> {
     await tempFile.rename(filePath);
 
     await updateFileHistory(filePath);
-    debugPrint("Data Loaded Successfully: $filePath");
 
     setState(() {});
 
@@ -383,8 +380,6 @@ class BodyState extends State<Body> {
         }
       }),
     );
-
-    debugPrint("$sortedRecentFiles");
 
     return sortedRecentFiles;
   }

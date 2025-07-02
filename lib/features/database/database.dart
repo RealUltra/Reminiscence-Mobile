@@ -11,7 +11,6 @@ import 'package:reminiscence/features/database/tables/messages.dart';
 import 'package:reminiscence/features/database/tables/attachments.dart';
 import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/features/database/sqlcipher.dart';
-import 'package:reminiscence/features/database/tables/search_tokens.dart';
 
 part 'database.g.dart';
 
@@ -22,7 +21,7 @@ String escapeString(String source) {
 }
 
 @DriftDatabase(
-  tables: [Chats, Participants, Messages, Attachments, SearchTokens],
+  tables: [Chats, Participants, Messages, Attachments],
   daos: [ChatDao, MessageDao],
 )
 class AppDatabase extends _$AppDatabase {

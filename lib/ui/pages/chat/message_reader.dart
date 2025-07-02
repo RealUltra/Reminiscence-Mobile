@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/daos/message_column.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
@@ -89,8 +88,6 @@ class MessageReader {
 
     // Start loading
     loading = true;
-
-    debugPrint("Loading $startIndex");
 
     // If the system messages and message ids haven't been loaded, load them.
     if (!ready) {

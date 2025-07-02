@@ -11,12 +11,12 @@ import 'package:reminiscence/features/database/tables/chats.dart';
 class Messages extends Table {
   TextColumn get id => text()();
   IntColumn get chatId => integer().references(Chats, #id)();
-  IntColumn get index => integer()();
   TextColumn get rawData => text()();
   IntColumn get sentAt => integer()();
   TextColumn get senderName => text()();
   TextColumn get content => text()();
   TextColumn get noEmojisContent => text()();
+  TextColumn get searchContent => text()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

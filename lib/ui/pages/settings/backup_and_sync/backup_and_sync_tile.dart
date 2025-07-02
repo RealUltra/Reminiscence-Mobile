@@ -7,10 +7,18 @@ class BackupAndSyncTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text('Backup & Sync'),
-      leading: Icon(Icons.sync),
-      children: [ExportSettingsButton(), ImportSettingsButton()],
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+
+      child: ExpansionTile(
+        title: Text('Backup & Sync'),
+        leading: Icon(Icons.sync),
+        children: [
+          const SizedBox(height: 8.0),
+          ExportSettingsButton(),
+          ImportSettingsButton(),
+        ],
+      ),
     );
   }
 }

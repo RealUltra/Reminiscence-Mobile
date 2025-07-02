@@ -49,7 +49,7 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> search() async {
     // Empty the search results
-    searchResults.clear();
+    setState(() => searchResults.clear());
 
     // Fetch the search query
     final query = searchController.text;

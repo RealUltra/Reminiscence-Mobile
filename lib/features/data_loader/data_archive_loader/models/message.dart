@@ -6,7 +6,6 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/models/cha
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/message_stack.dart';
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/attachment.dart';
 import 'package:reminiscence/features/database/tables/attachment_type.dart';
-import 'package:reminiscence/features/tokenizer/tokenizer.dart';
 
 class Message {
   final Map<String, dynamic> data;
@@ -19,8 +18,8 @@ class Message {
   late final int sentAt;
   late final String senderName;
   late final String content;
+  late final String searchContent;
   late final List<Attachment> attachments;
-  late final Set<String> searchTokens;
 
   Message({
     required this.data,
@@ -39,7 +38,7 @@ class Message {
     content = data["content"] ?? "";
     id = _generateUniqueId();
     attachments = _getAttachments();
-    searchTokens = _getSearchTokens();
+    searchContent = _getSearchContent();
   }
 
   String _generateUniqueId() {
@@ -76,10 +75,8 @@ class Message {
     return attachments;
   }
 
-  Set<String> _getSearchTokens() {
-    final tokens = tokenize(content);
-    tokens.addAll(_getReactions());
-    return tokens;
+  String _getSearchContent() {
+    return "$content ${_getReactions().join(" ")}";
   }
 
   List<String> _getReactions() {

@@ -4,7 +4,6 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -107,8 +106,6 @@ Future<String?> createRemFile({
   final messageReader = MessageReader(chats);
 
   for (final chat in chats) {
-    debugPrint("Chat Title: ${chat.title}");
-
     final stacksMid = chat.messageStacks.length / 2;
 
     await insertArchiveChat(db, chat, messageReader, (int increment) async {
@@ -207,7 +204,6 @@ Future<void> insertArchiveChat(
 
   // Add messages to database
   int stacksDone = 0;
-  int index = 0;
 
   messageReader.initialize(archiveChat);
 
@@ -217,10 +213,9 @@ Future<void> insertArchiveChat(
     // Efficiently inserting all the messages and attachments into the database.
     await db.batch((batch) {
       for (final archiveMessage in messageReader.messages(messageStack)) {
-        MessagesCompanion message = MessagesCompanion(
+        final message = MessagesCompanion(
           id: Value(archiveMessage.id),
           chatId: chat.id,
-          index: Value(index),
           rawData: Value(jsonEncode(archiveMessage.data)),
           sentAt: Value(archiveMessage.sentAt),
           senderName: Value(archiveMessage.senderName),
@@ -228,31 +223,20 @@ Future<void> insertArchiveChat(
           noEmojisContent: Value(
             removeEmojis(archiveMessage.content.toLowerCase()),
           ),
+          searchContent: Value(archiveMessage.searchContent),
         );
 
         batch.insert(db.messages, message);
 
-        index++;
-
         // Add attachments to database
         for (final archiveAttachment in archiveMessage.attachments) {
-          AttachmentsCompanion attachment = AttachmentsCompanion(
+          final attachment = AttachmentsCompanion(
             messageId: message.id,
             type: Value(archiveAttachment.type),
             uri: Value(archiveAttachment.uri),
           );
 
           batch.insert(db.attachments, attachment);
-        }
-
-        // Add search tokens to database
-        for (final token in archiveMessage.searchTokens) {
-          SearchTokensCompanion searchToken = SearchTokensCompanion(
-            messageId: message.id,
-            value: Value(token),
-          );
-
-          batch.insert(db.searchTokens, searchToken);
         }
       }
     });

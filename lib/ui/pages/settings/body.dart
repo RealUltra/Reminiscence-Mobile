@@ -18,7 +18,13 @@ class _BodyState extends State<Body> {
       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
 
       child: ListView(
-        children: [AppearanceTile(), SystemMessagesTile(), BackupAndSyncTile()],
+        children: [
+          AppearanceTile(),
+          const Divider(),
+          SystemMessagesTile(),
+          const Divider(),
+          BackupAndSyncTile(),
+        ],
       ),
     );
   }

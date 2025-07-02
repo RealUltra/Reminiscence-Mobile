@@ -115,7 +115,6 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
         if (mounted && success) {
           setState(() {
             duration = formatDuration(DateTime.now().difference(startTime));
-            debugPrint("Completed in $duration seconds.");
             isLoading = false;
           });
         }

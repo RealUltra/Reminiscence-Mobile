@@ -15,7 +15,6 @@ enum MessageColumn {
 final columnNameLookup = {
   MessageColumn.id: "m.id",
   MessageColumn.chatId: "m.chat_id",
-  MessageColumn.idx: 'm."index"',
   MessageColumn.rawData: "m.raw_data",
   MessageColumn.sentAt: "m.sent_at",
   MessageColumn.senderName: "m.sender_name",

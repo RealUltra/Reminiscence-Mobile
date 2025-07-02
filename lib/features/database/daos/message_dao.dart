@@ -8,7 +8,6 @@ import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/features/database/tables/attachments.dart';
 import 'package:reminiscence/features/database/tables/messages.dart';
-import 'package:reminiscence/features/tokenizer/tokenizer.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -86,7 +85,6 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
         SELECT
           m.id,
           m.chat_id,
-          m."index",
           m.raw_data,
           m.sent_at,
           m.sender_name,
@@ -136,7 +134,6 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
             SELECT
               m.id,
               m.chat_id,
-              m."index",
               m.raw_data,
               m.sent_at,
               m.sender_name,
@@ -155,11 +152,13 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
               ON a.message_id = m.id
 
             WHERE
-              m.id IN ($placeholders) AND
-              m.chat_id = ?
+              m.id IN ($placeholders) 
+              AND m.chat_id = ?
           """, variables: variables).get();
 
-    return _getMessageDtos(rows);
+    final messageDtos = _getMessageDtos(rows);
+
+    return messageDtos;
   }
 
   // Used for getting all the message timestamps from a chat and from a particular sender. Used in the graph.
@@ -213,11 +212,10 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
     for (final filter in filters) {
       if (filter.type == FilterType.query) {
-        final tokens = tokenize(filter.query!);
-        final placeholders = _getPlaceholders(tokens.length);
-
-        whereClauses.add("st.value IN ($placeholders)");
-        variables.addAll(tokens.map(Variable.withString));
+        whereClauses.add(
+          "CONCAT(' ', LOWER(m.search_content), ' ') LIKE LOWER(?)",
+        );
+        variables.add(Variable.withString("% ${filter.query} %"));
       }
 
       if (filter.type == FilterType.sender) {
@@ -259,17 +257,11 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
     final whereSql = whereClauses.join(" AND ");
 
-    final joinTokensClause =
-        whereSql.contains("st.value")
-            ? "LEFT JOIN search_tokens st ON st.message_id = m.id"
-            : "";
-
     final rows =
         await customSelect("""
             SELECT
               m.id,
               m.chat_id,
-              m."index",
               m.raw_data,
               m.sent_at,
               m.sender_name,
@@ -286,8 +278,6 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
             LEFT JOIN
               attachments a
               ON a.message_id = m.id
-
-            $joinTokensClause
 
             WHERE $whereSql
           """, variables: variables).get();

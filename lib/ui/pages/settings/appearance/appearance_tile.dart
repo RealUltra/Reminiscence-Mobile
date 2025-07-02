@@ -6,10 +6,14 @@ class AppearanceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text('Appearance'),
-      leading: Icon(Icons.color_lens),
-      children: [ThemeSelector()],
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+
+      child: ExpansionTile(
+        title: Text('Appearance'),
+        leading: Icon(Icons.color_lens),
+        children: [ThemeSelector()],
+      ),
     );
   }
 }

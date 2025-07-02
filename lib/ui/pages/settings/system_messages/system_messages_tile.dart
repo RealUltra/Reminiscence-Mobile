@@ -11,25 +11,29 @@ class SystemMessagesTile extends StatelessWidget {
     final systemMessagesProvider = Provider.of<SystemMessagesProvider>(context);
     final systemMessages = systemMessagesProvider.systemMessages;
 
-    return ExpansionTile(
-      title: Text('System Messages'),
-      leading: Icon(Icons.settings_suggest),
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
 
-      children: [
-        Visibility(
-          visible: systemMessages.isNotEmpty,
+      child: ExpansionTile(
+        title: Text('System Messages'),
+        leading: Icon(Icons.settings_suggest),
 
-          child: Text(
-            "Tap any to unmark as system message.",
+        children: [
+          Visibility(
+            visible: systemMessages.isNotEmpty,
 
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+            child: Text(
+              "Tap any to unmark as system message.",
+
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
 
-        MessagesList(messages: systemMessages),
-      ],
+          MessagesList(messages: systemMessages),
+        ],
+      ),
     );
   }
 }
