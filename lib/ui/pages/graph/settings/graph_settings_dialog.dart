@@ -7,7 +7,7 @@ import 'package:reminiscence/ui/pages/graph/graph_details_widget.dart';
 import 'package:reminiscence/ui/pages/graph/graph_mode_selector.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/pages/graph/separate_participants_switch.dart';
-import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
+import 'package:reminiscence/ui/components/switch_controller.dart';
 
 class GraphSettingsDialog extends StatefulWidget {
   final GraphSettings initialSettings;

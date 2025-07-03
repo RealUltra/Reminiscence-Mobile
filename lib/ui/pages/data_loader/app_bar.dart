@@ -8,18 +8,23 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: Text("Reminiscence"),
+
       scrolledUnderElevation: 0.0,
       backgroundColor: Colors.transparent,
+
       actions: [
         IconButton(
           onPressed: () => showTutorial(context),
           icon: Icon(Icons.help_outline, size: 30),
         ),
       ],
+
       actionsPadding: EdgeInsets.only(right: 8),
+
       titleTextStyle: Theme.of(
         context,
       ).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.w600),
+
       titleSpacing: 24.0,
     );
   }

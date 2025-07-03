@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
+import 'package:reminiscence/ui/components/switch_controller.dart';
 
 class SeparateParticipantsSwitch extends StatefulWidget {
   final SwitchController controller;

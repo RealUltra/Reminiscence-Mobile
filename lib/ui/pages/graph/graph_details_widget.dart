@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
-import 'package:reminiscence/ui/pages/graph/switch_controller.dart';
+import 'package:reminiscence/ui/components/switch_controller.dart';
 
 class GraphDetailsWidget extends StatefulWidget {
   final int graphMode;

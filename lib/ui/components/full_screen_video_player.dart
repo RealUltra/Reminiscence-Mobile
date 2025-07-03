@@ -34,16 +34,19 @@ class FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: Column(
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
           children: [
             Spacer(),
+
             AspectRatio(
               aspectRatio: controller.value.aspectRatio,
               child: VideoPlayer(controller),
             ),
+
             Spacer(),
+
             Column(
               mainAxisSize: MainAxisSize.min,
 
@@ -88,12 +91,11 @@ class FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
 
                     Row(
                       children: [
-                        widget.onShare != null
-                            ? IconButton(
-                              onPressed: widget.onShare,
-                              icon: Icon(Icons.share),
-                            )
-                            : Container(),
+                        if (widget.onShare != null)
+                          IconButton(
+                            onPressed: widget.onShare,
+                            icon: Icon(Icons.share),
+                          ),
 
                         IconButton(
                           onPressed: () {
