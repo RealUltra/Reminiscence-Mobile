@@ -10,7 +10,6 @@ import 'package:reminiscence/features/database/tables/attachments.dart';
 import 'package:reminiscence/features/database/tables/messages.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/filter_type.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 part 'message_dao.g.dart';
 
@@ -23,9 +22,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     int chatId, {
     List<MessageColumn> columns = allColumns,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final systemMessages = getSystemMessages(prefs);
+    final systemMessages = await getSystemMessages();
     final systemPlaceholders = _getPlaceholders(systemMessages.length);
 
     final columnNames = getColumnNames(columns);
@@ -69,9 +66,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     int startTimestamp,
     int limit,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final systemMessages = getSystemMessages(prefs);
+    final systemMessages = await getSystemMessages();
     final placeholders = _getPlaceholders(systemMessages.length);
 
     final variables = [
@@ -120,8 +115,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
   // Used for retrieving pinned messages
   Future<List<MessageDto>> getPinned(int chatId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final allPinnedMessages = getPinnedMessages(prefs);
+    final allPinnedMessages = await getPinnedMessages();
     final placeholders = _getPlaceholders(allPinnedMessages.length);
 
     final variables = [
@@ -166,9 +160,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     int chatId, {
     String? senderName,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final systemMessages = getSystemMessages(prefs);
+    final systemMessages = await getSystemMessages();
     final placeholders = _getPlaceholders(systemMessages.length);
 
     final variables = [

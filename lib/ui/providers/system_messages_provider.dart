@@ -11,24 +11,35 @@ class SystemMessagesProvider extends ChangeNotifier {
   SystemMessagesProvider({required this.prefs});
 
   List<String> get systemMessages {
-    String systemMessagesJson = prefs.getString('systemMessages') ?? "[]";
-    List<String> systemMessages = jsonDecode(systemMessagesJson).cast<String>();
-    return systemMessages;
+    return data_storage.getSystemMessagesSync(prefs);
   }
 
-  set systemMessages(List<String> systemMessages) {
-    prefs
-        .setString("systemMessages", jsonEncode(systemMessages))
-        .then((_) => notifyListeners());
+  Future<void> setSystemMessages(List<String> systemMessages) async {
+    await prefs.setString("systemMessages", jsonEncode(systemMessages));
+    notifyListeners();
   }
 
   Future<void> markAsSystem(String content) async {
-    await data_storage.markAsSystemMessage(content);
-    notifyListeners();
+    final systemMessages = this.systemMessages;
+
+    if (!systemMessages.contains(content)) {
+      systemMessages.add(content);
+    }
+
+    await setSystemMessages(systemMessages);
   }
 
   Future<void> unmarkAsSystem(String content) async {
-    await data_storage.unmarkAsSystemMessage(content);
-    notifyListeners();
+    final systemMessages = this.systemMessages;
+
+    if (systemMessages.contains(content)) {
+      systemMessages.remove(content);
+    }
+
+    await setSystemMessages(systemMessages);
+  }
+
+  bool isSystemMessage(String content) {
+    return systemMessages.contains(content);
   }
 }

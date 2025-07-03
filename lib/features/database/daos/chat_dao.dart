@@ -5,7 +5,6 @@ import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/features/database/tables/chats.dart';
 import 'package:reminiscence/features/database/tables/messages.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 part 'chat_dao.g.dart';
 
@@ -14,9 +13,7 @@ class ChatDao extends DatabaseAccessor<AppDatabase> with _$ChatDaoMixin {
   ChatDao(super.db);
 
   Future<List<ChatDto>> getChatDtos() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final systemMessages = getSystemMessages(prefs);
+    final systemMessages = await getSystemMessages();
     final placeholders = List.filled(systemMessages.length, "?").join(",");
 
     final variables = [

@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
-import 'package:reminiscence/features/data_storage/pinned_messages.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
@@ -266,7 +265,19 @@ class _MessageWidgetState extends State<MessageWidget> {
     BuildContext context,
     LongPressStartDetails details,
   ) async {
-    final pinned = await isPinned(widget.message.id);
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+
+    final systemMessagesProvider = Provider.of<SystemMessagesProvider>(
+      context,
+      listen: false,
+    );
+
+    final pinnedMessagesProvider = Provider.of<PinnedMessagesProvider>(
+      context,
+      listen: false,
+    );
+
+    final pinned = pinnedMessagesProvider.isPinned(widget.message.id);
 
     if (!context.mounted) return;
 
@@ -362,17 +373,6 @@ class _MessageWidgetState extends State<MessageWidget> {
     if (result == null || !context.mounted) {
       return;
     }
-
-    final sessionData = Provider.of<SessionData>(context, listen: false);
-    final systemMessagesProvider = Provider.of<SystemMessagesProvider>(
-      context,
-      listen: false,
-    );
-
-    final pinnedMessagesProvider = Provider.of<PinnedMessagesProvider>(
-      context,
-      listen: false,
-    );
 
     switch (result) {
       case "viewReactions":

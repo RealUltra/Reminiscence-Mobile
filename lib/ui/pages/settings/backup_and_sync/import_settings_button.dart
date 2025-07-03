@@ -122,7 +122,7 @@ class ImportSettingsButton extends StatelessWidget {
       }
 
       if (mode == "overwrite") {
-        systemMessagesProvider.systemMessages = newSystemMessages;
+        systemMessagesProvider.setSystemMessages(newSystemMessages);
       } else {
         final systemMessages = systemMessagesProvider.systemMessages;
 
@@ -145,7 +145,7 @@ class ImportSettingsButton extends StatelessWidget {
       }
 
       if (mode == "overwrite") {
-        pinnedMessagesProvider.pinnedMessages = newPinnedMessages;
+        pinnedMessagesProvider.setPinnedMessages(newPinnedMessages);
       } else {
         final pinnedMessages = pinnedMessagesProvider.pinnedMessages;
 

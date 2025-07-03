@@ -11,24 +11,35 @@ class PinnedMessagesProvider extends ChangeNotifier {
   PinnedMessagesProvider({required this.prefs});
 
   List<String> get pinnedMessages {
-    String pinnedMessagesJson = prefs.getString('pinnedMessages') ?? "[]";
-    List<String> pinnedMessages = jsonDecode(pinnedMessagesJson).cast<String>();
-    return pinnedMessages;
+    return data_storage.getPinnedMessagesSync(prefs);
   }
 
-  set pinnedMessages(List<String> pinnedMessages) {
-    prefs
-        .setString("pinnedMessages", jsonEncode(pinnedMessages))
-        .then((_) => notifyListeners());
+  Future<void> setPinnedMessages(List<String> pinnedMessages) async {
+    await prefs.setString("pinnedMessages", jsonEncode(pinnedMessages));
+    notifyListeners();
   }
 
   Future<void> pinMessage(String messageId) async {
-    await data_storage.pinMessage(messageId);
-    notifyListeners();
+    final pinnedMessages = this.pinnedMessages;
+
+    if (!pinnedMessages.contains(messageId)) {
+      pinnedMessages.add(messageId);
+    }
+
+    await setPinnedMessages(pinnedMessages);
   }
 
   Future<void> unpinMessage(String messageId) async {
-    await data_storage.unpinMessage(messageId);
-    notifyListeners();
+    final pinnedMessages = this.pinnedMessages;
+
+    if (pinnedMessages.contains(messageId)) {
+      pinnedMessages.remove(messageId);
+    }
+
+    await setPinnedMessages(pinnedMessages);
+  }
+
+  bool isPinned(String messageId) {
+    return pinnedMessages.contains(messageId);
   }
 }
