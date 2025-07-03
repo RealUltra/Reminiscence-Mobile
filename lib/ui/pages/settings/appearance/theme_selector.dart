@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
-import 'package:reminiscence/ui/providers/theme_mode_provider.dart';
+import 'package:reminiscence/ui/theme/theme_mode_provider.dart';
 
 class ThemeSelector extends StatefulWidget {
   const ThemeSelector({super.key});

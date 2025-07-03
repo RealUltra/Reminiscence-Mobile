@@ -143,7 +143,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       return p.join(widget.data.mediaDir.path, "${widget.attachment.id}");
     } else {
       return p.join(
-        widget.data.mediaDir.path,
+        widget.data.tempDir.path,
         "${widget.attachment.id}_decrypted",
       );
     }
@@ -171,7 +171,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     );
 
     final decryptedPath = p.join(
-      widget.data.mediaDir.path,
+      widget.data.tempDir.path,
       "${widget.attachment.id}_decrypted",
     );
 

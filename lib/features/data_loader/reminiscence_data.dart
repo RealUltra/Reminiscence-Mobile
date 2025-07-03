@@ -1,23 +1,28 @@
 import 'dart:io';
 import 'dart:ui';
-
 import 'package:cryptography/cryptography.dart';
+
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
 
 class ReminiscenceData {
+  final String remFilePath;
   final String dbPath;
   final String? password;
   final List<int> nonce;
   late final SecretKey? secretKey;
   final Directory mediaDir;
+  final Directory tempDir;
+
   AppDatabase? _db;
 
   ReminiscenceData({
+    required this.remFilePath,
     required this.dbPath,
     required this.password,
     required this.nonce,
     required this.mediaDir,
+    required this.tempDir,
   }) {
     if (password == null) {
       secretKey = null;
@@ -31,10 +36,12 @@ class ReminiscenceData {
 
   static ReminiscenceData fromMap(Map<String, dynamic> data) {
     return ReminiscenceData(
+      remFilePath: data["remFilePath"],
       dbPath: data["dbPath"],
       password: data["password"],
       nonce: data["nonce"],
       mediaDir: Directory(data["mediaDir"]),
+      tempDir: Directory(data["tempDir"]),
     );
   }
 
@@ -59,10 +66,12 @@ class ReminiscenceData {
 
   Map<String, dynamic> get map {
     return {
+      "remFilePath": remFilePath,
       "dbPath": dbPath,
       "password": password,
       "nonce": nonce,
       "mediaDir": mediaDir.path,
+      "tempDir": tempDir.path,
     };
   }
 }

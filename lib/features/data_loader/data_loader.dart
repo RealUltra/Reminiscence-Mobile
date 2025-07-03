@@ -109,9 +109,11 @@ Future<ReminiscenceData?> loadRemFile({
   });
 
   return ReminiscenceData(
+    remFilePath: filePath,
     dbPath: dbPath,
     password: password,
     nonce: nonce,
     mediaDir: mediaDir,
+    tempDir: tempDir,
   );
 }

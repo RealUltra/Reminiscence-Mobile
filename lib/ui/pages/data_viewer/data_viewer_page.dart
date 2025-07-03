@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/data_viewer/navigation_bar.dart';
@@ -103,7 +104,7 @@ class _DataViewerPageState extends State<DataViewerPage> {
     );
   }
 
-  void goBack(BuildContext context, bool didPop) {
+  Future<void> goBack(BuildContext context, bool didPop) async {
     if (didPop) {
       return;
     }
@@ -119,6 +120,12 @@ class _DataViewerPageState extends State<DataViewerPage> {
     // Go back to the data loader
     final sessionData = Provider.of<SessionData>(context, listen: false);
     final data = sessionData.data!;
+
+    final mustPop = await showConfirmExitDialog(context);
+
+    if (!mustPop || !context.mounted) {
+      return;
+    }
 
     data.closeDatabase();
 
@@ -147,5 +154,31 @@ class _DataViewerPageState extends State<DataViewerPage> {
     }
 
     setState(() {});
+  }
+
+  Future<bool> showConfirmExitDialog(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Exit?'),
+              content: Text('Are you sure you want to exit?'),
+
+              actions: <Widget>[
+                TextButton(
+                  child: Text('No'),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+
+                TextButton(
+                  child: Text('Yes'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 }

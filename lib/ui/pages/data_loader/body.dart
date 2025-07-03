@@ -263,21 +263,23 @@ class BodyState extends State<Body> {
 
     if (!context.mounted) return;
 
-    // Load the rem file.
-    //await loadRemData(context, remFilePath, password: password);
-
     await showDialog(
       context: context,
+
       builder:
           (context) => AlertDialog(
             title: Text('Disclaimer'),
+
             content: Column(
               mainAxisSize: MainAxisSize.min,
+
               children: [
                 BulletPoint(
                   "A .rem file has been created using your instagram data.",
                 ),
+
                 const SizedBox(height: 8),
+
                 BulletPoint(
                   "Please delete the zip file containing your instagram data as it poses security risks.",
                   textStyle: TextStyle(
@@ -286,11 +288,14 @@ class BodyState extends State<Body> {
                 ),
               ],
             ),
+
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
+
                 child: Text(
                   'OK',
+
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),

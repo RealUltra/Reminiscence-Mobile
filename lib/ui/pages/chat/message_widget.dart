@@ -409,6 +409,12 @@ class _MessageWidgetState extends State<MessageWidget> {
 
       case "markAsSystem":
         {
+          final confirmed = await showConfirmSystemMessageDialog(context);
+
+          if (!confirmed) {
+            return;
+          }
+
           // Mark as system message here
           await systemMessagesProvider.markAsSystem(
             widget.message.noEmojisContent,
@@ -425,6 +431,37 @@ class _MessageWidgetState extends State<MessageWidget> {
           }
         }
     }
+  }
+
+  Future<bool> showConfirmSystemMessageDialog(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Mark as System Message?'),
+
+              content: Text(
+                'Are you sure you want to mark this message as a system message?\n\n'
+                'All such messages will no longer appear in any chat.\n\n'
+                'This can be reverted from settings.',
+              ),
+
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancel'),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+
+                TextButton(
+                  child: Text('Confirm'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 
   bool _shouldShowDivider() {

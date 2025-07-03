@@ -12,7 +12,7 @@ import 'package:reminiscence/ui/pages/search/search_page.dart';
 import 'package:reminiscence/ui/providers/pinned_messages_provider.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 import 'package:reminiscence/ui/providers/system_messages_provider.dart';
-import 'package:reminiscence/ui/providers/theme_mode_provider.dart';
+import 'package:reminiscence/ui/theme/theme_mode_provider.dart';
 import 'package:reminiscence/ui/theme/app_theme.dart';
 import 'package:reminiscence/ui/pages/data_loader/data_loader_page.dart';
 import 'package:reminiscence/ui/pages/loading_screen/loading_screen.dart';
