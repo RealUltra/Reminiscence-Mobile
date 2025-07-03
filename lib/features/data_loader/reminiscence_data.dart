@@ -6,7 +6,7 @@ import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
 
 class ReminiscenceData {
-  final String remFilePath;
+  final String filePath;
   final String dbPath;
   final String? password;
   final List<int> nonce;
@@ -17,7 +17,7 @@ class ReminiscenceData {
   AppDatabase? _db;
 
   ReminiscenceData({
-    required this.remFilePath,
+    required this.filePath,
     required this.dbPath,
     required this.password,
     required this.nonce,
@@ -36,7 +36,7 @@ class ReminiscenceData {
 
   static ReminiscenceData fromMap(Map<String, dynamic> data) {
     return ReminiscenceData(
-      remFilePath: data["remFilePath"],
+      filePath: data["filePath"],
       dbPath: data["dbPath"],
       password: data["password"],
       nonce: data["nonce"],
@@ -66,7 +66,7 @@ class ReminiscenceData {
 
   Map<String, dynamic> get map {
     return {
-      "remFilePath": remFilePath,
+      "filePath": filePath,
       "dbPath": dbPath,
       "password": password,
       "nonce": nonce,

@@ -109,7 +109,7 @@ Future<ReminiscenceData?> loadRemFile({
   });
 
   return ReminiscenceData(
-    remFilePath: filePath,
+    filePath: filePath,
     dbPath: dbPath,
     password: password,
     nonce: nonce,
