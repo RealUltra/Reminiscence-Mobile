@@ -4,7 +4,7 @@ Version: 1.0
 Page Size: 4096 bytes
 Author: Rameez Baig
 Date: 4th July 2025
-Byte Order: Big-endian
+Byte Order: Little-endian
 Magic Number: 0x52454D30 (REM0)
 
 
