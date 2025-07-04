@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:reminiscence/features/reminiscence_file_io/components/page_type.dart';
+import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
 
 class PageHeader {
   PageType pageType;
@@ -16,7 +17,15 @@ class PageHeader {
   });
 
   factory PageHeader.fromBytes(Uint8List bytes) {
-    final data = ByteData.sublistView(bytes);
+    final sizedBytes = Uint8List(pageHeaderSize);
+
+    if (bytes.length <= pageHeaderSize) {
+      sizedBytes.setAll(0, bytes);
+    } else {
+      sizedBytes.setAll(0, bytes.sublist(0, pageHeaderSize));
+    }
+
+    final data = ByteData.sublistView(sizedBytes);
 
     final pageTypeValue = data.getUint8(0);
     // final flags = data.getUint8(1);
@@ -33,7 +42,7 @@ class PageHeader {
   }
 
   Uint8List toBytes() {
-    final data = ByteData(12);
+    final data = ByteData(pageHeaderSize);
 
     data.setUint8(0, pageTypeToValue(pageType)); // Page Type
     data.setUint8(1, 0); // Page Flags
