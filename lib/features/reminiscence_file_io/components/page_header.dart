@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:reminiscence/features/reminiscence_file_io/page_type.dart';
+import 'package:reminiscence/features/reminiscence_file_io/components/page_type.dart';
 
 class PageHeader {
   PageType pageType;

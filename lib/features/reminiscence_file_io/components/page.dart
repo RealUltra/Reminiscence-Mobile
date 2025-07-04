@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:reminiscence/features/reminiscence_file_io/page_header.dart';
+import 'package:reminiscence/features/reminiscence_file_io/components/page_header.dart';
 import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
 
 class Page {

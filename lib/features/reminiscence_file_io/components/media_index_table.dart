@@ -1,0 +1,27 @@
+import 'dart:typed_data';
+
+import 'package:reminiscence/features/reminiscence_file_io/components/media_index_entry.dart';
+import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
+
+class MediaIndexTable {
+  List<MediaIndexEntry> entries;
+
+  MediaIndexTable(this.entries);
+
+  factory MediaIndexTable.fromBytes(Uint8List bytes) {
+    final entries = <MediaIndexEntry>[];
+
+    for (
+      int offset = 0;
+      (offset + mediaIndexEntrySize) <= bytes.length;
+      offset += 8
+    ) {
+      final entryBytes = bytes.sublist(offset, offset + mediaIndexEntrySize);
+      final entry = MediaIndexEntry.fromBytes(entryBytes);
+
+      entries.add(entry);
+    }
+
+    return MediaIndexTable(entries);
+  }
+}
