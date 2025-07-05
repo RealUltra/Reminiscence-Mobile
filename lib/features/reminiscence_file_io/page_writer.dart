@@ -24,7 +24,7 @@ class PageWriter {
     /*
     Save the footer in memory.
     */
-    _footer = _footer;
+    _footer = footer;
   }
 
   Future<void> writeMagicNumber() async {
@@ -65,11 +65,11 @@ class PageWriter {
     page.header.payloadSize = payloadSize;
 
     // If there is any data remaining after the page is filled, that will be written to the next page.
-    page.header.nextPageId = 0;
-
     if (page.payload.length > maxPayloadSize) {
       final nextPageId = await getFreePage();
       page.header.nextPageId = nextPageId;
+    } else {
+      page.header.nextPageId = 0;
     }
 
     // Pad the rest of the page with 0s if the payload is less than `maxPayloadSize`.
@@ -117,17 +117,15 @@ class PageWriter {
     final cluster = await reader.getCluster(pageId);
     final lastPageId = cluster.last;
 
-    // Calculate the remaining capacity of this page.
+    // Get the offset at which you must start writing.
     final pageHeader = await reader.readPageHeader(lastPageId);
     final offset = pageHeader.payloadSize;
+
+    // Calculate the remaining capacity of this page.
     final pageCapacity = maxPayloadSize - offset;
 
     // If the page is not at maximum capacity, write to it.
     if (pageCapacity > 0) {
-      // Set the position to beyond the page's header & current payload.
-      final position = getPagePosition(lastPageId);
-      await file.setPosition(position + pageHeaderSize + offset);
-
       // The sized payload ensures that the payload is not larger than the page capacity.
       final sizedPayload = payload.sublist(
         0,
@@ -136,6 +134,10 @@ class PageWriter {
 
       // This is the remaining payload after the sized payload is written to this page.
       payload = payload.sublist(sizedPayload.length);
+
+      // Set the position to beyond the page's header & current payload.
+      final position = getPagePosition(lastPageId);
+      await file.setPosition(position + pageHeaderSize + offset);
 
       // Write the sized payload to the page.
       await file.writeFrom(sizedPayload);
@@ -150,9 +152,11 @@ class PageWriter {
       return pageHeader.pageId;
     }
 
-    // If the payload is not empty, write the next page's id to the page header and then write the next page.
-    pageHeader.nextPageId = await getFreePage();
+    // If the payload is not empty, write the next page's id to the page header.
+    pageHeader.nextPageId = await getFreePage(pageType);
     await writePageHeader(pageHeader);
+
+    // Write the next page and return whatever it returns, because that will be where it stopped writing.
     return await writePage(
       Page(
         header: PageHeader(pageType: pageType, pageId: pageHeader.nextPageId),
@@ -265,7 +269,9 @@ class PageWriter {
     }
 
     // Remove any existing data from the root page as well by emptying it.
-    await writePage(Page(header: pageHeader));
+    await writePage(
+      Page(header: PageHeader(pageType: pageType, pageId: rootPageId)),
+    );
 
     // Get chunks from the stream and append them to the root page.
     int pageId = rootPageId;
@@ -493,19 +499,6 @@ class PageWriter {
     final pageId = ++_footer.pageCount;
     await writePageHeader(PageHeader(pageType: PageType.free, pageId: pageId));
     await writeFooter(_footer);
-    return pageId;
-  }
-
-  Future<int> ensurePageInitialized(PageType pageType, int pageId) async {
-    /*
-    Returns a non-zero page id. 
-    
-    If the page id passed in as a parameter is not 0, it is returned.
-    Otherwise, a free page's id is returned.
-    */
-    if (pageId == 0) {
-      return await getFreePage(pageType);
-    }
     return pageId;
   }
 

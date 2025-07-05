@@ -17,6 +17,8 @@ class ReminiscenceFile {
 
   ReminiscenceFile();
 
+  PageReader get reader => _reader;
+
   void initializeReaderWriter() {
     /*
     Initialize the page reader and page writer after opening or creating the file.
@@ -101,7 +103,7 @@ class ReminiscenceFile {
     */
 
     // Get the page to start writing the media to.
-    final mediaRootPageId = await _writer.getFreePage();
+    final mediaRootPageId = await _writer.getFreePage(PageType.media);
 
     // Prepare the media index entry with the media root page id and the attachment id.
     final mediaIndexEntry = MediaIndexEntry(
@@ -126,9 +128,6 @@ class ReminiscenceFile {
 
     // if the entry was found, delete it.
     if (mediaIndexEntry.mediaRootPageId != 0) {
-      // Remove the media file's content by adding it to the free list.
-      await _writer.addToFreeList(mediaIndexEntry.mediaRootPageId);
-
       // Remove the media file's index entry from the media index table by making its media pointer point nowhere (set mediaRootPageId to 0).
       mediaIndexEntry.mediaRootPageId = 0;
       await _writer.addToMediaIndex(mediaIndexEntry);

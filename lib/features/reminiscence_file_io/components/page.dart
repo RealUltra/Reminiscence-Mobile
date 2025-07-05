@@ -8,7 +8,7 @@ class Page {
   late final Uint8List payload;
 
   Page({required this.header, Uint8List? payload}) {
-    this.payload = payload ?? Uint8List(maxPayloadSize);
+    this.payload = payload ?? Uint8List(0);
   }
 
   factory Page.fromBytes(Uint8List bytes) {

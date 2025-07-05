@@ -112,12 +112,8 @@ class PageReader {
     // Calculate the offset from the start of this page, or the "relative" offset.
     final relativeOffset = offset % maxPayloadSize;
 
-    // Read the header of the page to
-    final pageHeader = await readPageHeader(targetPageId);
-
-    // Calculate how many bytes we can possibly read, based on the size of the payload and the position we are reading from.
-    // Constrain the read limit to a minimum of 0 bytes.
-    final readLimit = max(pageHeader.payloadSize - relativeOffset, 0);
+    // Calculate how many bytes we can possibly read, based on the the position we are reading from and the capacity of any page.
+    final readLimit = maxPayloadSize - relativeOffset;
 
     // Move beyond the page's header and the offset.
     final position = getPagePosition(targetPageId);
@@ -162,19 +158,20 @@ class PageReader {
     Reads a particular media index entry based on its attachment id.
     */
 
-    // Get the starting page of the media index table.
-    final rootId = _footer.mediaIndexRootPageId;
-
     // If the media index table is empty, return a blank media index entry.
-    if (rootId == 0) {
+    if (_footer.mediaIndexRootPageId == 0) {
       return MediaIndexEntry.fromBytes(Uint8List(mediaIndexEntrySize));
     }
 
     // Calculate the entry's position within the media index table
     final offset = attachmentId * mediaIndexEntrySize;
 
-    // Read at that position.
-    final bytes = await readAtOffset(rootId, offset, mediaIndexEntrySize);
+    // Read at that position from the start of the media index.
+    final bytes = await readAtOffset(
+      _footer.mediaIndexRootPageId,
+      offset,
+      mediaIndexEntrySize,
+    );
 
     // Return the media index entry that was read.
     return MediaIndexEntry.fromBytes(bytes);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:archive/archive.dart';
+import 'package:characters/characters.dart';
 import 'package:emoji_regex/emoji_regex.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:reminiscence/features/data_loader/data_archive_loader/models/chat.dart';
 
