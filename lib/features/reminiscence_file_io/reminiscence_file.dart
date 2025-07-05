@@ -1,49 +1,78 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:reminiscence/features/reminiscence_file_io/components/footer.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/media_index_entry.dart';
-import 'package:reminiscence/features/reminiscence_file_io/components/media_index_table.dart';
-import 'package:reminiscence/features/reminiscence_file_io/components/page.dart';
-import 'package:reminiscence/features/reminiscence_file_io/components/page_header.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/page_type.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/metadata.dart';
-
-const magicNumber = "REM0";
-const pageSize = 4096;
-const pageHeaderSize = 12;
-final mediaIndexEntrySize = 8;
-
-final maxPayloadSize = pageSize - pageHeaderSize;
+import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+import 'package:reminiscence/features/reminiscence_file_io/page_reader.dart';
+import 'package:reminiscence/features/reminiscence_file_io/page_writer.dart';
 
 class ReminiscenceFile {
   late RandomAccessFile _file;
-  late Footer footer;
+
+  late PageReader _reader;
+  late PageWriter _writer;
+  late Footer _footer;
 
   ReminiscenceFile();
 
+  void initializeReaderWriter() {
+    /*
+    Initialize the page reader and page writer after opening or creating the file.
+    */
+    _reader = PageReader(_file);
+    _writer = PageWriter(_file, reader: _reader);
+  }
+
+  Future<void> initializeFooter() async {
+    /*
+    Save the footer in memory and provider the reader & writer the same instance of the footer so that modifications are shared.
+    */
+    _footer = await _reader.readFooter();
+    _reader.initializeFooter(_footer);
+    _writer.initializeFooter(_footer);
+  }
+
   Future<void> open(String path) async {
+    /*
+    Open an existing file in append mode.
+    */
+
+    // Open the file
     _file = await File(path).open(mode: FileMode.append);
 
+    // Prepare the page reader and page writer.
+    initializeReaderWriter();
+
+    // Make sure the magic number matches the expected magic number for our files.
     if (!(await validateMagicNumber())) {
       throw Exception("Invalid rem file. Magic number not recognized.");
     }
 
-    footer = await readFooter();
+    // Load the footer into memory.
+    await initializeFooter();
   }
 
   Future<void> create(String path) async {
+    /*
+    Create a new Reminiscence file or overwrite an existing one.
+    */
+
+    // Open the file in write mode
     _file = await File(path).open(mode: FileMode.write);
 
-    await writeMagicNumber();
+    // Prepare the page reader and page writer.
+    initializeReaderWriter();
 
-    // Metadata page
-    await writeMetadata(Metadata(footerPageId: 2));
+    // Write our magic number to the file.
+    await _writer.writeMagicNumber();
 
-    // Footer
-    await writeFooter(
+    // Write the metadata page.
+    await _writer.writeMetadata(Metadata(footerPageId: metadataPageId));
+
+    // Writer the footer page.
+    await _writer.writeFooter(
       Footer(
         dbRootPageId: 0,
         mediaIndexRootPageId: 0,
@@ -52,487 +81,88 @@ class ReminiscenceFile {
       ),
     );
 
-    footer = await readFooter();
+    // Load the footer into memory.
+    await initializeFooter();
   }
 
+  // `close()` simply closes the file.
   Future<void> close() => _file.close();
 
   Future<bool> validateMagicNumber() async {
-    await _file.setPosition(0);
-    final magic = String.fromCharCodes(await _file.read(4));
-    return magic == magicNumber;
-  }
-
-  Future<void> writeMagicNumber() async {
-    await _file.setPosition(0);
-    await _file.writeFrom(Uint8List.fromList(utf8.encode(magicNumber)));
-  }
-
-  Future<void> writePageHeader(PageHeader pageHeader) async {
-    final pageId = pageHeader.pageId;
-    final position = _getPagePosition(pageId);
-
-    await _file.setPosition(position);
-    await _file.writeFrom(pageHeader.toBytes());
-  }
-
-  Future<void> writePage(PageHeader pageHeader, Uint8List payload) async {
-    final pageId = pageHeader.pageId;
-    final position = _getPagePosition(pageId);
-
-    await _file.setPosition(position);
-
-    final payloadSize = min(maxPayloadSize, payload.length);
-    pageHeader.payloadSize = payloadSize;
-
-    final sizedPayload = Uint8List(maxPayloadSize);
-    sizedPayload.setAll(0, payload.sublist(0, payloadSize));
-
-    await _file.writeFrom(pageHeader.toBytes());
-    await _file.writeFrom(sizedPayload);
-
-    if (payload.length > maxPayloadSize) {
-      final nextPageId = await getFreePage();
-
-      pageHeader.nextPageId = nextPageId;
-      await writePageHeader(pageHeader);
-
-      await writePage(
-        PageHeader(pageType: pageHeader.pageType, pageId: nextPageId),
-        payload.sublist(maxPayloadSize),
-      );
-    }
-  }
-
-  Future<void> appendToPage(
-    PageType pageType,
-    int pageId,
-    Uint8List payload,
-  ) async {
-    final chainIds = await getPageChainIds(pageId);
-
-    if (chainIds.isEmpty) {
-      await writePage(PageHeader(pageType: pageType, pageId: pageId), payload);
-    }
-
-    final lastPageId = chainIds.last;
-    final pageHeader = await readPageHeader(lastPageId);
-
-    final offset = pageHeader.payloadSize;
-    final position = _getPagePosition(lastPageId);
-
-    final pageCapacity = maxPayloadSize - offset;
-
-    if (pageCapacity > 0) {
-      await _file.setPosition(position + pageHeaderSize + offset);
-
-      final sizedPayload = payload.sublist(
-        0,
-        min(pageCapacity, payload.length),
-      );
-      payload = payload.sublist(sizedPayload.length);
-
-      await _file.writeFrom(sizedPayload);
-
-      pageHeader.payloadSize += sizedPayload.length;
-    }
-
-    if (payload.isEmpty) {
-      await writePageHeader(pageHeader);
-      return;
-    }
-
-    pageHeader.nextPageId = await getFreePage();
-    await writePageHeader(pageHeader);
-
-    await writePage(
-      PageHeader(pageType: pageType, pageId: pageHeader.nextPageId),
-      payload,
-    );
-  }
-
-  Future<void> writeAtOffset(
-    PageType pageType,
-    int rootPageId,
-    int offset,
-    Uint8List payload,
-  ) async {
-    final chainIds = await getPageChainIds(rootPageId);
-    final initialChainLength = chainIds.length;
-
-    final targetPageIndex = (offset / maxPayloadSize).toInt();
-
-    while (chainIds.length <= targetPageIndex) {
-      final pageId = await addToChain(pageType, chainIds.last);
-      chainIds.add(pageId);
-    }
-
-    for (int i = initialChainLength - 1; i < chainIds.length - 1; i++) {
-      final pageId = chainIds[i];
-      final header = await readPageHeader(pageId);
-      header.payloadSize = maxPayloadSize;
-      await writePageHeader(header);
-    }
-
-    final targetPageId = chainIds[targetPageIndex];
-    final pageHeader = await readPageHeader(targetPageId);
-
-    final pageCapacity = maxPayloadSize - pageHeader.payloadSize;
-
-    final sizedPayload = Uint8List(min(pageCapacity, payload.length));
-    sizedPayload.setAll(0, payload.sublist(0, sizedPayload.length));
-    final remainingPayload = payload.sublist(sizedPayload.length);
-
-    if (sizedPayload.isNotEmpty) {
-      final position = _getPagePosition(targetPageId);
-      final relativeOffset = offset % maxPayloadSize;
-
-      await _file.setPosition(position + pageHeaderSize + relativeOffset);
-      await _file.writeFrom(sizedPayload);
-
-      pageHeader.payloadSize += sizedPayload.length;
-      await writePageHeader(pageHeader);
-    }
-
-    if (remainingPayload.isNotEmpty) {
-      await appendToPage(pageType, targetPageId, remainingPayload);
-    }
-  }
-
-  Future<void> writePayload(
-    PageType pageType,
-    int rootPageId,
-    Stream<List<int>> stream,
-  ) async {
-    final pageHeader = await readPageHeader(rootPageId);
-
-    if (pageHeader.nextPageId != 0) {
-      await addToFreeList(pageHeader.nextPageId);
-    }
-
-    await for (final bytes in stream) {
-      await appendToPage(pageType, rootPageId, Uint8List.fromList(bytes));
-    }
-  }
-
-  Future<void> writeMetadata(Metadata metadata) async {
-    await writePage(
-      PageHeader(pageType: PageType.metadata, pageId: 1),
-      metadata.toBytes(),
-    );
-  }
-
-  Future<void> writeFooter(Footer footer) async {
-    await writePage(
-      PageHeader(pageType: PageType.footer, pageId: 2),
-      footer.toBytes(),
-    );
-  }
-
-  Future<void> writeDatabase(File dbFile) async {
-    if (footer.dbRootPageId == 0) {
-      footer.dbRootPageId = await getFreePage();
-      await writeFooter(footer);
-    }
-
-    final rootId = footer.dbRootPageId;
-    await writePayload(PageType.database, rootId, dbFile.openRead());
-  }
-
-  Future<void> addToMediaIndex(MediaIndexEntry entry) async {
-    if (footer.mediaIndexRootPageId == 0) {
-      footer.mediaIndexRootPageId = await getFreePage();
-      await writeFooter(footer);
-    }
-
-    final mediaIndexEntry = await readMediaIndexEntry(entry.attachmentId);
-
-    if (mediaIndexEntry.mediaRootPageId != 0) {
-      await addToFreeList(mediaIndexEntry.mediaRootPageId);
-    }
-
-    final rootId = footer.mediaIndexRootPageId;
-    final offset = entry.attachmentId * mediaIndexEntrySize;
-
-    await writeAtOffset(PageType.mediaIndex, rootId, offset, entry.toBytes());
+    /*
+    Check if the magic number of the file is correct (what is expected).
+    */
+    return (await _reader.readMagicNumber()) == magicNumber;
   }
 
   Future<void> addMediaFile(int attachmentId, File file) async {
-    final mediaRootPageId = await getFreePage();
+    /*
+    Add a media file to the rem file and to the media index.
+    */
 
+    // Get the page to start writing the media to.
+    final mediaRootPageId = await _writer.getFreePage();
+
+    // Prepare the media index entry with the media root page id and the attachment id.
     final mediaIndexEntry = MediaIndexEntry(
       attachmentId: attachmentId,
       mediaRootPageId: mediaRootPageId,
     );
 
-    await addToMediaIndex(mediaIndexEntry);
+    // Add the entry to the media index.
+    await _writer.addToMediaIndex(mediaIndexEntry);
 
-    await writePayload(PageType.media, mediaRootPageId, file.openRead());
-  }
-
-  Future<void> addToFreeList(int rootPageId) async {
-    final chainIds = await getPageChainIds(rootPageId);
-
-    for (int i = 0; i < chainIds.length; i++) {
-      final pageId = chainIds[i];
-      final nextPageId = (i == chainIds.length - 1) ? 0 : chainIds[i + 1];
-
-      await writePageHeader(
-        PageHeader(
-          pageType: PageType.free,
-          pageId: pageId,
-          nextPageId: nextPageId,
-        ),
-      );
-    }
-
-    final freeList = await getPageChainIds(footer.freeListRootPageId);
-
-    await writePageHeader(
-      PageHeader(
-        pageType: PageType.free,
-        pageId: freeList.last,
-        nextPageId: rootPageId,
-      ),
-    );
-
-    await removeTrailingFreePages();
-  }
-
-  Future<void> removeTrailingFreePages() async {
-    final freeList = await getPageChainIds(footer.freeListRootPageId);
-
-    final lastPageId = footer.pageCount;
-
-    if (freeList.length > 1 && freeList.contains(lastPageId)) {
-      final index = freeList.indexOf(lastPageId);
-      print("[Garbage Collector] Removing Page $lastPageId");
-
-      if (index == 0) {
-        footer.freeListRootPageId = freeList[1];
-        await writeFooter(footer);
-      } else {
-        final pageHeader = await readPageHeader(freeList[index - 1]);
-        pageHeader.nextPageId = 0;
-        await writePageHeader(pageHeader);
-      }
-
-      final position = _getPagePosition(lastPageId);
-      await _file.truncate(position);
-
-      footer.pageCount--;
-      await writeFooter(footer);
-
-      await removeTrailingFreePages();
-    }
+    // Write the data to this media file's cluster.
+    await _writer.writeData(PageType.media, mediaRootPageId, file.openRead());
   }
 
   Future<void> removeMediaFile(int attachmentId) async {
-    final mediaIndexEntry = await readMediaIndexEntry(attachmentId);
+    /*
+    Deletes a media file from the rem file and its entry from the media index.
+    */
 
+    // Get the media index entry for this attachment.
+    final mediaIndexEntry = await _reader.readMediaIndexEntry(attachmentId);
+
+    // if the entry was found, delete it.
     if (mediaIndexEntry.mediaRootPageId != 0) {
-      await addToFreeList(mediaIndexEntry.mediaRootPageId);
-    }
+      // Remove the media file's content by adding it to the free list.
+      await _writer.addToFreeList(mediaIndexEntry.mediaRootPageId);
 
-    final rootId = footer.mediaIndexRootPageId;
-    final offset = attachmentId * mediaIndexEntrySize;
-
-    await writeAtOffset(
-      PageType.mediaIndex,
-      rootId,
-      offset,
-      Uint8List(mediaIndexEntrySize),
-    );
-  }
-
-  Future<PageHeader> readPageHeader(int pageId) async {
-    final position = _getPagePosition(pageId);
-    await _file.setPosition(position);
-    return PageHeader.fromBytes(await _file.read(pageHeaderSize));
-  }
-
-  Future<Page> readPage(int pageId) async {
-    final position = _getPagePosition(pageId);
-    await _file.setPosition(position);
-    return Page.fromBytes(await _file.read(pageSize));
-  }
-
-  Stream<Uint8List> readPayload(int rootPageId) async* {
-    int pageId = rootPageId;
-
-    while (pageId != 0) {
-      final page = await readPage(pageId);
-      yield page.payload.sublist(0, page.header.payloadSize);
-      pageId = page.header.nextPageId;
+      // Remove the media file's index entry from the media index table by making its media pointer point nowhere (set mediaRootPageId to 0).
+      mediaIndexEntry.mediaRootPageId = 0;
+      await _writer.addToMediaIndex(mediaIndexEntry);
     }
   }
 
-  Future<Uint8List> readAtOffset(int rootPageId, int offset, int length) async {
-    final chainIds = await getPageChainIds(rootPageId);
-
-    final targetPageIndex = (offset / maxPayloadSize).toInt();
-
-    if (chainIds.length <= targetPageIndex) {
-      return Uint8List(length);
-    }
-
-    final targetPageId = chainIds[targetPageIndex];
-    final pageHeader = await readPageHeader(targetPageId);
-
-    final sizedPayload = Uint8List(length);
-
-    final relativeOffset = offset % maxPayloadSize;
-    final pageCapacity = max(pageHeader.payloadSize - relativeOffset, 0);
-
-    final position = _getPagePosition(targetPageId);
-    await _file.setPosition(position + pageHeaderSize + relativeOffset);
-
-    final bytes = await _file.read(min(pageCapacity, length));
-    sizedPayload.setAll(0, bytes);
-
-    if (pageCapacity < length && chainIds.length > (targetPageIndex + 1)) {
-      final nextPageId = chainIds[targetPageIndex + 1];
-      final bytes = await readAtOffset(nextPageId, 0, length - pageCapacity);
-      sizedPayload.setAll(pageCapacity, bytes);
-    }
-
-    return sizedPayload;
+  Future<void> readDatabaseToFile(File outputFile) async {
+    /*
+    Reads the database file within the rem file and writes it to `outputFile`.
+    */
+    final rootId = _footer.dbRootPageId;
+    await _readToFile(rootId, outputFile);
   }
 
-  Future<void> readPayloadToFile(int rootPageId, File outputFile) async {
+  Future<void> readMediaToFile(int attachmentId, File outputFile) async {
+    /*
+    Reads the media file related to `attachmentId` stored within the rem file and writes it to `outputFile`.
+    */
+    final mediaIndexEntry = await _reader.readMediaIndexEntry(attachmentId);
+    await _readToFile(mediaIndexEntry.mediaRootPageId, outputFile);
+  }
+
+  Future<void> _readToFile(int rootPageId, File outputFile) async {
+    /*
+    Read the data within a cluster to a file.
+    */
+
     final sink = outputFile.openWrite();
 
-    await for (final buffer in readPayload(rootPageId)) {
+    await for (final buffer in _reader.readData(rootPageId)) {
       sink.add(buffer);
     }
 
     await sink.flush();
     await sink.close();
-  }
-
-  Future<Metadata> readMetadata() async {
-    final page = await readPage(1);
-    return Metadata.fromBytes(page.payload);
-  }
-
-  Future<Footer> readFooter() async {
-    final page = await readPage(2);
-    return Footer.fromBytes(page.payload);
-  }
-
-  Future<void> readDatabaseToFile(File outputFile) async {
-    final rootId = footer.dbRootPageId;
-    await readPayloadToFile(rootId, outputFile);
-  }
-
-  Future<MediaIndexTable> readMediaIndex() async {
-    final rootId = footer.mediaIndexRootPageId;
-
-    List<int> payload = [];
-
-    await for (final buffer in readPayload(rootId)) {
-      payload.addAll(buffer);
-    }
-
-    return MediaIndexTable.fromBytes(Uint8List.fromList(payload));
-  }
-
-  Future<MediaIndexEntry> readMediaIndexEntry(int attachmentId) async {
-    final rootId = footer.mediaIndexRootPageId;
-
-    if (rootId == 0) {
-      return MediaIndexEntry.fromBytes(Uint8List(mediaIndexEntrySize));
-    }
-
-    final offset = attachmentId * mediaIndexEntrySize;
-
-    final bytes = await readAtOffset(rootId, offset, mediaIndexEntrySize);
-
-    return MediaIndexEntry.fromBytes(bytes);
-  }
-
-  Future<void> readMediaToFile(int attachmentId, File outputFile) async {
-    final mediaIndexEntry = await readMediaIndexEntry(attachmentId);
-    await readPayloadToFile(mediaIndexEntry.mediaRootPageId, outputFile);
-  }
-
-  Future<int> addToChain(PageType pageType, int rootPageId) async {
-    final newPageId = await getFreePage(pageType);
-
-    final chainIds = await getPageChainIds(rootPageId);
-
-    if (chainIds.isNotEmpty) {
-      final lastPageId = chainIds.last;
-
-      final lastPageHeader = await readPageHeader(lastPageId);
-      lastPageHeader.nextPageId = newPageId;
-      await writePageHeader(lastPageHeader);
-
-      await writePageHeader(
-        PageHeader(pageType: lastPageHeader.pageType, pageId: newPageId),
-      );
-    }
-
-    return newPageId;
-  }
-
-  Future<int> getFreePage([PageType pageType = PageType.free]) async {
-    if (footer.freeListRootPageId == 0) {
-      footer.pageCount++;
-      footer.freeListRootPageId = footer.pageCount;
-
-      await writeFooter(footer);
-
-      await writePageHeader(
-        PageHeader(pageType: PageType.free, pageId: footer.freeListRootPageId),
-      );
-    }
-
-    final freePageId = footer.freeListRootPageId;
-    final freePageHeader = await readPageHeader(freePageId);
-
-    int nextFreePageId;
-
-    if (freePageHeader.nextPageId != 0) {
-      nextFreePageId = freePageHeader.nextPageId;
-    } else {
-      footer.pageCount++;
-      nextFreePageId = footer.pageCount;
-
-      await writeFooter(footer);
-
-      await writePageHeader(
-        PageHeader(pageType: PageType.free, pageId: nextFreePageId),
-      );
-    }
-
-    footer.freeListRootPageId = nextFreePageId;
-
-    await writeFooter(footer);
-
-    await writePage(
-      PageHeader(pageType: pageType, pageId: freePageId),
-      Uint8List(0),
-    );
-
-    return freePageId;
-  }
-
-  Future<List<int>> getPageChainIds(int rootPageId) async {
-    int pageId = rootPageId;
-
-    final chainIds = <int>[];
-
-    while (pageId != 0) {
-      chainIds.add(pageId);
-      final header = await readPageHeader(pageId);
-      pageId = header.nextPageId;
-    }
-
-    return chainIds;
-  }
-
-  int _getPagePosition(int pageId) {
-    return (pageId - 1) * pageSize + magicNumber.length;
   }
 }

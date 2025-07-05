@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
+import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
 
 class MediaIndexEntry {
-  final int attachmentId;
-  final int mediaRootPageId;
+  int attachmentId;
+  int mediaRootPageId;
 
   MediaIndexEntry({required this.attachmentId, required this.mediaRootPageId});
 

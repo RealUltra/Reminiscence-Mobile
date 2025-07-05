@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:reminiscence/features/reminiscence_file_io/components/media_index_entry.dart';
-import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
+import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
 
 class MediaIndexTable {
   List<MediaIndexEntry> entries;

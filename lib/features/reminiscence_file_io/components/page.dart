@@ -1,14 +1,14 @@
 import 'dart:typed_data';
 
 import 'package:reminiscence/features/reminiscence_file_io/components/page_header.dart';
-import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
+import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
 
 class Page {
   final PageHeader header;
   late final Uint8List payload;
 
   Page({required this.header, Uint8List? payload}) {
-    this.payload = payload ?? Uint8List(4084);
+    this.payload = payload ?? Uint8List(maxPayloadSize);
   }
 
   factory Page.fromBytes(Uint8List bytes) {

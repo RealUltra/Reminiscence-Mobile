@@ -10,6 +10,8 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+
 const int metadataVersion = 1;
 const int nonceSize = 16;
 const int encryptedNonceSize = 32;
@@ -67,7 +69,7 @@ class Metadata {
   }
 
   Uint8List toBytes() {
-    final data = ByteData(4084);
+    final data = ByteData(maxPayloadSize);
 
     data.setUint8(0, metadataVersion); // Metadata version
     data.setUint8(1, _getByteFlags()); // Page Flags

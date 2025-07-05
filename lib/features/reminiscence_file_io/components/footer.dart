@@ -9,6 +9,8 @@
 
 import 'dart:typed_data';
 
+import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+
 const int footerVersion = 1;
 
 class Footer {
@@ -47,7 +49,7 @@ class Footer {
   }
 
   Uint8List toBytes() {
-    final data = ByteData(30);
+    final data = ByteData(maxPayloadSize);
 
     data.setUint8(0, footerVersion); // Current footer version
 
