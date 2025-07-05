@@ -9,7 +9,7 @@ import 'package:reminiscence/features/reminiscence_file_io/components/metadata.d
 import 'package:reminiscence/features/reminiscence_file_io/components/page.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/page_header.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/page_type.dart';
-import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+import 'package:reminiscence/features/reminiscence_file_io/utils.dart';
 import 'package:reminiscence/features/reminiscence_file_io/page_reader.dart';
 
 class PageWriter {

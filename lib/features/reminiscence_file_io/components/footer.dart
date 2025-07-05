@@ -9,7 +9,7 @@
 
 import 'dart:typed_data';
 
-import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+import 'package:reminiscence/features/reminiscence_file_io/utils.dart';
 
 const int footerVersion = 1;
 

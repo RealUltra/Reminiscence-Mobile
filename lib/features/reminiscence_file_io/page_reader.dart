@@ -8,7 +8,7 @@ import 'package:reminiscence/features/reminiscence_file_io/components/media_inde
 import 'package:reminiscence/features/reminiscence_file_io/components/metadata.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/page.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/page_header.dart';
-import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+import 'package:reminiscence/features/reminiscence_file_io/utils.dart';
 
 class PageReader {
   final RandomAccessFile file;

@@ -4,7 +4,7 @@ import 'package:reminiscence/features/reminiscence_file_io/components/footer.dar
 import 'package:reminiscence/features/reminiscence_file_io/components/media_index_entry.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/page_type.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/metadata.dart';
-import 'package:reminiscence/features/reminiscence_file_io/components/utils.dart';
+import 'package:reminiscence/features/reminiscence_file_io/utils.dart';
 import 'package:reminiscence/features/reminiscence_file_io/page_reader.dart';
 import 'package:reminiscence/features/reminiscence_file_io/page_writer.dart';
 
