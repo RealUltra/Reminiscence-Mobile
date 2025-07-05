@@ -50,7 +50,7 @@ Magic Number: 0x52454D30 (REM0)
 0x01: Is encrypted
 
 
-# Footer Page Layout - 26 bytes
+# Footer Page Layout - 30 bytes
 
 | Offset | Field                       | Size (bytes) | Description                                                      |
 |--------|-----------------------------|--------------|------------------------------------------------------------------|
@@ -60,7 +60,8 @@ Magic Number: 0x52454D30 (REM0)
 | 14     | DB Root Page ID             | 4            | The id of the first database page                                |
 | 18     | Media Index Root Page ID    | 4            | The id of the first media index page                             |
 | 22     | Free List Root Page ID      | 4            | The id of the first free page                                    |
-| 66     | Reserved                    | 4070         |                                                                  |
+| 66     | Page Count                  | 4            | The number of pages currently in the file                        |
+| 70     | Reserved                    | 4066         |                                                                  |
 
 
 # Media Index Layout - Size depends on number of entries
@@ -80,13 +81,10 @@ Magic Number: 0x52454D30 (REM0)
 | 4      | Media Root Page ID | 4            | The id of this media's first page                                |
 
 
-# Initial Layout - 20484 bytes (20 kb)
+# Initial Layout - 8196 bytes (8 kb)
 
 | Offset | Field                 | Size (bytes) | Description                                                      |
 |--------|-----------------------|--------------|------------------------------------------------------------------|
 | 0      | Magic Number          | 4            | The magic number (Constant as defined above)                     |
 | 4      | Metadata Page         | 4096         | The metadata page as defined above                               |
-| 4100   | Database Root Page    | 4096         | An empty page allocated for the database                         |
-| 8196   | Media Index Root Page | 4096         | An empty page allocated for the media index                      |
-| 12292  | Free List Root Page   | 4096         | An empty page                                                    |
-| 16388  | Footer Page           | 4096         | The footer page as defined above                                 |
+| 4100   | Footer Page           | 4096         | The footer page as defined above                                 |

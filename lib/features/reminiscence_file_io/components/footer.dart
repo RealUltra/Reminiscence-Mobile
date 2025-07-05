@@ -12,14 +12,16 @@ import 'dart:typed_data';
 const int footerVersion = 1;
 
 class Footer {
-  final int dbRootPageId;
-  final int mediaIndexRootPageId;
-  final int freeListRootPageId;
+  int dbRootPageId;
+  int mediaIndexRootPageId;
+  int freeListRootPageId;
+  int pageCount;
 
   Footer({
     required this.dbRootPageId,
     required this.mediaIndexRootPageId,
     required this.freeListRootPageId,
+    required this.pageCount,
   });
 
   factory Footer.fromBytes(Uint8List bytes) {
@@ -34,16 +36,18 @@ class Footer {
     final dbRootPageId = data.getUint32(2, Endian.little);
     final mediaIndexRootPageId = data.getUint32(6, Endian.little);
     final freeListRootPageId = data.getUint32(10, Endian.little);
+    final pageCount = data.getUint32(14, Endian.little);
 
     return Footer(
       dbRootPageId: dbRootPageId,
       mediaIndexRootPageId: mediaIndexRootPageId,
       freeListRootPageId: freeListRootPageId,
+      pageCount: pageCount,
     );
   }
 
   Uint8List toBytes() {
-    final data = ByteData(4084);
+    final data = ByteData(30);
 
     data.setUint8(0, footerVersion); // Current footer version
 
@@ -66,6 +70,12 @@ class Footer {
       freeListRootPageId,
       Endian.little,
     ); // The first page of the free list
+
+    data.setUint32(
+      14,
+      pageCount,
+      Endian.little,
+    ); // The number of pages currently in use by the file
 
     return data.buffer.asUint8List();
   }

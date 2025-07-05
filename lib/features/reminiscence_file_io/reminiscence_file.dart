@@ -20,6 +20,7 @@ final maxPayloadSize = pageSize - pageHeaderSize;
 
 class ReminiscenceFile {
   late RandomAccessFile _file;
+  late Footer footer;
 
   ReminiscenceFile();
 
@@ -29,6 +30,8 @@ class ReminiscenceFile {
     if (!(await validateMagicNumber())) {
       throw Exception("Invalid rem file. Magic number not recognized.");
     }
+
+    footer = await readFooter();
   }
 
   Future<void> create(String path) async {
@@ -37,40 +40,22 @@ class ReminiscenceFile {
     await writeMagicNumber();
 
     // Metadata page
-    await writeMetadata(Metadata(footerPageId: 5));
-
-    // Database root page
-    await writePage(
-      PageHeader(pageType: PageType.database, pageId: 2),
-      Uint8List(0),
-    );
-
-    // Media index root page
-    await writePage(
-      PageHeader(pageType: PageType.mediaIndex, pageId: 3),
-      Uint8List(0),
-    );
-
-    // Free page
-    await writePage(
-      PageHeader(pageType: PageType.free, pageId: 4),
-      Uint8List(0),
-    );
+    await writeMetadata(Metadata(footerPageId: 2));
 
     // Footer
     await writeFooter(
-      Footer(dbRootPageId: 2, mediaIndexRootPageId: 3, freeListRootPageId: 4),
+      Footer(
+        dbRootPageId: 0,
+        mediaIndexRootPageId: 0,
+        freeListRootPageId: 0,
+        pageCount: 2,
+      ),
     );
+
+    footer = await readFooter();
   }
 
   Future<void> close() => _file.close();
-
-  Future<int> size() => _file.length();
-
-  Future<int> pageCount() async {
-    final fileSize = await size();
-    return (fileSize / pageSize).toInt();
-  }
 
   Future<bool> validateMagicNumber() async {
     await _file.setPosition(0);
@@ -107,7 +92,7 @@ class ReminiscenceFile {
     await _file.writeFrom(sizedPayload);
 
     if (payload.length > maxPayloadSize) {
-      final nextPageId = await getFreePage(markAsUsed: true);
+      final nextPageId = await getFreePage();
 
       pageHeader.nextPageId = nextPageId;
       await writePageHeader(pageHeader);
@@ -133,22 +118,31 @@ class ReminiscenceFile {
     final lastPageId = chainIds.last;
     final pageHeader = await readPageHeader(lastPageId);
 
-    if (pageHeader.payloadSize != 0 &&
-        pageHeader.payloadSize != maxPayloadSize) {
-      final offset = pageHeader.payloadSize;
-      final position = _getPagePosition(lastPageId);
-      _file.setPosition(position + offset);
+    final offset = pageHeader.payloadSize;
+    final position = _getPagePosition(lastPageId);
 
-      final pageCapacity = maxPayloadSize - offset;
-      final sizedPayload = payload.sublist(0, pageCapacity);
-      payload = payload.sublist(pageCapacity);
+    final pageCapacity = maxPayloadSize - offset;
 
-      _file.writeFrom(sizedPayload);
+    if (pageCapacity > 0) {
+      await _file.setPosition(position + pageHeaderSize + offset);
+
+      final sizedPayload = payload.sublist(
+        0,
+        min(pageCapacity, payload.length),
+      );
+      payload = payload.sublist(sizedPayload.length);
+
+      await _file.writeFrom(sizedPayload);
 
       pageHeader.payloadSize += sizedPayload.length;
     }
 
-    pageHeader.nextPageId = await getFreePage(markAsUsed: true);
+    if (payload.isEmpty) {
+      await writePageHeader(pageHeader);
+      return;
+    }
+
+    pageHeader.nextPageId = await getFreePage();
     await writePageHeader(pageHeader);
 
     await writePage(
@@ -157,19 +151,53 @@ class ReminiscenceFile {
     );
   }
 
-  Stream<List<int>> getByteStream(Uint8List bytes, {int? packetSize}) async* {
-    packetSize ??= maxPayloadSize;
+  Future<void> writeAtOffset(
+    PageType pageType,
+    int rootPageId,
+    int offset,
+    Uint8List payload,
+  ) async {
+    int bytesTraversed = 0;
+    int pageId = rootPageId;
 
-    int offset = 0;
+    while (bytesTraversed < offset) {
+      final pageHeader = await readPageHeader(pageId);
+      final bytesRemaining = offset - bytesTraversed;
 
-    while (offset < bytes.length) {
-      final byteCount = min(packetSize, bytes.length);
-      yield bytes.sublist(offset, byteCount);
-      offset += byteCount;
+      if (bytesRemaining > maxPayloadSize) {
+        bytesTraversed += maxPayloadSize;
+
+        if (pageHeader.nextPageId == 0) {
+          pageHeader.nextPageId = await getFreePage();
+        }
+
+        pageHeader.pageType = pageType;
+        await writePageHeader(pageHeader);
+
+        pageId = pageHeader.nextPageId;
+      } else {
+        bytesTraversed += bytesRemaining;
+      }
     }
+
+    final pageHeader = await readPageHeader(pageId);
+
+    final actualPayloadSize = pageHeader.payloadSize;
+    final tempPayloadSize = offset % maxPayloadSize;
+
+    pageHeader.payloadSize = tempPayloadSize;
+    await writePageHeader(pageHeader);
+
+    await appendToPage(pageType, pageId, payload);
+
+    pageHeader.payloadSize = max(
+      actualPayloadSize,
+      min(maxPayloadSize, tempPayloadSize + payload.length),
+    );
+    await writePageHeader(pageHeader);
   }
 
-  Future<void> streamPayload(
+  Future<void> writePayload(
     PageType pageType,
     int rootPageId,
     Stream<List<int>> stream,
@@ -180,55 +208,8 @@ class ReminiscenceFile {
       await addToFreeList(pageHeader.nextPageId);
     }
 
-    List<int> buffer = [];
-    int pageId = rootPageId;
-    int offset = 0;
-
     await for (final bytes in stream) {
-      buffer.addAll(bytes);
-
-      while (buffer.isNotEmpty) {
-        final pageCapacity = maxPayloadSize - offset;
-
-        final payload = buffer.sublist(0, min(pageCapacity, buffer.length));
-        buffer = buffer.sublist(payload.length);
-
-        final pageHeader = await readPageHeader(pageId);
-        int nextPageId;
-
-        if ((offset + payload.length) < maxPayloadSize) {
-          nextPageId = 0;
-        } else if (pageHeader.nextPageId != 0) {
-          nextPageId = pageHeader.nextPageId;
-        } else {
-          nextPageId = await getFreePage(markAsUsed: true);
-        }
-
-        final newPageHeader = PageHeader(
-          pageType: pageType,
-          pageId: pageId,
-          nextPageId: nextPageId,
-          payloadSize: payload.length,
-        );
-
-        if (offset > 0) {
-          newPageHeader.payloadSize += pageHeader.payloadSize;
-        }
-
-        await writePageHeader(newPageHeader);
-
-        final position = _getPagePosition(pageId);
-        await _file.setPosition(position + pageHeaderSize + offset);
-
-        await _file.writeFrom(payload);
-
-        if (nextPageId != 0) {
-          pageId = nextPageId;
-          offset = 0;
-        } else {
-          offset += payload.length;
-        }
-      }
+      await appendToPage(pageType, rootPageId, Uint8List.fromList(bytes));
     }
   }
 
@@ -241,44 +222,45 @@ class ReminiscenceFile {
 
   Future<void> writeFooter(Footer footer) async {
     await writePage(
-      PageHeader(pageType: PageType.footer, pageId: 5),
+      PageHeader(pageType: PageType.footer, pageId: 2),
       footer.toBytes(),
     );
   }
 
   Future<void> writeDatabase(File dbFile) async {
-    final footer = await readFooter();
+    if (footer.dbRootPageId == 0) {
+      footer.dbRootPageId = await getFreePage();
+      await writeFooter(footer);
+    }
+
     final rootId = footer.dbRootPageId;
-    await streamPayload(PageType.database, rootId, dbFile.openRead());
+    await writePayload(PageType.database, rootId, dbFile.openRead());
   }
 
   Future<void> addToMediaIndex(MediaIndexEntry entry) async {
-    final footer = await readFooter();
-    final rootId = footer.mediaIndexRootPageId;
-
-    PageHeader currentHeader = await readPageHeader(rootId);
-
-    while (currentHeader.nextPageId != 0) {
-      currentHeader = await readPageHeader(currentHeader.nextPageId);
+    if (footer.mediaIndexRootPageId == 0) {
+      footer.mediaIndexRootPageId = await getFreePage();
+      await writeFooter(footer);
     }
 
-    final lastPage = await readPage(currentHeader.pageId);
+    final mediaIndexEntry = await readMediaIndexEntry(entry.attachmentId);
 
-    final payload = Uint8List(
-      lastPage.header.payloadSize + mediaIndexEntrySize,
-    );
+    if (mediaIndexEntry.mediaRootPageId != 0) {
+      print(
+        "Media Root Page Causing The Error: ${mediaIndexEntry.mediaRootPageId}",
+      );
+      await addToFreeList(mediaIndexEntry.mediaRootPageId);
+    }
 
-    payload.setAll(0, lastPage.payload.sublist(0, lastPage.header.payloadSize));
-    payload.setAll(lastPage.header.payloadSize, entry.toBytes());
+    final rootId = footer.mediaIndexRootPageId;
+    final offset = entry.attachmentId * mediaIndexEntrySize;
 
-    await writePage(
-      PageHeader(pageType: PageType.mediaIndex, pageId: lastPage.header.pageId),
-      payload,
-    );
+    await writeAtOffset(PageType.mediaIndex, rootId, offset, entry.toBytes());
   }
 
   Future<void> addMediaFile(int attachmentId, File file) async {
-    final mediaRootPageId = await getFreePage(markAsUsed: true);
+    final mediaRootPageId = await getFreePage();
+
     final mediaIndexEntry = MediaIndexEntry(
       attachmentId: attachmentId,
       mediaRootPageId: mediaRootPageId,
@@ -286,20 +268,26 @@ class ReminiscenceFile {
 
     await addToMediaIndex(mediaIndexEntry);
 
-    await streamPayload(PageType.media, mediaRootPageId, file.openRead());
+    await writePayload(PageType.media, mediaRootPageId, file.openRead());
   }
 
   Future<void> addToFreeList(int rootPageId) async {
     final chainIds = await getPageChainIds(rootPageId);
 
-    for (final pageId in chainIds) {
+    for (int i = 0; i < chainIds.length; i++) {
+      final pageId = chainIds[i];
+      final nextPageId = (i == chainIds.length - 1) ? 0 : chainIds[i + 1];
+
       await writePage(
-        PageHeader(pageType: PageType.free, pageId: pageId),
+        PageHeader(
+          pageType: PageType.free,
+          pageId: pageId,
+          nextPageId: nextPageId,
+        ),
         Uint8List(0),
       );
     }
 
-    final footer = await readFooter();
     final freeList = await getPageChainIds(footer.freeListRootPageId);
 
     await writePageHeader(
@@ -309,6 +297,35 @@ class ReminiscenceFile {
         nextPageId: rootPageId,
       ),
     );
+
+    await removeTrailingFreePages();
+  }
+
+  Future<void> removeTrailingFreePages() async {
+    final freeList = await getPageChainIds(footer.freeListRootPageId);
+
+    final lastPageId = footer.pageCount;
+
+    if (freeList.length > 1 && freeList.contains(lastPageId)) {
+      final index = freeList.indexOf(lastPageId);
+
+      if (index == 0) {
+        footer.freeListRootPageId = freeList[1];
+        await writeFooter(footer);
+      } else {
+        final pageHeader = await readPageHeader(freeList[index - 1]);
+        pageHeader.nextPageId = 0;
+        await writePageHeader(pageHeader);
+      }
+
+      final position = _getPagePosition(lastPageId);
+      await _file.truncate(position);
+
+      footer.pageCount--;
+      await writeFooter(footer);
+
+      await removeTrailingFreePages();
+    }
   }
 
   Future<PageHeader> readPageHeader(int pageId) async {
@@ -333,6 +350,45 @@ class ReminiscenceFile {
     }
   }
 
+  Future<Uint8List> readAtOffset(int rootPageId, int offset, int length) async {
+    final chainIds = await getPageChainIds(rootPageId);
+
+    if (chainIds.isEmpty) {
+      return Uint8List(length);
+    }
+
+    final lastPageHeader = await readPageHeader(chainIds.last);
+    final totalPayloadSize =
+        (chainIds.length - 1) * maxPayloadSize + lastPageHeader.payloadSize;
+
+    if (totalPayloadSize < (offset + length)) {
+      return Uint8List(length);
+    }
+
+    int bytesTraversed = 0;
+    int pageId = chainIds.first;
+
+    for (pageId in chainIds) {
+      final header = await readPageHeader(pageId);
+      bytesTraversed += header.payloadSize;
+
+      if (bytesTraversed >= offset) {
+        break;
+      }
+    }
+
+    final position = _getPagePosition(pageId);
+    final relativeOffset = offset % maxPayloadSize;
+    await _file.setPosition(position + pageHeaderSize + relativeOffset);
+
+    final payload = await _file.read(length);
+
+    final sizedPayload = Uint8List(length);
+    sizedPayload.setAll(0, payload);
+
+    return sizedPayload;
+  }
+
   Future<void> readPayloadToFile(int rootPageId, File outputFile) async {
     final sink = outputFile.openWrite();
 
@@ -350,18 +406,16 @@ class ReminiscenceFile {
   }
 
   Future<Footer> readFooter() async {
-    final page = await readPage(5);
+    final page = await readPage(2);
     return Footer.fromBytes(page.payload);
   }
 
   Future<void> readDatabaseToFile(File outputFile) async {
-    final footer = await readFooter();
     final rootId = footer.dbRootPageId;
     await readPayloadToFile(rootId, outputFile);
   }
 
   Future<MediaIndexTable> readMediaIndex() async {
-    final footer = await readFooter();
     final rootId = footer.mediaIndexRootPageId;
 
     List<int> payload = [];
@@ -373,49 +427,62 @@ class ReminiscenceFile {
     return MediaIndexTable.fromBytes(Uint8List.fromList(payload));
   }
 
-  Future<void> readMediaToFile(int attachmentId, File outputFile) async {
-    final mediaIndex = await readMediaIndex();
+  Future<MediaIndexEntry> readMediaIndexEntry(int attachmentId) async {
+    final rootId = footer.mediaIndexRootPageId;
 
-    for (final entry in mediaIndex.entries) {
-      if (entry.attachmentId == attachmentId) {
-        await readPayloadToFile(entry.mediaRootPageId, outputFile);
-        return;
-      }
+    if (rootId == 0) {
+      return MediaIndexEntry.fromBytes(Uint8List(mediaIndexEntrySize));
     }
+
+    final offset = attachmentId * mediaIndexEntrySize;
+
+    final bytes = await readAtOffset(rootId, offset, mediaIndexEntrySize);
+
+    return MediaIndexEntry.fromBytes(bytes);
   }
 
-  Future<int> getFreePage({bool markAsUsed = false}) async {
-    final footer = await readFooter();
-    final freePageId = footer.freeListRootPageId;
+  Future<void> readMediaToFile(int attachmentId, File outputFile) async {
+    final mediaIndexEntry = await readMediaIndexEntry(attachmentId);
+    await readPayloadToFile(mediaIndexEntry.mediaRootPageId, outputFile);
+  }
 
-    if (markAsUsed) {
-      final freePageHeader = await readPageHeader(freePageId);
+  Future<int> getFreePage() async {
+    if (footer.freeListRootPageId == 0) {
+      footer.pageCount++;
+      footer.freeListRootPageId = footer.pageCount;
 
-      int nextFreePageId;
-
-      if (freePageHeader.nextPageId != 0) {
-        nextFreePageId = freePageHeader.nextPageId;
-      } else {
-        nextFreePageId = (await pageCount()) + 1;
-
-        await writePage(
-          PageHeader(pageType: PageType.free, pageId: nextFreePageId),
-          Uint8List(0),
-        );
-      }
-
-      await writeFooter(
-        Footer(
-          dbRootPageId: footer.dbRootPageId,
-          mediaIndexRootPageId: footer.mediaIndexRootPageId,
-          freeListRootPageId: nextFreePageId,
-        ),
-      );
+      await writeFooter(footer);
 
       await writePageHeader(
-        PageHeader(pageType: PageType.free, pageId: freePageId),
+        PageHeader(pageType: PageType.free, pageId: footer.freeListRootPageId),
       );
     }
+
+    final freePageId = footer.freeListRootPageId;
+    final freePageHeader = await readPageHeader(freePageId);
+
+    int nextFreePageId;
+
+    if (freePageHeader.nextPageId != 0) {
+      nextFreePageId = freePageHeader.nextPageId;
+    } else {
+      footer.pageCount++;
+      nextFreePageId = footer.pageCount;
+
+      await writeFooter(footer);
+
+      await writePageHeader(
+        PageHeader(pageType: PageType.free, pageId: nextFreePageId),
+      );
+    }
+
+    footer.freeListRootPageId = nextFreePageId;
+
+    await writeFooter(footer);
+
+    await writePageHeader(
+      PageHeader(pageType: PageType.free, pageId: freePageId),
+    );
 
     return freePageId;
   }

@@ -19,7 +19,9 @@ class MediaIndexTable {
       final entryBytes = bytes.sublist(offset, offset + mediaIndexEntrySize);
       final entry = MediaIndexEntry.fromBytes(entryBytes);
 
-      entries.add(entry);
+      if (entry.mediaRootPageId != 0) {
+        entries.add(entry);
+      }
     }
 
     return MediaIndexTable(entries);
