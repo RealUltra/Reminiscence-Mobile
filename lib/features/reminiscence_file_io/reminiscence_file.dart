@@ -140,7 +140,7 @@ class ReminiscenceFile {
   List<int> get nonce => _metadata.nonce.toList();
 
   // Get the encrypted nonce as a `List<int>` (since that's what used by the `decrypt` function)
-  List<int> get encryptedNonce => _metadata.nonce.toList();
+  List<int> get encryptedNonce => _metadata.encryptedNonce.toList();
 
   Future<bool> validateMagicNumber() async {
     /*

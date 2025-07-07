@@ -32,7 +32,7 @@ Magic Number: 0x52454D30 (REM0)
 0x06: Footer
 
 
-# Metadata Page Layout - 66 bytes
+# Metadata Page Layout - 98 bytes
 
 | Offset | Field            | Size (bytes) | Description                                                      |
 |--------|------------------|--------------|------------------------------------------------------------------|
@@ -40,9 +40,9 @@ Magic Number: 0x52454D30 (REM0)
 | 12     | Metadata Version | 1            | The version of the meta page format                              |
 | 13     | Metadata Flags   | 1            | Allocated for bit flags (encrypted)                              |
 | 14     | Nonce            | 16           | The nonce required to derive the encryption key with kdf         |
-| 30     | Encrypted Nonce  | 32           | Used to test if the decryption key is correct                    |
-| 62     | Footer Page ID   | 4            | The page ID of the footer                                        |
-| 66     | Reserved         | 65470        | Padding                                                          |
+| 30     | Encrypted Nonce  | 64           | Used to test if the decryption key is correct                    |
+| 94     | Footer Page ID   | 4            | The page ID of the footer                                        |
+| 98     | Reserved         | 65438        | Padding                                                          |
 
 
 # Metadata Flags

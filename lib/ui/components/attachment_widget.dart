@@ -140,13 +140,21 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
   String _getFilePath() {
     if (widget.data.secretKey == null) {
-      return p.join(widget.data.tempDir.path, "media_${widget.attachment.id}");
+      return _getNormalFilePath();
     } else {
-      return p.join(
-        widget.data.tempDir.path,
-        "media_${widget.attachment.id}_decrypted",
-      );
+      return _getDecryptedFilePath();
     }
+  }
+
+  String _getNormalFilePath() {
+    return p.join(widget.data.tempDir.path, "media_${widget.attachment.id}");
+  }
+
+  String _getDecryptedFilePath() {
+    return p.join(
+      widget.data.tempDir.path,
+      "media_${widget.attachment.id}_decrypted",
+    );
   }
 
   String _getExtension() {
@@ -160,11 +168,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   Future<void> _prepareFile() async {
-    final encryptedPath = p.join(
-      widget.data.tempDir.path,
-      "media_${widget.attachment.id}",
-    );
-
+    final encryptedPath = _getNormalFilePath();
     final encryptedFile = File(encryptedPath);
 
     if (!(await encryptedFile.exists())) {
@@ -185,15 +189,15 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       return;
     }
 
-    final decryptedPath = p.join(
-      widget.data.tempDir.path,
-      "media_${widget.attachment.id}_decrypted",
-    );
-
+    final decryptedPath = _getDecryptedFilePath();
     final decryptedFile = File(decryptedPath);
 
     // If the decrypted file already exists, exit the function.
     if (await decryptedFile.exists()) {
+      // Update the widget to render the attachment
+      if (mounted) {
+        setState(() {});
+      }
       return;
     }
 

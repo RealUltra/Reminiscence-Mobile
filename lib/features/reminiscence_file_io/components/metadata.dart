@@ -14,7 +14,7 @@ import 'package:reminiscence/features/reminiscence_file_io/utils.dart';
 
 const int metadataVersion = 1;
 const int nonceSize = 16;
-const int encryptedNonceSize = 32;
+const int encryptedNonceSize = 64;
 
 const int flagEncrypted = 0x01;
 
@@ -58,7 +58,7 @@ class Metadata {
       encryptedNonce[i] = data.getUint8(18 + i);
     }
 
-    final footerPageId = data.getUint32(50, Endian.little);
+    final footerPageId = data.getUint32(82, Endian.little);
 
     return Metadata(
       isEncrypted: isEncrypted,
@@ -84,7 +84,7 @@ class Metadata {
       data.setUint8(18 + i, encryptedNonce[i]);
     }
 
-    data.setUint32(50, footerPageId, Endian.little); // The footer's page id
+    data.setUint32(82, footerPageId, Endian.little); // The footer's page id
 
     return data.buffer.asUint8List();
   }

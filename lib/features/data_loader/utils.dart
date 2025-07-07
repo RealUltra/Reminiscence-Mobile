@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:reminiscence/features/encryption/encryption.dart';
@@ -24,18 +25,25 @@ Future<bool> isRemFileEncrypted(String filePath) async {
 }
 
 Future<bool> checkPassword(String remFilePath, String? password) async {
-  if (password == null) {
-    return !(await isRemFileEncrypted(remFilePath));
+  final remFile = ReminiscenceFile();
+  await remFile.open(remFilePath);
+
+  final isEncrypted = remFile.isEncrypted();
+  final nonce = remFile.nonce;
+  final encryptionTest = remFile.encryptedNonce;
+
+  while (encryptionTest.last == 0) {
+    encryptionTest.removeAt(encryptionTest.length - 1);
   }
 
-  InputFileStream stream = InputFileStream(remFilePath);
-  Archive archive = ZipDecoder().decodeStream(stream);
+  await remFile.close();
 
-  ArchiveFile? nonceFile = archive.find("nonce.txt");
-  List<int> nonce = nonceFile!.readBytes() ?? [];
+  if (password == null) {
+    return !isEncrypted;
+  }
 
-  ArchiveFile? testFile = archive.find("test.dat");
-  List<int> encryptionTest = testFile?.readBytes() ?? [];
+  print("Encryption Test: $encryptionTest");
+  print("Encryption Test Length: ${encryptionTest.length}");
 
   DerivedKey derivedKey = await deriveKey(password: password, nonce: nonce);
 
@@ -44,8 +52,10 @@ Future<bool> checkPassword(String remFilePath, String? password) async {
       encryptionTest,
       derivedKey.secretKey,
     );
+
     return ListEquality().equals(nonce, decryptedTest);
   } catch (e) {
+    print("Decryption Error: $e");
     return false;
   }
 }
