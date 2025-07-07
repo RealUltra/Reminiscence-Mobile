@@ -137,8 +137,12 @@ class BodyState extends State<Body> {
     String filePath, {
     String? password,
   }) async {
+    final isValid = await isValidRemFile(filePath);
+
+    if (!context.mounted) return;
+
     // Check if the rem file selected is valid.
-    if (!isValidRemFile(filePath)) {
+    if (!isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -154,9 +158,13 @@ class BodyState extends State<Body> {
       return;
     }
 
+    final isEncrypted = await isRemFileEncrypted(filePath);
+
+    if (!context.mounted) return;
+
     // If the file is encrypted but there is no password given, prompt for a password.
     // If the user closes the password prompt, exit the function.
-    if (isRemFileEncrypted(filePath)) {
+    if (isEncrypted) {
       password ??= await _promptPassword(
         context,
         1,
@@ -198,7 +206,7 @@ class BodyState extends State<Body> {
     data.loadDatabase();
 
     if (!context.mounted) {
-      await data.closeDatabase();
+      await data.close();
       return;
     }
 
@@ -207,7 +215,7 @@ class BodyState extends State<Body> {
     sessionData.setChat(null);
 
     if (!context.mounted) {
-      await data.closeDatabase();
+      await data.close();
       return;
     }
 

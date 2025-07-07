@@ -5,27 +5,27 @@ import 'package:path/path.dart' as p;
 
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
+import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
 
-bool isRemFileEncrypted(String filePath) {
-  InputFileStream stream = InputFileStream(filePath);
-  Archive archive = ZipDecoder().decodeStream(stream);
+Future<bool> isRemFileEncrypted(String filePath) async {
+  final file = ReminiscenceFile();
 
-  ArchiveFile? archiveFile = archive.find("nonce.txt");
-  List<int>? bytes = archiveFile?.readBytes();
-
-  if (archiveFile == null ||
-      !archiveFile.isFile ||
-      bytes == null ||
-      bytes.isEmpty) {
+  try {
+    await file.open(filePath);
+  } catch (e) {
     return false;
   }
 
-  return true;
+  final isEncrypted = file.isEncrypted();
+
+  await file.close();
+
+  return isEncrypted;
 }
 
 Future<bool> checkPassword(String remFilePath, String? password) async {
   if (password == null) {
-    return !isRemFileEncrypted(remFilePath);
+    return !(await isRemFileEncrypted(remFilePath));
   }
 
   InputFileStream stream = InputFileStream(remFilePath);
@@ -50,13 +50,15 @@ Future<bool> checkPassword(String remFilePath, String? password) async {
   }
 }
 
-bool isValidRemFile(String filePath) {
-  InputFileStream stream = InputFileStream(filePath);
-  Archive archive = ZipDecoder().decodeStream(stream);
+Future<bool> isValidRemFile(String filePath) async {
+  final file = ReminiscenceFile();
 
-  ArchiveFile? archiveFile = archive.find("database.db");
-
-  return archiveFile != null;
+  try {
+    await file.open(filePath);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 Future<void> extractArchiveDir(

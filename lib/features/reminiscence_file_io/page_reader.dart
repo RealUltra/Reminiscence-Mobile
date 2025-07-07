@@ -15,6 +15,11 @@ class PageReader {
 
   late final Footer _footer;
 
+  // A cache storing page ids and their next page ids.
+  // Key: page id
+  // Value: next page id
+  late final Map<int, PageHeader> _pageHeaderCache;
+
   PageReader(this.file);
 
   void initializeFooter(Footer footer) {
@@ -22,6 +27,13 @@ class PageReader {
     Save the footer in memory.
     */
     _footer = footer;
+  }
+
+  void initializePageHeaderCache(Map<int, PageHeader> pageHeaderCache) {
+    /*
+    Save the footer in memory.
+    */
+    _pageHeaderCache = pageHeaderCache;
   }
 
   Future<String> readMagicNumber() async {
@@ -85,7 +97,7 @@ class PageReader {
 
     while (pageId != 0) {
       final page = await readPage(pageId);
-      yield page.payload.sublist(0, page.header.payloadSize);
+      yield Uint8List.sublistView(page.payload, 0, page.header.payloadSize);
       pageId = page.header.nextPageId;
     }
   }
@@ -189,7 +201,7 @@ class PageReader {
 
     while (pageId != 0) {
       clusterIds.add(pageId);
-      final header = await readPageHeader(pageId);
+      final header = _pageHeaderCache[pageId] ?? (await readPageHeader(pageId));
       pageId = header.nextPageId;
     }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/data_loader/utils.dart';
 
 import 'package:reminiscence/ui/pages/data_loader/file_card.dart';
 
@@ -42,17 +43,38 @@ class _FilesListState extends State<FilesList> {
             child: ListView.builder(
               itemCount: filePaths.length,
               itemBuilder: (BuildContext context, int index) {
+                final filePath = filePaths[index];
+
                 return Column(
                   key: ValueKey(filePaths[index]),
 
                   children: [
-                    FileCard(
-                      filePath: filePaths[index],
-                      lastOpened: widget.recentFiles[filePaths[index]],
-                      onClick: widget.onClick,
-                      onShare: widget.onShare,
-                      onDelete: onDelete,
+                    FutureBuilder(
+                      future: isRemFileEncrypted(filePath),
+                      builder: (
+                        BuildContext context,
+                        AsyncSnapshot<dynamic> snapshot,
+                      ) {
+                        if (snapshot.connectionState ==
+                                ConnectionState.waiting ||
+                            snapshot.hasError ||
+                            !snapshot.hasData) {
+                          return Container();
+                        }
+
+                        final bool isEncrypted = snapshot.data;
+
+                        return FileCard(
+                          filePath: filePath,
+                          lastOpened: widget.recentFiles[filePaths[index]],
+                          isEncrypted: isEncrypted,
+                          onClick: widget.onClick,
+                          onShare: widget.onShare,
+                          onDelete: onDelete,
+                        );
+                      },
                     ),
+
                     const SizedBox(height: 12),
                   ],
                 );

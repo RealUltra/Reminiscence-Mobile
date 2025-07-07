@@ -13,8 +13,10 @@ class Page {
 
   factory Page.fromBytes(Uint8List bytes) {
     return Page(
-      header: PageHeader.fromBytes(bytes.sublist(0, pageHeaderSize)),
-      payload: bytes.sublist(pageHeaderSize),
+      header: PageHeader.fromBytes(
+        Uint8List.sublistView(bytes, 0, pageHeaderSize),
+      ),
+      payload: Uint8List.sublistView(bytes, pageHeaderSize),
     );
   }
 

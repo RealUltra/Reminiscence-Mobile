@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import "package:path/path.dart" as p;
 
-import 'package:reminiscence/features/data_loader/utils.dart';
-
 class FileCard extends StatelessWidget {
   final String filePath;
   final DateTime? lastOpened;
-  late final bool isEncrypted;
+  final bool isEncrypted;
   final void Function(String) onClick;
   final void Function(String) onShare;
   final void Function(String) onDelete;
@@ -15,12 +13,11 @@ class FileCard extends StatelessWidget {
     super.key,
     required this.filePath,
     required this.lastOpened,
+    required this.isEncrypted,
     required this.onClick,
     required this.onShare,
     required this.onDelete,
-  }) {
-    isEncrypted = isRemFileEncrypted(filePath);
-  }
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -46,7 +46,7 @@ dependencies:
       ref: master
 
   emoji_regex: ^0.0.5
-  characters: ^1.4.1
+  characters: ^1.4.0
 
 dev_dependencies:
   flutter_test:

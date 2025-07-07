@@ -127,7 +127,7 @@ class _DataViewerPageState extends State<DataViewerPage> {
       return;
     }
 
-    data.closeDatabase();
+    data.close();
 
     Navigator.of(context).pop();
   }

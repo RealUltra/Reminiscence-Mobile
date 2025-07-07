@@ -22,7 +22,7 @@ class LoadingScreen<T> extends StatefulWidget {
 
 class _LoadingScreenState<T> extends State<LoadingScreen> {
   late Progress progress;
-  late final DateTime startTime;
+  final _stopwatch = Stopwatch();
   String? duration;
   late bool isLoading;
   SendPort? sendPort;
@@ -32,7 +32,6 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
     super.initState();
 
     progress = Progress(value: 0);
-    startTime = DateTime.now();
     isLoading = true;
 
     startOperation();
@@ -92,6 +91,8 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
     final receivePort = ReceivePort();
     final rootToken = RootIsolateToken.instance!;
 
+    _stopwatch.start();
+
     await Isolate.spawn(widget.operation, [
       ...widget.operationParams,
       rootToken,
@@ -114,8 +115,9 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
         // Set the duration and stop loading.
         if (mounted && success) {
           setState(() {
-            duration = formatDuration(DateTime.now().difference(startTime));
+            duration = formatDuration(_stopwatch.elapsed);
             isLoading = false;
+            debugPrint("Loading Screen Duration: $duration");
           });
         }
 

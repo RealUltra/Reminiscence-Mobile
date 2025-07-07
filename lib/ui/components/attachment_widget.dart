@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
@@ -34,8 +35,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   void initState() {
     super.initState();
 
-    if (widget.attachment.type == AttachmentType.photo ||
-        widget.attachment.type == AttachmentType.audio) {
+    if (widget.attachment.type != AttachmentType.link) {
       _prepareFile();
     }
   }
@@ -140,11 +140,11 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
   String _getFilePath() {
     if (widget.data.secretKey == null) {
-      return p.join(widget.data.mediaDir.path, "${widget.attachment.id}");
+      return p.join(widget.data.tempDir.path, "media_${widget.attachment.id}");
     } else {
       return p.join(
         widget.data.tempDir.path,
-        "${widget.attachment.id}_decrypted",
+        "media_${widget.attachment.id}_decrypted",
       );
     }
   }
@@ -160,19 +160,34 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   Future<void> _prepareFile() async {
+    final encryptedPath = p.join(
+      widget.data.tempDir.path,
+      "media_${widget.attachment.id}",
+    );
+
+    final encryptedFile = File(encryptedPath);
+
+    if (!(await encryptedFile.exists())) {
+      final remFile = ReminiscenceFile();
+      remFile.pageHeaderCache = widget.data.file.pageHeaderCache;
+      await remFile.open(widget.data.file.name);
+      await remFile.readMediaToFile(widget.attachment.id, encryptedFile);
+      await remFile.close();
+
+      // Update the widget to render the attachment
+      if (mounted) {
+        setState(() {});
+      }
+    }
+
     // If the file is not encrypted, exit the function.
     if (widget.data.secretKey == null) {
       return;
     }
 
-    final encryptedPath = p.join(
-      widget.data.mediaDir.path,
-      "${widget.attachment.id}",
-    );
-
     final decryptedPath = p.join(
       widget.data.tempDir.path,
-      "${widget.attachment.id}_decrypted",
+      "media_${widget.attachment.id}_decrypted",
     );
 
     final decryptedFile = File(decryptedPath);
@@ -192,6 +207,8 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     );
 
     // Update the widget to render the attachment
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

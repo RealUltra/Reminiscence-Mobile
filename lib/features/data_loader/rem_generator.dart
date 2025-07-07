@@ -17,6 +17,7 @@ import 'package:reminiscence/features/data_loader/data_archive_loader/models/cha
 import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
+import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
 import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 
 Future<AppDatabase> createFreshDatabase(
@@ -77,8 +78,24 @@ Future<String?> createRemFile({
   String fileName = path.basenameWithoutExtension(archivePath);
   String outputPath = path.join(tempDir.path, "$fileName.rem");
 
-  final encoder = ZipFileEncoder();
-  encoder.create(outputPath);
+  final nonce = Uint8List.fromList(derivedKey?.nonce ?? []);
+
+  Uint8List? encryptedNonce;
+
+  if (derivedKey != null) {
+    encryptedNonce = Uint8List.fromList(
+      await encrypt(derivedKey.nonce, derivedKey.secretKey),
+    );
+  }
+
+  final remFile = ReminiscenceFile();
+
+  await remFile.create(
+    outputPath,
+    isEncrypted: password != null,
+    nonce: nonce,
+    encryptedNonce: encryptedNonce,
+  );
 
   // Open the archive.
   InputFileStream stream = InputFileStream(archivePath);
@@ -105,38 +122,52 @@ Future<String?> createRemFile({
 
   final messageReader = MessageReader(chats);
 
-  for (final chat in chats) {
-    final stacksMid = chat.messageStacks.length / 2;
+  final stopwatch = Stopwatch()..start();
+
+  for (int i = 0; i < chats.length; i++) {
+    final chat = chats[i];
 
     await insertArchiveChat(db, chat, messageReader, (int increment) async {
       sendPort?.send({
         "type": "progress",
         "progress": {
-          "value": (stacksDone + increment * 0.5) / totalStacks * 0.99,
-          "label": 'Loading Chat Messages:\n${chat.title}',
+          "value": (stacksDone + increment) / totalStacks * 0.49,
+          "label":
+              'Loading Chat Messages:\n${chat.title}\n(${i + 1} / ${chats.length})',
         },
       });
     });
 
-    stacksDone += stacksMid;
-
-    await insertMediaFiles(db, chat.id, archiveMap, encoder, derivedKey, (
-      double progress,
-    ) async {
-      sendPort?.send({
-        "type": "progress",
-        "progress": {
-          "value": (stacksDone + progress * stacksMid) / totalStacks * 0.99,
-          "label": 'Loading Chat Media:\n${chat.title}',
-        },
-      });
-    });
-
-    stacksDone += stacksMid;
+    stacksDone += chat.messageStacks.length;
 
     if (isCancelled) return null;
   }
+
+  stopwatch.stop();
+  print(
+    "Time taken to add all the chats to the database: ${stopwatch.elapsed.inSeconds} seconds",
+  );
   //
+
+  stopwatch
+    ..reset()
+    ..start();
+  // Insert the media for all the attachments into the rem file
+  await insertMediaFiles(db, archiveMap, remFile, derivedKey, (
+    attachmentsDone,
+    totalAttachments,
+  ) async {
+    sendPort?.send({
+      "type": "progress",
+      "progress": {
+        "value": 0.49 + attachmentsDone / totalAttachments * 0.5,
+        "label":
+            'Loading Chat Media...\n($attachmentsDone / $totalAttachments)',
+      },
+    });
+  });
+
+  print("`insertMediaFiles` Duration: ${stopwatch.elapsed.inSeconds} seconds");
 
   sendPort?.send({
     "type": "progress",
@@ -148,25 +179,10 @@ Future<String?> createRemFile({
   await db.close();
 
   // Adding the database to the rem file.
-  await encoder.addFile(File(dbPath), "database.db");
-
-  // Adding the nonce to the rem file.
-  encoder.addArchiveFile(
-    ArchiveFile.bytes("nonce.txt", derivedKey?.nonce ?? []),
-  );
-
-  // Adding the password test to the rem file.
-  if (derivedKey != null) {
-    encoder.addArchiveFile(
-      ArchiveFile.bytes(
-        "test.dat",
-        await encrypt(derivedKey.nonce, derivedKey.secretKey),
-      ),
-    );
-  }
+  await remFile.writeDatabase(File(dbPath));
 
   // Close the rem file
-  await encoder.close();
+  await remFile.close();
 
   sendPort?.send({
     "type": "progress",
@@ -249,71 +265,60 @@ Future<void> insertArchiveChat(
 
 Future<void> insertMediaFiles(
   AppDatabase db,
-  int chatId,
   Map<String, ArchiveFile> archiveMap,
-  ZipFileEncoder remEncoder,
+  ReminiscenceFile remFile,
   DerivedKey? derivedKey,
-  Future<void> Function(double) updateProgress,
+  Future<void> Function(int, int) updateProgress,
 ) async {
   final results =
       await db
           .customSelect(
             """
               SELECT 
-                a.id, 
-                a.uri 
+                id, 
+                uri 
               
               FROM 
-                attachments a 
-              
-              JOIN 
-                messages m 
-                ON a.message_id = m.id 
+                attachments
                 
               WHERE 
-                m.chat_id = ? AND 
-                a.type <> ?
+                type <> ?
+
+              ORDER BY
+                id
             """,
-            variables: [
-              Variable.withInt(chatId),
-              Variable.withString(AttachmentType.link.name),
-            ],
+            variables: [Variable.withString(AttachmentType.link.name)],
           )
           .get();
-
-  final List<Map<String, dynamic>> attachments = results
-      .map((row) => {'id': row.read<int>('id'), 'uri': row.read<String>('uri')})
-      .toList(growable: false);
 
   final tempDir = await getTemporaryDirectory();
 
   int attachmentsDone = 0;
 
-  for (Map<String, dynamic> attachment in attachments) {
-    final attachmentId = attachment["id"];
-    final uri = attachment["uri"];
+  for (final row in results) {
+    final attachmentId = row.read<int>('id');
+    final uri = row.read<String>('uri');
 
     final archiveFile = archiveMap[path.normalize(uri)];
-    final targetPath = path.join("media", "$attachmentId");
 
-    updateProgress(attachmentsDone / attachments.length);
+    updateProgress(attachmentsDone, results.length);
 
     if (archiveFile != null) {
-      InputStream fileStream = archiveFile.rawContent!.getStream();
+      InputStream inputStream = archiveFile.rawContent!.getStream();
 
       final tempPath = path.join(tempDir.path, "attachment.dat");
 
       if (derivedKey != null) {
         await encryptStream(
-          inputStream: fileStream,
+          inputStream: inputStream,
           outputPath: tempPath,
           secretKey: derivedKey.secretKey,
         );
 
-        fileStream = InputFileStream(tempPath);
+        await remFile.addMediaFile(attachmentId, File(tempPath));
+      } else {
+        await remFile.addMediaFileFromStream(attachmentId, inputStream);
       }
-
-      remEncoder.addArchiveFile(ArchiveFile.stream(targetPath, fileStream));
 
       final tempFile = File(tempPath);
 

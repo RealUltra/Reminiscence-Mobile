@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:archive/archive_io.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/footer.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/media_index_entry.dart';
 import 'package:reminiscence/features/reminiscence_file_io/components/metadata.dart';
@@ -18,6 +19,11 @@ class PageWriter {
   final PageReader reader;
   late final Footer _footer;
 
+  // A cache storing page ids and their headers.
+  // Key: page id
+  // Value: its page header
+  late final Map<int, PageHeader> _pageHeaderCache;
+
   PageWriter(this.file, {required this.reader});
 
   void initializeFooter(Footer footer) {
@@ -25,6 +31,13 @@ class PageWriter {
     Save the footer in memory.
     */
     _footer = footer;
+  }
+
+  void initializePageHeaderCache(Map<int, PageHeader> pageHeaderCache) {
+    /*
+    Save the footer in memory.
+    */
+    _pageHeaderCache = pageHeaderCache;
   }
 
   Future<void> writeMagicNumber() async {
@@ -47,6 +60,7 @@ class PageWriter {
     final position = getPagePosition(pageId);
     await file.setPosition(position);
     await file.writeFrom(pageHeader.toBytes());
+    _pageHeaderCache[pageId] = pageHeader;
   }
 
   Future<int> writePage(Page page) async {
@@ -74,14 +88,12 @@ class PageWriter {
 
     // Pad the rest of the page with 0s if the payload is less than `maxPayloadSize`.
     final sizedPayload = Uint8List(maxPayloadSize);
-    sizedPayload.setAll(0, page.payload.sublist(0, payloadSize));
+    sizedPayload.setAll(0, Uint8List.sublistView(page.payload, 0, payloadSize));
 
-    // Get the position of this page and write the header & payload.
-    final pageId = page.header.pageId;
-    final position = getPagePosition(pageId);
+    // Write the page header, which will also move the file cursor to the target page.
+    await writePageHeader(page.header);
 
-    await file.setPosition(position);
-    await file.writeFrom(page.header.toBytes());
+    // Write the payload
     await file.writeFrom(sizedPayload);
 
     // Write the next page
@@ -93,13 +105,14 @@ class PageWriter {
             pageType: page.header.pageType,
             pageId: page.header.nextPageId,
           ),
-          payload: page.payload.sublist(maxPayloadSize),
+
+          payload: Uint8List.sublistView(page.payload, maxPayloadSize),
         ),
       );
     }
 
     // Return this page as the function stopped writing here.
-    return pageId;
+    return page.header.pageId;
   }
 
   Future<int> appendToPage(
@@ -118,7 +131,7 @@ class PageWriter {
     final lastPageId = cluster.last;
 
     // Get the offset at which you must start writing.
-    final pageHeader = await reader.readPageHeader(lastPageId);
+    final pageHeader = await _getPageHeader(lastPageId);
     final offset = pageHeader.payloadSize;
 
     // Calculate the remaining capacity of this page.
@@ -127,13 +140,14 @@ class PageWriter {
     // If the page is not at maximum capacity, write to it.
     if (pageCapacity > 0) {
       // The sized payload ensures that the payload is not larger than the page capacity.
-      final sizedPayload = payload.sublist(
+      final sizedPayload = Uint8List.sublistView(
+        payload,
         0,
         min(pageCapacity, payload.length),
       );
 
       // This is the remaining payload after the sized payload is written to this page.
-      payload = payload.sublist(sizedPayload.length);
+      payload = Uint8List.sublistView(payload, sizedPayload.length);
 
       // Set the position to beyond the page's header & current payload.
       final position = getPagePosition(lastPageId);
@@ -154,15 +168,18 @@ class PageWriter {
 
     // If the payload is not empty, write the next page's id to the page header.
     pageHeader.nextPageId = await getFreePage(pageType);
+
     await writePageHeader(pageHeader);
 
     // Write the next page and return whatever it returns, because that will be where it stopped writing.
-    return await writePage(
+    final result = await writePage(
       Page(
         header: PageHeader(pageType: pageType, pageId: pageHeader.nextPageId),
         payload: payload,
       ),
     );
+
+    return result;
   }
 
   Future<void> writeAtOffset(
@@ -188,7 +205,7 @@ class PageWriter {
     while (cluster.length <= targetPageIndex) {
       // Set the size of the cluster's last page to maximum.
       // This is because we don't want the targetPageIndex to simulate any data, but we do want every other page to simulate being full.
-      final header = await reader.readPageHeader(cluster.last);
+      final header = await _getPageHeader(cluster.last);
       header.payloadSize = maxPayloadSize;
       await writePageHeader(header);
 
@@ -204,17 +221,23 @@ class PageWriter {
     final relativeOffset = offset % maxPayloadSize;
 
     // Read the page header to know how much data is already written to it.
-    final pageHeader = await reader.readPageHeader(targetPageId);
+    final pageHeader = await _getPageHeader(targetPageId);
 
     // Calculate the page's capacity from the position we will be writing to.
     final pageCapacity = maxPayloadSize - relativeOffset;
 
     // The sized payload ensures that the payload does not overflow beyond the page's capacity.
     final sizedPayload = Uint8List(min(pageCapacity, payload.length));
-    sizedPayload.setAll(0, payload.sublist(0, sizedPayload.length));
+    sizedPayload.setAll(
+      0,
+      Uint8List.sublistView(payload, 0, sizedPayload.length),
+    );
 
     // Prepare the remaining payload to write to the next page.
-    final remainingPayload = payload.sublist(sizedPayload.length);
+    final remainingPayload = Uint8List.sublistView(
+      payload,
+      sizedPayload.length,
+    );
 
     // If there is space on the page, write the payload.
     if (sizedPayload.isNotEmpty) {
@@ -250,10 +273,63 @@ class PageWriter {
     }
   }
 
-  Future<int> writeData(
+  Future<int> writeData(PageType pageType, int rootPageId, File file) async {
+    /*
+    Write data from a stream into a cluster.
+
+    Returns the page id of the last page it wrote to.
+    */
+
+    final stopwatch = Stopwatch()..start();
+
+    // Add the existing cluster to the free list to remove any existing data.
+    final pageHeader = await _getPageHeader(rootPageId);
+
+    // Remove any existing data from the root page as well by emptying it.
+    await writePage(
+      Page(header: PageHeader(pageType: pageType, pageId: rootPageId)),
+    );
+
+    if (pageHeader.nextPageId != 0) {
+      await addToFreeList(pageHeader.nextPageId);
+    }
+
+    // Get chunks from the stream and append them to the root page.
+    int pageId = rootPageId;
+
+    // Open the file and prepare to read it.
+    final raf = await file.open();
+    final fileLength = await raf.length();
+    final chunkSize = maxPayloadSize;
+    int offset = 0;
+
+    while (offset < fileLength) {
+      // Determine the chunk size. It cannot be larger than the number of bytes remaining.
+      final remaining = fileLength - offset;
+      final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
+
+      // Read the chunk
+      final chunk = await raf.read(currentChunkSize);
+
+      // Keep track of the last page the function wrote to so that it doesn't have to traverse the entire cluster each time.
+      stopwatch.reset();
+      pageId = await appendToPage(pageType, pageId, chunk);
+      offset += currentChunkSize;
+      //print(
+      //  "`appendToPage` Duration: ${stopwatch.elapsedMicroseconds} microseconds",
+      //);
+    }
+
+    await raf.close();
+
+    // Return the final page id as it is the last one written to.
+    return pageId;
+  }
+
+  Future<int> writeDataFromStream(
     PageType pageType,
     int rootPageId,
-    Stream<List<int>> dataStream,
+    InputStream inputStream,
   ) async {
     /*
     Write data from a stream into a cluster.
@@ -261,24 +337,53 @@ class PageWriter {
     Returns the page id of the last page it wrote to.
     */
 
-    // Add the existing cluster to the free list to remove any existing data.
-    final pageHeader = await reader.readPageHeader(rootPageId);
+    final stopwatch = Stopwatch()..start();
 
-    if (pageHeader.nextPageId != 0) {
-      await addToFreeList(pageHeader.nextPageId);
-    }
+    // Add the existing cluster to the free list to remove any existing data.
+    final pageHeader = await _getPageHeader(rootPageId);
 
     // Remove any existing data from the root page as well by emptying it.
     await writePage(
       Page(header: PageHeader(pageType: pageType, pageId: rootPageId)),
     );
 
+    if (pageHeader.nextPageId != 0) {
+      await addToFreeList(pageHeader.nextPageId);
+    }
+
     // Get chunks from the stream and append them to the root page.
     int pageId = rootPageId;
 
-    await for (final bytes in dataStream) {
+    // Open the file and prepare to read it.
+    final fileLength = inputStream.length;
+    final chunkSize = maxPayloadSize;
+    int offset = 0;
+
+    final chunk = Uint8List(chunkSize);
+
+    while (offset < fileLength) {
+      // Determine the chunk size. It cannot be larger than the number of bytes remaining.
+      final remaining = fileLength - offset;
+      final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
+
+      // Read the chunk
+      final chunkStream = inputStream.readBytes(currentChunkSize);
+
+      for (int i = 0; i < currentChunkSize; i++) {
+        chunk[i] = chunkStream.readUint8();
+      }
+
       // Keep track of the last page the function wrote to so that it doesn't have to traverse the entire cluster each time.
-      pageId = await appendToPage(pageType, pageId, Uint8List.fromList(bytes));
+      stopwatch.reset();
+      pageId = await appendToPage(
+        pageType,
+        pageId,
+        Uint8List.sublistView(chunk, 0, currentChunkSize),
+      );
+      offset += currentChunkSize;
+      //print(
+      //  "`appendToPage` Duration: ${stopwatch.elapsedMicroseconds} microseconds",
+      //);
     }
 
     // Return the final page id as it is the last one written to.
@@ -314,7 +419,7 @@ class PageWriter {
     Write a database file to the database segment of the rem file.
     */
     await ensureDatabaseInitialized();
-    await writeData(PageType.database, _footer.dbRootPageId, dbFile.openRead());
+    await writeData(PageType.database, _footer.dbRootPageId, dbFile);
   }
 
   Future<void> addToMediaIndex(MediaIndexEntry entry) async {
@@ -415,7 +520,7 @@ class PageWriter {
       // If it is any other page, modify the next pointer of the page before it to connect it to the page after it.
       else {
         // Read the page header of the previous page to modify it.
-        final pageHeader = await reader.readPageHeader(freeList[index - 1]);
+        final pageHeader = await _getPageHeader(freeList[index - 1]);
 
         // If there is a page in the free list after this page, the previous page will point to it. Otherwise, the previous page will point nowhere (nextPageId = 0)
         pageHeader.nextPageId =
@@ -427,7 +532,6 @@ class PageWriter {
 
       // Indicate the page deletion, and possibly the new free list root page, within the footer.
       _footer.pageCount--;
-      await writeFooter(_footer);
 
       // Call the garbage collector again in case the free list contains more pages at the end of the file.
       await garbageCollector();
@@ -448,7 +552,7 @@ class PageWriter {
     // If the cluster isn't empty, update its last page to point towards the new page (thus adding it to the cluster).
     if (cluster.isNotEmpty) {
       final lastPageId = cluster.last;
-      final lastPageHeader = await reader.readPageHeader(lastPageId);
+      final lastPageHeader = await _getPageHeader(lastPageId);
       lastPageHeader.nextPageId = newPageId;
       await writePageHeader(lastPageHeader);
     }
@@ -471,9 +575,10 @@ class PageWriter {
     final freePageId = _footer.freeListRootPageId;
 
     // Get the first free page's header so that you may set the page fater it as the new root free page.
-    final freePageHeader = await reader.readPageHeader(freePageId);
+    final freePageHeader = await _getPageHeader(freePageId);
 
     // Prepare the free page you will return by making sure it is a fully filled page, changing the page type and ensuring it has no page after it.
+
     await writePage(
       Page(header: PageHeader(pageType: pageType, pageId: freePageId)),
     );
@@ -485,9 +590,6 @@ class PageWriter {
       _footer.freeListRootPageId = await _newFreePage();
     }
 
-    // Update the footer to account for the new free list root page.
-    await writeFooter(_footer);
-
     // Return the free page.
     return freePageId;
   }
@@ -498,8 +600,18 @@ class PageWriter {
     */
     final pageId = ++_footer.pageCount;
     await writePageHeader(PageHeader(pageType: PageType.free, pageId: pageId));
-    await writeFooter(_footer);
     return pageId;
+  }
+
+  Future<PageHeader> _getPageHeader(int pageId) async {
+    if (_pageHeaderCache.containsKey(pageId)) {
+      return _pageHeaderCache[pageId]!;
+    }
+
+    final pageHeader = await reader.readPageHeader(pageId);
+    _pageHeaderCache[pageId] = pageHeader;
+
+    return pageHeader;
   }
 
   Future<void> ensureDatabaseInitialized() async {
@@ -508,7 +620,6 @@ class PageWriter {
     */
     if (_footer.dbRootPageId == 0) {
       _footer.dbRootPageId = await getFreePage(PageType.database);
-      await writeFooter(_footer);
     }
   }
 
@@ -518,7 +629,6 @@ class PageWriter {
     */
     if (_footer.mediaIndexRootPageId == 0) {
       _footer.mediaIndexRootPageId = await getFreePage(PageType.mediaIndex);
-      await writeFooter(_footer);
     }
   }
 
@@ -528,7 +638,6 @@ class PageWriter {
     */
     if (_footer.freeListRootPageId == 0) {
       _footer.freeListRootPageId = await _newFreePage();
-      await writeFooter(_footer);
     }
   }
 }

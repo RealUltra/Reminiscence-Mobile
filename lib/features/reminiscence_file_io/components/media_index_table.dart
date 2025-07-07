@@ -16,7 +16,11 @@ class MediaIndexTable {
       (offset + mediaIndexEntrySize) <= bytes.length;
       offset += 8
     ) {
-      final entryBytes = bytes.sublist(offset, offset + mediaIndexEntrySize);
+      final entryBytes = Uint8List.sublistView(
+        bytes,
+        offset,
+        offset + mediaIndexEntrySize,
+      );
       final entry = MediaIndexEntry.fromBytes(entryBytes);
 
       if (entry.mediaRootPageId != 0) {

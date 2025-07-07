@@ -4,24 +4,23 @@ import 'package:cryptography/cryptography.dart';
 
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/encryption/kdf.dart';
+import 'package:reminiscence/features/reminiscence_file_io/reminiscence_file.dart';
 
 class ReminiscenceData {
-  final String filePath;
+  final ReminiscenceFile file;
   final String dbPath;
   final String? password;
   final List<int> nonce;
   late final SecretKey? secretKey;
-  final Directory mediaDir;
   final Directory tempDir;
 
   AppDatabase? _db;
 
   ReminiscenceData({
-    required this.filePath,
+    required this.file,
     required this.dbPath,
     required this.password,
     required this.nonce,
-    required this.mediaDir,
     required this.tempDir,
   }) {
     if (password == null) {
@@ -36,11 +35,10 @@ class ReminiscenceData {
 
   static ReminiscenceData fromMap(Map<String, dynamic> data) {
     return ReminiscenceData(
-      filePath: data["filePath"],
+      file: ReminiscenceFile()..open(data["filePath"]),
       dbPath: data["dbPath"],
       password: data["password"],
       nonce: data["nonce"],
-      mediaDir: Directory(data["mediaDir"]),
       tempDir: Directory(data["tempDir"]),
     );
   }
@@ -49,11 +47,13 @@ class ReminiscenceData {
     _db ??= AppDatabase(dbPath: dbPath, password: password, token: token);
   }
 
-  Future<void> closeDatabase() async {
+  Future<void> close() async {
     if (isDatabaseReady()) {
       await _db!.close();
       _db = null;
     }
+
+    await file.close();
   }
 
   bool isDatabaseReady() {
@@ -66,11 +66,10 @@ class ReminiscenceData {
 
   Map<String, dynamic> get map {
     return {
-      "filePath": filePath,
+      "filePath": file.name,
       "dbPath": dbPath,
       "password": password,
       "nonce": nonce,
-      "mediaDir": mediaDir.path,
       "tempDir": tempDir.path,
     };
   }

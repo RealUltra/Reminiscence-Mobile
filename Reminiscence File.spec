@@ -1,7 +1,7 @@
 # Reminiscence File (.rem) Format Specification
 
 Version: 1.0
-Page Size: 4096 bytes
+Page Size: 65536 bytes
 Author: Rameez Baig
 Date: 4th July 2025
 Byte Order: Little-endian
@@ -42,7 +42,7 @@ Magic Number: 0x52454D30 (REM0)
 | 14     | Nonce            | 16           | The nonce required to derive the encryption key with kdf         |
 | 30     | Encrypted Nonce  | 32           | Used to test if the decryption key is correct                    |
 | 62     | Footer Page ID   | 4            | The page ID of the footer                                        |
-| 66     | Reserved         | 4030         | Padding                                                          |
+| 66     | Reserved         | 65470        | Padding                                                          |
 
 
 # Metadata Flags
@@ -61,7 +61,7 @@ Magic Number: 0x52454D30 (REM0)
 | 18     | Media Index Root Page ID    | 4            | The id of the first media index page                             |
 | 22     | Free List Root Page ID      | 4            | The id of the first free page                                    |
 | 66     | Page Count                  | 4            | The number of pages currently in the file                        |
-| 70     | Reserved                    | 4066         |                                                                  |
+| 70     | Reserved                    | 65506        |                                                                  |
 
 
 # Media Index Layout - Size depends on number of entries
@@ -81,10 +81,10 @@ Magic Number: 0x52454D30 (REM0)
 | 4      | Media Root Page ID | 4            | The id of this media's first page                                |
 
 
-# Initial Layout - 8196 bytes (8 kb)
+# Initial Layout - 131076 bytes (128 kb)
 
 | Offset | Field                 | Size (bytes) | Description                                                      |
 |--------|-----------------------|--------------|------------------------------------------------------------------|
 | 0      | Magic Number          | 4            | The magic number (Constant as defined above)                     |
-| 4      | Metadata Page         | 4096         | The metadata page as defined above                               |
-| 4100   | Footer Page           | 4096         | The footer page as defined above                                 |
+| 4      | Metadata Page         | 65536        | The metadata page as defined above                               |
+| 65540  | Footer Page           | 65536        | The footer page as defined above                                 |

@@ -9,6 +9,9 @@ class PageHeader {
   int nextPageId;
   int payloadSize;
 
+  final _byteData = ByteData(pageHeaderSize);
+  final _bytes = Uint8List(pageHeaderSize);
+
   PageHeader({
     required this.pageType,
     required this.pageId,
@@ -22,7 +25,7 @@ class PageHeader {
     if (bytes.length <= pageHeaderSize) {
       sizedBytes.setAll(0, bytes);
     } else {
-      sizedBytes.setAll(0, bytes.sublist(0, pageHeaderSize));
+      sizedBytes.setAll(0, Uint8List.sublistView(bytes, 0, pageHeaderSize));
     }
 
     final data = ByteData.sublistView(sizedBytes);
@@ -42,14 +45,16 @@ class PageHeader {
   }
 
   Uint8List toBytes() {
-    final data = ByteData(pageHeaderSize);
+    _byteData.setUint8(0, pageTypeToValue(pageType)); // Page Type
+    _byteData.setUint8(1, 0); // Page Flags
+    _byteData.setUint32(2, pageId, Endian.little); // Page ID
+    _byteData.setUint32(6, nextPageId, Endian.little); // Next Page ID
+    _byteData.setUint16(10, payloadSize, Endian.little); // Payload Size
 
-    data.setUint8(0, pageTypeToValue(pageType)); // Page Type
-    data.setUint8(1, 0); // Page Flags
-    data.setUint32(2, pageId, Endian.little); // Page ID
-    data.setUint32(6, nextPageId, Endian.little); // Next Page ID
-    data.setUint16(10, payloadSize, Endian.little); // Payload Size
+    for (int i = 0; i < pageHeaderSize; i++) {
+      _bytes[i] = _byteData.getUint8(i);
+    }
 
-    return data.buffer.asUint8List();
+    return _bytes;
   }
 }
