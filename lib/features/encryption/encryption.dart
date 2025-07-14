@@ -41,18 +41,13 @@ Future<List<int>> decrypt(List<int> encryptedData, SecretKey secretKey) async {
   return decrypted;
 }
 
-Future<void> encryptStream({
+Stream<List<int>> encryptStream({
   required InputStream inputStream,
-  required String outputPath,
   required SecretKey secretKey,
   int chunkSize = 64 * 1024,
-}) async {
-  final outputStream = File(outputPath).openWrite();
-
+}) async* {
   final algorithm = AesGcm.with256bits();
   final nonce = generateNonce(length: 12);
-
-  outputStream.add(nonce);
 
   Mac? outputMac;
 
@@ -71,39 +66,40 @@ Future<void> encryptStream({
     emptyMac.add(0);
   }
 
-  await outputStream.addStream(encryptedStream);
-  outputStream.add(outputMac?.bytes ?? emptyMac);
+  yield nonce;
+  yield outputMac?.bytes ?? emptyMac;
 
-  await outputStream.close();
+  await for (final chunk in encryptedStream) {
+    yield chunk;
+  }
 }
 
 Future<void> decryptStream({
-  required InputStream inputStream,
+  required Stream<List<int>> stream,
   required String outputPath,
   required SecretKey secretKey,
   int chunkSize = 64 * 1024,
 }) async {
-  final fileLength = inputStream.length;
+  final splitStream = splitEncryptedStream(stream);
+  final iterator = StreamIterator(splitStream);
 
-  if (fileLength < 28) {
-    throw Exception("The file is too short to contain the nonce and the mac.");
-  }
+  await iterator.moveNext();
 
-  final nonce = inputStream.readBytes(12).toUint8List();
+  final nonce = iterator.current;
 
-  final input = getStreamFromInputStream(
-    stream: inputStream.readBytes(fileLength - 28),
-  );
+  await iterator.moveNext();
 
-  final macBytes = inputStream.readBytes(16).toUint8List();
+  final macBytes = iterator.current;
   final mac = Mac(macBytes);
+
+  await iterator.moveNext();
 
   final algorithm = AesGcm.with256bits();
 
   final output = File(outputPath).openWrite();
 
   final decryptedStream = algorithm.decryptStream(
-    input,
+    splitStream,
     secretKey: secretKey,
     nonce: nonce,
     mac: mac,
@@ -112,4 +108,23 @@ Future<void> decryptStream({
   await output.addStream(decryptedStream);
 
   await output.close();
+}
+
+Stream<List<int>> splitEncryptedStream(Stream<List<int>> stream) async* {
+  final iterator = StreamIterator(stream);
+
+  final bytes = <int>[];
+
+  while (await iterator.moveNext() && bytes.length < 28) {
+    bytes.addAll(iterator.current);
+  }
+  
+  yield bytes.sublist(0, 12);
+  yield bytes.sublist(12, 28);
+
+  yield bytes.sublist(28);
+
+  while (await iterator.moveNext()) {
+    yield iterator.current;
+  }
 }

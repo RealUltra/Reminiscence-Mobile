@@ -168,14 +168,24 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   Future<void> _prepareFile() async {
-    final encryptedPath = _getNormalFilePath();
-    final encryptedFile = File(encryptedPath);
+    final file = File(_getFilePath());
 
-    if (!(await encryptedFile.exists())) {
+    if (!(await file.exists())) {
       final remFile = ReminiscenceFile();
       remFile.pageHeaderCache = widget.data.file.pageHeaderCache;
       await remFile.open(widget.data.file.name);
-      await remFile.readMediaToFile(widget.attachment.id, encryptedFile);
+
+      if (widget.data.secretKey == null) {
+        final encryptedPath = _getNormalFilePath();
+        final encryptedFile = File(encryptedPath);
+        await remFile.readMediaToFile(widget.attachment.id, encryptedFile);
+      
+      } else {
+        final decryptedPath = _getDecryptedFilePath();
+        final mediaStream = remFile.readMedia(widget.attachment.id);
+        await decryptStream(stream: mediaStream, outputPath: decryptedPath, secretKey: widget.data.secretKey!);
+      }
+
       await remFile.close();
 
       // Update the widget to render the attachment
@@ -189,6 +199,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       return;
     }
 
+    /*
     final decryptedPath = _getDecryptedFilePath();
     final decryptedFile = File(decryptedPath);
 
@@ -214,5 +225,6 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     if (mounted) {
       setState(() {});
     }
+  */
   }
 }

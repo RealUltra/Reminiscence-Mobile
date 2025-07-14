@@ -9,7 +9,7 @@ class FileCard extends StatelessWidget {
   final void Function(String) onShare;
   final void Function(String) onDelete;
 
-  FileCard({
+  const FileCard({
     super.key,
     required this.filePath,
     required this.lastOpened,

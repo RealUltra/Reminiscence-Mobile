@@ -42,8 +42,8 @@ Future<bool> checkPassword(String remFilePath, String? password) async {
     return !isEncrypted;
   }
 
-  print("Encryption Test: $encryptionTest");
-  print("Encryption Test Length: ${encryptionTest.length}");
+  debugPrint("Encryption Test: $encryptionTest");
+  debugPrint("Encryption Test Length: ${encryptionTest.length}");
 
   DerivedKey derivedKey = await deriveKey(password: password, nonce: nonce);
 
@@ -55,7 +55,7 @@ Future<bool> checkPassword(String remFilePath, String? password) async {
 
     return ListEquality().equals(nonce, decryptedTest);
   } catch (e) {
-    print("Decryption Error: $e");
+    debugPrint("Decryption Error: $e");
     return false;
   }
 }

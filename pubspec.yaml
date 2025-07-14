@@ -47,6 +47,7 @@ dependencies:
 
   emoji_regex: ^0.0.5
   characters: ^1.4.0
+  es_compression: ^2.0.14
 
 dev_dependencies:
   flutter_test:

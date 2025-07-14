@@ -149,17 +149,20 @@ class ReminiscenceFile {
     return (await _reader.readMagicNumber()) == magicNumber;
   }
 
-  Future<void> addMediaFile(int attachmentId, File file) async {
+  Future<void> addMediaFile(
+    int attachmentId, {
+    File? file,
+    InputStream? inputStream,
+    Stream<List<int>>? stream,
+  }) async {
     /*
     Add a media file to the rem file and to the media index.
     */
 
-    // Get the page to start writing the media to.
-    final watch = Stopwatch();
-    watch.start();
+    assert(file != null || inputStream != null || stream != null);
 
+    // Get the page to start writing the media to.
     final mediaRootPageId = await _writer.getFreePage(PageType.media);
-    //print("1. ${watch.elapsedMicroseconds} microseconds");
 
     // Prepare the media index entry with the media root page id and the attachment id.
     final mediaIndexEntry = MediaIndexEntry(
@@ -168,62 +171,26 @@ class ReminiscenceFile {
     );
 
     // Add the entry to the media index.
-    //watch
-    //  ..reset()
-    //  ..start();
     await _writer.addToMediaIndex(mediaIndexEntry);
-    //print("Added to media index in ${watch.elapsedMicroseconds} microseconds");
 
     // Write the data to this media file's cluster.
-    //watch
-    //  ..reset()
-    //  ..start();
-    await _writer.writeData(PageType.media, mediaRootPageId, file);
-    //print("``writeData` Duration: ${watch.elapsedMilliseconds} ms");
+    if (file != null) {
+      await _writer.writeData(PageType.media, mediaRootPageId, file);
 
-    watch.stop();
-  }
+    } else if (stream != null) {
+      await _writer.writeDataFromStream(
+        PageType.media,
+        mediaRootPageId,
+        stream,
+      );
 
-  Future<void> addMediaFileFromStream(
-    int attachmentId,
-    InputStream inputStream,
-  ) async {
-    /*
-    Add a media file to the rem file and to the media index.
-    */
-
-    // Get the page to start writing the media to.
-    final watch = Stopwatch();
-    watch.start();
-
-    final mediaRootPageId = await _writer.getFreePage(PageType.media);
-    //print("1. ${watch.elapsedMicroseconds} microseconds");
-
-    // Prepare the media index entry with the media root page id and the attachment id.
-    final mediaIndexEntry = MediaIndexEntry(
-      attachmentId: attachmentId,
-      mediaRootPageId: mediaRootPageId,
-    );
-
-    // Add the entry to the media index.
-    //watch
-    //  ..reset()
-    //  ..start();
-    await _writer.addToMediaIndex(mediaIndexEntry);
-    //print("Added to media index in ${watch.elapsedMicroseconds} microseconds");
-
-    // Write the data to this media file's cluster.
-    //watch
-    //  ..reset()
-    //  ..start();
-    await _writer.writeDataFromStream(
-      PageType.media,
-      mediaRootPageId,
-      inputStream,
-    );
-    //print("``writeData` Duration: ${watch.elapsedMilliseconds} ms");
-
-    watch.stop();
+    } else {
+      await _writer.writeDataFromInputStream(
+        PageType.media,
+        mediaRootPageId,
+        inputStream!,
+      );
+    }
   }
 
   Future<void> removeMediaFile(int attachmentId) async {
@@ -270,6 +237,18 @@ class ReminiscenceFile {
     await _readToFile(mediaIndexEntry.mediaRootPageId, outputFile);
 
     print("Finished writing attachment $attachmentId");
+  }
+
+  Stream<List<int>> readMedia(int attachmentId) async* {
+    /*
+    Reads the media file related to `attachmentId` stored within the rem file and writes it to `outputFile`.
+    */
+
+    final mediaIndexEntry = await _reader.readMediaIndexEntry(attachmentId);
+
+    await for (final chunk in  _reader.readData(mediaIndexEntry.mediaRootPageId)) {
+      yield chunk;
+    }
   }
 
   Future<void> _readToFile(int rootPageId, File outputFile) async {

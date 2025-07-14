@@ -98,6 +98,35 @@ class BodyState extends State<Body> {
   }
 
   Future<void> loadNewData(BuildContext context) async {
+    /*
+    final status = await Permission.storage.request();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      return;
+    }
+
+    if (status.isDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Reminiscence requires storage permissions to load your data!",
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+
+      return;
+    }
+    */
+
     final result = await FilePicker.platform.pickFiles(type: FileType.any);
 
     if (result != null) {

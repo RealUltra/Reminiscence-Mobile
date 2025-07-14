@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -280,30 +281,12 @@ class PageWriter {
     Returns the page id of the last page it wrote to.
     */
 
-    final stopwatch = Stopwatch()..start();
-
-    // Add the existing cluster to the free list to remove any existing data.
-    final pageHeader = await _getPageHeader(rootPageId);
-
-    // Remove any existing data from the root page as well by emptying it.
-    await writePage(
-      Page(header: PageHeader(pageType: pageType, pageId: rootPageId)),
-    );
-
-    if (pageHeader.nextPageId != 0) {
-      await addToFreeList(pageHeader.nextPageId);
-    }
-
-    // Get chunks from the stream and append them to the root page.
-    int pageId = rootPageId;
-
     // Open the file and prepare to read it.
     final raf = await file.open();
     final fileLength = await raf.length();
-    final chunkSize = maxPayloadSize;
     int offset = 0;
 
-    while (offset < fileLength) {
+    return _writeData(pageType, rootPageId, (int chunkSize) async {
       // Determine the chunk size. It cannot be larger than the number of bytes remaining.
       final remaining = fileLength - offset;
       final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
@@ -311,22 +294,35 @@ class PageWriter {
       // Read the chunk
       final chunk = await raf.read(currentChunkSize);
 
-      // Keep track of the last page the function wrote to so that it doesn't have to traverse the entire cluster each time.
-      stopwatch.reset();
-      pageId = await appendToPage(pageType, pageId, chunk);
       offset += currentChunkSize;
-      //print(
-      //  "`appendToPage` Duration: ${stopwatch.elapsedMicroseconds} microseconds",
-      //);
-    }
 
-    await raf.close();
-
-    // Return the final page id as it is the last one written to.
-    return pageId;
+      return chunk;
+    }, () => (offset >= fileLength));
   }
 
   Future<int> writeDataFromStream(
+    PageType pageType,
+    int rootPageId,
+    Stream<List<int>> stream,
+  ) async {
+    /*
+    Write data from a stream into a cluster.
+
+    Returns the page id of the last page it wrote to.
+    */
+
+    final iterator = StreamIterator(stream);
+    bool finished = await iterator.moveNext();
+
+    return _writeData(pageType, rootPageId, (int chunkSize) async {
+      // Determine the chunk size. It cannot be larger than the number of bytes remaining.
+      final chunk = iterator.current;
+      finished = !(await iterator.moveNext());
+      return Uint8List.fromList(chunk);
+    }, () => finished);
+  }
+
+  Future<int> writeDataFromInputStream(
     PageType pageType,
     int rootPageId,
     InputStream inputStream,
@@ -337,7 +333,40 @@ class PageWriter {
     Returns the page id of the last page it wrote to.
     */
 
-    final stopwatch = Stopwatch()..start();
+    // Open the file and prepare to read it.
+    final fileLength = inputStream.length;
+    int offset = 0;
+    Uint8List? chunk;
+
+    return _writeData(pageType, rootPageId, (int chunkSize) async {
+      chunk ??= Uint8List(chunkSize);
+
+      final remaining = fileLength - offset;
+      final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
+
+      final chunkStream = inputStream.readBytes(currentChunkSize);
+
+      for (int i = 0; i < currentChunkSize; i++) {
+        chunk![i] = chunkStream.readUint8();
+      }
+
+      offset += currentChunkSize;
+
+      return Uint8List.sublistView(chunk!, 0, currentChunkSize);
+    }, () => (offset >= fileLength));
+  }
+
+  Future<int> _writeData(
+    PageType pageType,
+    int rootPageId,
+    Future<Uint8List> Function(int chunkSize) getNextChunk,
+    bool Function() endOfFile,
+  ) async {
+    /*
+    Write data as chunks into a cluster. Used to write data from a file, an `InputFileStream` or a `Stream<List<int>>`.
+
+    Returns the page id of the last page it wrote to.
+    */
 
     // Add the existing cluster to the free list to remove any existing data.
     final pageHeader = await _getPageHeader(rootPageId);
@@ -355,35 +384,14 @@ class PageWriter {
     int pageId = rootPageId;
 
     // Open the file and prepare to read it.
-    final fileLength = inputStream.length;
     final chunkSize = maxPayloadSize;
-    int offset = 0;
 
-    final chunk = Uint8List(chunkSize);
-
-    while (offset < fileLength) {
+    while (!endOfFile()) {
       // Determine the chunk size. It cannot be larger than the number of bytes remaining.
-      final remaining = fileLength - offset;
-      final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
-
-      // Read the chunk
-      final chunkStream = inputStream.readBytes(currentChunkSize);
-
-      for (int i = 0; i < currentChunkSize; i++) {
-        chunk[i] = chunkStream.readUint8();
-      }
+      final chunk = await getNextChunk(chunkSize);
 
       // Keep track of the last page the function wrote to so that it doesn't have to traverse the entire cluster each time.
-      stopwatch.reset();
-      pageId = await appendToPage(
-        pageType,
-        pageId,
-        Uint8List.sublistView(chunk, 0, currentChunkSize),
-      );
-      offset += currentChunkSize;
-      //print(
-      //  "`appendToPage` Duration: ${stopwatch.elapsedMicroseconds} microseconds",
-      //);
+      pageId = await appendToPage(pageType, pageId, chunk);
     }
 
     // Return the final page id as it is the last one written to.

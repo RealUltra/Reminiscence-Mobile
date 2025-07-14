@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'dart:ui';
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -144,7 +145,7 @@ Future<String?> createRemFile({
   }
 
   stopwatch.stop();
-  print(
+  debugPrint(
     "Time taken to add all the chats to the database: ${stopwatch.elapsed.inSeconds} seconds",
   );
   //
@@ -167,7 +168,9 @@ Future<String?> createRemFile({
     });
   });
 
-  print("`insertMediaFiles` Duration: ${stopwatch.elapsed.inSeconds} seconds");
+  debugPrint(
+    "`insertMediaFiles` Duration: ${stopwatch.elapsed.inSeconds} seconds",
+  );
 
   sendPort?.send({
     "type": "progress",
@@ -291,8 +294,6 @@ Future<void> insertMediaFiles(
           )
           .get();
 
-  final tempDir = await getTemporaryDirectory();
-
   int attachmentsDone = 0;
 
   for (final row in results) {
@@ -306,24 +307,15 @@ Future<void> insertMediaFiles(
     if (archiveFile != null) {
       InputStream inputStream = archiveFile.rawContent!.getStream();
 
-      final tempPath = path.join(tempDir.path, "attachment.dat");
-
       if (derivedKey != null) {
-        await encryptStream(
+        final encryptedStream = encryptStream(
           inputStream: inputStream,
-          outputPath: tempPath,
           secretKey: derivedKey.secretKey,
         );
 
-        await remFile.addMediaFile(attachmentId, File(tempPath));
+        await remFile.addMediaFile(attachmentId, stream: encryptedStream);
       } else {
-        await remFile.addMediaFileFromStream(attachmentId, inputStream);
-      }
-
-      final tempFile = File(tempPath);
-
-      if (await tempFile.exists()) {
-        await tempFile.delete();
+        await remFile.addMediaFile(attachmentId, inputStream: inputStream);
       }
     }
 
