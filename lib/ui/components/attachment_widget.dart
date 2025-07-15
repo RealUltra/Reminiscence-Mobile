@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
@@ -31,17 +30,25 @@ class AttachmentWidget extends StatefulWidget {
 }
 
 class _AttachmentWidgetState extends State<AttachmentWidget> {
+  bool isReady = false;
+
   @override
   void initState() {
     super.initState();
 
     if (widget.attachment.type != AttachmentType.link) {
       _prepareFile();
+    } else {
+      setState(() => isReady = true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!isReady) {
+      return CircularProgressIndicator();
+    }
+
     if (widget.attachment.type == AttachmentType.photo) {
       return _buildPhoto();
     } else if (widget.attachment.type == AttachmentType.audio) {
@@ -56,35 +63,41 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   Widget _buildPhoto() {
-    String imagePath = _getFilePath();
+    final imageFile = File(_getFilePath());
 
-    if (!File(imagePath).existsSync()) {
+    if (!imageFile.existsSync()) {
+      return CircularProgressIndicator();
+    }
+
+    if (imageFile.lengthSync() <= 0) {
+      imageFile.deleteSync();
+      _prepareFile();
       return CircularProgressIndicator();
     }
 
     return GestureDetector(
       onTap: () => launchFile(),
-      child: Image.file(File(imagePath), width: 300, fit: BoxFit.cover),
+      child: Image.file(imageFile, width: 300, fit: BoxFit.cover),
     );
   }
 
   Widget _buildAudio() {
-    String audioPath = _getFilePath();
+    final audioFile = File(_getFilePath());
 
-    if (!File(audioPath).existsSync()) {
+    if (!audioFile.existsSync()) {
       return CircularProgressIndicator();
     }
 
     return Container(
       margin: EdgeInsets.only(top: 8),
-      child: AudioPlayerWidget(audioPath, onShare: shareFile),
+      child: AudioPlayerWidget(audioFile.path, onShare: shareFile),
     );
   }
 
   Widget _buildFile() {
-    String filePath = _getFilePath();
+    final file = File(_getFilePath());
 
-    if (!File(filePath).existsSync()) {
+    if (!file.existsSync()) {
       return CircularProgressIndicator();
     }
 
@@ -139,22 +152,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   String _getFilePath() {
-    if (widget.data.secretKey == null) {
-      return _getNormalFilePath();
-    } else {
-      return _getDecryptedFilePath();
-    }
-  }
-
-  String _getNormalFilePath() {
     return p.join(widget.data.tempDir.path, "media_${widget.attachment.id}");
-  }
-
-  String _getDecryptedFilePath() {
-    return p.join(
-      widget.data.tempDir.path,
-      "media_${widget.attachment.id}_decrypted",
-    );
   }
 
   String _getExtension() {
@@ -176,30 +174,27 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       await remFile.open(widget.data.file.name);
 
       if (widget.data.secretKey == null) {
-        final encryptedPath = _getNormalFilePath();
-        final encryptedFile = File(encryptedPath);
-        await remFile.readMediaToFile(widget.attachment.id, encryptedFile);
-      
+        await remFile.readMediaToFile(widget.attachment.id, file);
+
       } else {
-        final decryptedPath = _getDecryptedFilePath();
-        final mediaStream = remFile.readMedia(widget.attachment.id);
-        await decryptStream(stream: mediaStream, outputPath: decryptedPath, secretKey: widget.data.secretKey!);
+        final stream = remFile.readMedia(widget.attachment.id);
+        await decryptStream(stream: stream, outputFile: file, secretKey: widget.data.secretKey!);
       }
 
       await remFile.close();
-
-      // Update the widget to render the attachment
-      if (mounted) {
-        setState(() {});
-      }
     }
 
+    // Update the widget to render the attachment
+    if (mounted) {
+      setState(() => isReady = true);
+    }
+
+    /*
     // If the file is not encrypted, exit the function.
     if (widget.data.secretKey == null) {
       return;
     }
 
-    /*
     final decryptedPath = _getDecryptedFilePath();
     final decryptedFile = File(decryptedPath);
 

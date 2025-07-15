@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:cryptography/cryptography.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+//import 'package:path_provider/path_provider.dart';
 
 import "package:reminiscence/features/encryption/utils.dart";
 
-Stream<List<int>> getStreamFromInputStream({
+Stream<List<int>> _streamToInputStream({
   required InputStream stream,
   int chunkSize = 64 * 1024,
 }) async* {
@@ -46,13 +49,18 @@ Stream<List<int>> encryptStream({
   required SecretKey secretKey,
   int chunkSize = 64 * 1024,
 }) async* {
+  // Prepare the algorithm
   final algorithm = AesGcm.with256bits();
+
+  // Generate a new nonce for this file.
   final nonce = generateNonce(length: 12);
 
-  Mac? outputMac;
+  // Prepare the variable for the mac.
+  late Mac outputMac;
 
+  // Encrypt the data and stream the encrypted data.
   final encryptedStream = algorithm.encryptStream(
-    getStreamFromInputStream(stream: inputStream, chunkSize: chunkSize),
+    _streamToInputStream(stream: inputStream, chunkSize: chunkSize),
     secretKey: secretKey,
     nonce: nonce,
     onMac: (Mac mac) {
@@ -60,71 +68,93 @@ Stream<List<int>> encryptStream({
     },
   );
 
-  List<int> emptyMac = [];
-
-  for (int i = 0; i < 16; i++) {
-    emptyMac.add(0);
-  }
-
-  yield nonce;
-  yield outputMac?.bytes ?? emptyMac;
-
+  // Prepare the temporary file to store the encrypted data.
+  final tempDir = await getTemporaryDirectory();
+  final tempFile = File(p.join(tempDir.path, "temp.encrypted"));
+  final sink = tempFile.openWrite();
   await for (final chunk in encryptedStream) {
+    sink.add(chunk);
+  }
+  await sink.close();
+
+  // Output the nonce & mac to the encrypted file.
+  yield nonce;
+  yield outputMac.bytes;
+
+  // Read the encrypted data back from the temporary file and output it.
+  final tempFileStream = tempFile.openRead();
+  await for (final chunk in tempFileStream) {
     yield chunk;
   }
 }
 
 Future<void> decryptStream({
   required Stream<List<int>> stream,
-  required String outputPath,
+  required File outputFile,
   required SecretKey secretKey,
   int chunkSize = 64 * 1024,
 }) async {
-  final splitStream = splitEncryptedStream(stream);
+  // This special stream will allow us to get the nonce & mac separately first.
+  final splitStream = _splitEncryptedStream(stream);
+
+  // An iterator to get items from the stream one by one.
   final iterator = StreamIterator(splitStream);
 
+  // Get the nonce
   await iterator.moveNext();
-
   final nonce = iterator.current;
 
+  // Get the mac
   await iterator.moveNext();
-
   final macBytes = iterator.current;
   final mac = Mac(macBytes);
 
-  await iterator.moveNext();
-
+  // Prepare the algorithm.
   final algorithm = AesGcm.with256bits();
 
-  final output = File(outputPath).openWrite();
-
+  // Decrypt the encrypted data within the input stream (nonce & mac ignored).
   final decryptedStream = algorithm.decryptStream(
-    splitStream,
+    _restOfStream(iterator),
     secretKey: secretKey,
     nonce: nonce,
     mac: mac,
   );
 
+  // Write the decrypted stream to the output file.
+  final output = outputFile.openWrite();
   await output.addStream(decryptedStream);
-
   await output.close();
+
+  // Cancel the iterator
+  await iterator.cancel();
 }
 
-Stream<List<int>> splitEncryptedStream(Stream<List<int>> stream) async* {
+Stream<List<int>> _splitEncryptedStream(Stream<List<int>> stream) async* {
   final iterator = StreamIterator(stream);
 
   final bytes = <int>[];
 
-  while (await iterator.moveNext() && bytes.length < 28) {
+  while (bytes.length < 28 && await iterator.moveNext()) {
     bytes.addAll(iterator.current);
   }
   
   yield bytes.sublist(0, 12);
   yield bytes.sublist(12, 28);
 
-  yield bytes.sublist(28);
+  if (bytes.length > 28) {
+    yield bytes.sublist(28);
+  }
 
   while (await iterator.moveNext()) {
     yield iterator.current;
+  }
+
+  await iterator.cancel();
+}
+
+Stream<List<int>> _restOfStream(StreamIterator<List<int>> iterator) async* {
+  while (await iterator.moveNext()) {
+    final chunk = iterator.current;
+    yield chunk;
   }
 }

@@ -312,7 +312,7 @@ class PageWriter {
     */
 
     final iterator = StreamIterator(stream);
-    bool finished = await iterator.moveNext();
+    bool finished = !(await iterator.moveNext());
 
     return _writeData(pageType, rootPageId, (int chunkSize) async {
       // Determine the chunk size. It cannot be larger than the number of bytes remaining.

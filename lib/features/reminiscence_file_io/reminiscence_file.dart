@@ -225,28 +225,19 @@ class ReminiscenceFile {
     /*
     Reads the media file related to `attachmentId` stored within the rem file and writes it to `outputFile`.
     */
-
-    print("Locating attachment $attachmentId media index entry.");
-
     final mediaIndexEntry = await _reader.readMediaIndexEntry(attachmentId);
-
-    print(
-      "Writing attachment $attachmentId to file from page ${mediaIndexEntry.mediaRootPageId}.",
-    );
-
     await _readToFile(mediaIndexEntry.mediaRootPageId, outputFile);
-
-    print("Finished writing attachment $attachmentId");
   }
 
-  Stream<List<int>> readMedia(int attachmentId) async* {
+  Stream<Uint8List> readMedia(int attachmentId) async* {
     /*
     Reads the media file related to `attachmentId` stored within the rem file and writes it to `outputFile`.
     */
 
     final mediaIndexEntry = await _reader.readMediaIndexEntry(attachmentId);
+    final rootPageId = mediaIndexEntry.mediaRootPageId;
 
-    await for (final chunk in  _reader.readData(mediaIndexEntry.mediaRootPageId)) {
+    await for (final chunk in _reader.readData(rootPageId)) {
       yield chunk;
     }
   }
@@ -258,8 +249,8 @@ class ReminiscenceFile {
 
     final sink = outputFile.openWrite();
 
-    await for (final buffer in _reader.readData(rootPageId)) {
-      sink.add(buffer);
+    await for (final chunk in _reader.readData(rootPageId)) {
+      sink.add(chunk);
     }
 
     await sink.flush();
