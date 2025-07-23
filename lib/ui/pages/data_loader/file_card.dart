@@ -29,7 +29,7 @@ class FileCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.fromLTRB(16, 12, 4, 12),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

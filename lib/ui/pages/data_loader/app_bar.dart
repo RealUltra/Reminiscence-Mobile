@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/data_loader/full_screen_ad.dart';
+import 'package:reminiscence/ui/components/video_player_widget.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MyAppBar({super.key});
@@ -10,7 +12,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text("Reminiscence"),
 
       scrolledUnderElevation: 0.0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
 
       actions: [
         IconButton(
@@ -33,11 +35,27 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   void showTutorial(BuildContext context) {
+    /*
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
             (_) => FullScreenAd(assetFilePath: "assets/tutorial-video.mp4"),
       ),
+    );
+    */
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => Material(
+            child: VideoPlayerWidget(
+              File("assets/tutorial-video.mp4"),
+              isAssetFile: true,
+              allowFullScreen: false,
+              startPlaying: true,
+              alwaysShowControls: true,
+            ),
+          ),
     );
   }
 }

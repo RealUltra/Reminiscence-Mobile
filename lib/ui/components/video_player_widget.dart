@@ -9,7 +9,20 @@ class VideoPlayerWidget extends StatefulWidget {
   final File videoFile;
   final VoidCallback? onShare;
 
-  const VideoPlayerWidget(this.videoFile, {super.key, this.onShare});
+  final bool isAssetFile;
+  final bool allowFullScreen;
+  final bool startPlaying;
+  final bool alwaysShowControls;
+
+  const VideoPlayerWidget(
+    this.videoFile, {
+    super.key,
+    this.onShare,
+    this.isAssetFile = false,
+    this.allowFullScreen = true,
+    this.startPlaying = false,
+    this.alwaysShowControls = false,
+  });
 
   @override
   State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -31,9 +44,18 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   Future<void> initVideo() async {
-    controller = VideoPlayerController.file(widget.videoFile);
+    if (!widget.isAssetFile) {
+      controller = VideoPlayerController.file(widget.videoFile);
+    } else {
+      controller = VideoPlayerController.asset(widget.videoFile.path);
+    }
+
     controller.addListener(() => setState(() {}));
     await controller.initialize();
+
+    if (widget.startPlaying) {
+      await controller.play();
+    }
 
     setState(() {
       isReady = true;
@@ -62,12 +84,16 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         width: 300,
         child: Stack(
           children: [
-            AspectRatio(
-              aspectRatio: controller.value.aspectRatio,
-              child: VideoPlayer(controller),
+            Center(
+              child: AspectRatio(
+                aspectRatio: controller.value.aspectRatio,
+                child: VideoPlayer(controller),
+              ),
             ),
 
-            (showControls || !controller.value.isPlaying)
+            (showControls ||
+                    !controller.value.isPlaying ||
+                    widget.alwaysShowControls)
                 ? Positioned(
                   left: 0,
                   right: 0,
@@ -134,10 +160,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                                   )
                                   : Container(),
 
-                              IconButton(
-                                onPressed: () => _fullScreen(),
-                                icon: Icon(Icons.fullscreen),
-                              ),
+                              widget.allowFullScreen
+                                  ? IconButton(
+                                    onPressed: () => _fullScreen(),
+                                    icon: Icon(Icons.fullscreen),
+                                  )
+                                  : Container(),
                             ],
                           ),
                         ],
