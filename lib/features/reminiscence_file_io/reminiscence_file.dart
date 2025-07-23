@@ -159,6 +159,7 @@ class ReminiscenceFile {
     Add a media file to the rem file and to the media index.
     */
 
+    // Ensure the user has included at least one of the parameters to read the file from.
     assert(file != null || inputStream != null || stream != null);
 
     // Get the page to start writing the media to.
@@ -211,7 +212,7 @@ class ReminiscenceFile {
 
   Future<void> writeDatabase(File dbFile) => _writer.writeDatabase(dbFile);
 
-  Future<void> readDatabaseToFile(File outputFile) async {
+  Future<void> writeDatabaseToFile(File outputFile) async {
     /*
     Reads the database file within the rem file and writes it to `outputFile`.
     */
@@ -221,7 +222,7 @@ class ReminiscenceFile {
 
   Future<void> readMediaIndex() => _reader.readMediaIndex();
 
-  Future<void> readMediaToFile(int attachmentId, File outputFile) async {
+  Future<void> writeMediaToFile(int attachmentId, File outputFile) async {
     /*
     Reads the media file related to `attachmentId` stored within the rem file and writes it to `outputFile`.
     */
@@ -231,12 +232,10 @@ class ReminiscenceFile {
 
   Stream<Uint8List> readMedia(int attachmentId) async* {
     /*
-    Reads the media file related to `attachmentId` stored within the rem file and writes it to `outputFile`.
+    Reads the media file related to `attachmentId` stored within the rem file and streams it.
     */
-
     final mediaIndexEntry = await _reader.readMediaIndexEntry(attachmentId);
     final rootPageId = mediaIndexEntry.mediaRootPageId;
-
     await for (final chunk in _reader.readData(rootPageId)) {
       yield chunk;
     }
@@ -244,15 +243,12 @@ class ReminiscenceFile {
 
   Future<void> _readToFile(int rootPageId, File outputFile) async {
     /*
-    Read the data within a cluster to a file.
+    Read the data within a cluster and write it to a file.
     */
-
     final sink = outputFile.openWrite();
-
     await for (final chunk in _reader.readData(rootPageId)) {
       sink.add(chunk);
     }
-
     await sink.flush();
     await sink.close();
   }

@@ -276,7 +276,7 @@ class PageWriter {
 
   Future<int> writeData(PageType pageType, int rootPageId, File file) async {
     /*
-    Write data from a stream into a cluster.
+    Write data from a file into a cluster.
 
     Returns the page id of the last page it wrote to.
     */
@@ -286,16 +286,12 @@ class PageWriter {
     final fileLength = await raf.length();
     int offset = 0;
 
+    // Write the data to the cluster.
     return _writeData(pageType, rootPageId, (int chunkSize) async {
-      // Determine the chunk size. It cannot be larger than the number of bytes remaining.
       final remaining = fileLength - offset;
       final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
-
-      // Read the chunk
       final chunk = await raf.read(currentChunkSize);
-
       offset += currentChunkSize;
-
       return chunk;
     }, () => (offset >= fileLength));
   }
@@ -328,30 +324,24 @@ class PageWriter {
     InputStream inputStream,
   ) async {
     /*
-    Write data from a stream into a cluster.
+    Write data from an input stream into a cluster.
 
     Returns the page id of the last page it wrote to.
     */
 
-    // Open the file and prepare to read it.
     final fileLength = inputStream.length;
     int offset = 0;
     Uint8List? chunk;
 
     return _writeData(pageType, rootPageId, (int chunkSize) async {
       chunk ??= Uint8List(chunkSize);
-
       final remaining = fileLength - offset;
       final currentChunkSize = remaining >= chunkSize ? chunkSize : remaining;
-
       final chunkStream = inputStream.readBytes(currentChunkSize);
-
       for (int i = 0; i < currentChunkSize; i++) {
         chunk![i] = chunkStream.readUint8();
       }
-
       offset += currentChunkSize;
-
       return Uint8List.sublistView(chunk!, 0, currentChunkSize);
     }, () => (offset >= fileLength));
   }
@@ -382,14 +372,13 @@ class PageWriter {
 
     // Get chunks from the stream and append them to the root page.
     int pageId = rootPageId;
-
-    // Open the file and prepare to read it.
     final chunkSize = maxPayloadSize;
 
     while (!endOfFile()) {
-      // Determine the chunk size. It cannot be larger than the number of bytes remaining.
+      // Get the chunk.
       final chunk = await getNextChunk(chunkSize);
 
+      // Add the chunk to the page.
       // Keep track of the last page the function wrote to so that it doesn't have to traverse the entire cluster each time.
       pageId = await appendToPage(pageType, pageId, chunk);
     }
@@ -436,9 +425,7 @@ class PageWriter {
     */
 
     // Read the existing entry of this attachment in the media index table to delete any existing media.
-    final mediaIndexEntry = await reader.readMediaIndexEntry(
-      entry.attachmentId,
-    );
+    final mediaIndexEntry = await reader.readMediaIndexEntry(entry.attachmentId);
 
     // If the entry exists, delete its data (by adding it to the free list).
     if (mediaIndexEntry.mediaRootPageId != 0) {

@@ -48,7 +48,7 @@ Future<ReminiscenceData?> loadRemFile({
   });
 
   // Extract the database file.
-  await remFile.readDatabaseToFile(File(dbPath));
+  await remFile.writeDatabaseToFile(File(dbPath));
 
   if (isCancelled) return null;
 

@@ -174,7 +174,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       await remFile.open(widget.data.file.name);
 
       if (widget.data.secretKey == null) {
-        await remFile.readMediaToFile(widget.attachment.id, file);
+        await remFile.writeMediaToFile(widget.attachment.id, file);
 
       } else {
         final stream = remFile.readMedia(widget.attachment.id);
@@ -188,38 +188,5 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     if (mounted) {
       setState(() => isReady = true);
     }
-
-    /*
-    // If the file is not encrypted, exit the function.
-    if (widget.data.secretKey == null) {
-      return;
-    }
-
-    final decryptedPath = _getDecryptedFilePath();
-    final decryptedFile = File(decryptedPath);
-
-    // If the decrypted file already exists, exit the function.
-    if (await decryptedFile.exists()) {
-      // Update the widget to render the attachment
-      if (mounted) {
-        setState(() {});
-      }
-      return;
-    }
-
-    // Decrypt the file.
-    final stream = InputFileStream(encryptedPath);
-
-    await decryptStream(
-      inputStream: stream,
-      outputPath: decryptedPath,
-      secretKey: widget.data.secretKey!,
-    );
-
-    // Update the widget to render the attachment
-    if (mounted) {
-      setState(() {});
-    }
-  */
   }
 }
