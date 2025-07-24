@@ -15,6 +15,8 @@ Future<ReminiscenceData?> loadRemFile({
   String? password,
   required RootIsolateToken rootToken,
   required SendPort? sendPort,
+  double progressStart = 0.0,
+  double progressValue = 1.0, 
 }) async {
   // Set up receive port and cancellation token
   ReceivePort? receivePort = sendPort != null ? ReceivePort() : null;
@@ -44,7 +46,7 @@ Future<ReminiscenceData?> loadRemFile({
 
   sendPort?.send({
     "type": "progress",
-    "progress": {"value": 0.0, "label": 'Preparing Chat Messages...'},
+    "progress": {"value": progressStart, "label": 'Preparing Chat Messages...'},
   });
 
   // Extract the database file.
@@ -70,7 +72,7 @@ Future<ReminiscenceData?> loadRemFile({
 
   sendPort?.send({
     "type": "progress",
-    "progress": {"value": 1.0},
+    "progress": {"value": progressStart + progressValue},
   });
 
   return ReminiscenceData(

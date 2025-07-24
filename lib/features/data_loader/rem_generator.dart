@@ -51,6 +51,8 @@ Future<String?> createRemFile({
   String? password,
   RootIsolateToken? rootToken,
   SendPort? sendPort,
+  double progressStart = 0.0,
+  double progressValue = 1.0,
 }) async {
   // Set up receive port and cancellation token
   ReceivePort? receivePort = sendPort != null ? ReceivePort() : null;
@@ -132,7 +134,10 @@ Future<String?> createRemFile({
       sendPort?.send({
         "type": "progress",
         "progress": {
-          "value": (stacksDone + increment) / totalStacks * 0.49,
+          "value":
+              progressStart +
+              ((stacksDone + increment) / totalStacks * 0.49) *
+                  progressValue,
           "label":
               'Loading Chat Messages:\n${chat.title}\n(${i + 1} / ${chats.length})',
         },
@@ -161,7 +166,10 @@ Future<String?> createRemFile({
     sendPort?.send({
       "type": "progress",
       "progress": {
-        "value": 0.49 + attachmentsDone / totalAttachments * 0.5,
+        "value":
+            progressStart +
+            (0.49 + attachmentsDone / totalAttachments * 0.5) *
+                progressValue,
         "label":
             'Loading Chat Media...\n($attachmentsDone / $totalAttachments)',
       },
@@ -175,7 +183,10 @@ Future<String?> createRemFile({
   sendPort?.send({
     "type": "progress",
     "progress":
-        Progress(value: 0.99, label: "Bundling everything up...").toMap(),
+        Progress(
+          value: progressStart + 0.99 * progressValue,
+          label: "Bundling everything up...",
+        ).toMap(),
   });
 
   // Close the database
@@ -189,7 +200,7 @@ Future<String?> createRemFile({
 
   sendPort?.send({
     "type": "progress",
-    "progress": Progress(value: 1.0).toMap(),
+    "progress": Progress(value: progressStart + progressValue).toMap(),
   });
 
   return outputPath;

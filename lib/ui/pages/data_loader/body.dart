@@ -16,7 +16,6 @@ import 'package:reminiscence/features/data_loader/rem_generator.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/file_history.dart';
-import 'package:reminiscence/ui/pages/data_loader/password_entry/bullet_point.dart';
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry/password_entry_dialog.dart';
@@ -291,25 +290,45 @@ class BodyState extends State<Body> {
 
     if (!context.mounted) return;
 
-    // Create a rem file with a loading screen.
-    String? outputPath =
-        await Navigator.of(context).pushNamed(
-              "/loading",
-              arguments: LoadingScreenArgs(
-                operation: createRemFileForIsolate,
-                operationParams: <dynamic>[filePath, password],
-                tooltip: "ℹ️ Do not close the app.\n⏳ This can take some time.\n✅ Only happens once per file.\n🚀 Instant access afterward.",
-              ),
-            )
-            as String?;
+    // Create a rem file with a loading screen and load it.
+    final dataMap = await Navigator.of(context).pushNamed(
+        "/loading",
+        arguments: LoadingScreenArgs(
+          operation: createRemFileForIsolate,
+          operationParams: <dynamic>[filePath, password],
+          tooltip: "ℹ️ Do not close the app.\n⏳ This can take some time.\n✅ Only happens once per file.\n🚀 Instant access afterward.",
+        ),
+      ) as Map<String, dynamic>?;
 
-    if (outputPath == null) return;
+    // Update the files list in case a new rem file was successfully generated.
+    setState(() {});
 
-    // Save the file in my applications directory.
-    final remFilePath = await saveNewRemFile(outputPath);
+    // Make sure the rem file was successfully generated & loaded.
+    if (dataMap == null) return;
 
-    if (!context.mounted) return;
+    // Parse the ReminiscenceData object from the map.
+    final data = ReminiscenceData.fromMap(dataMap);
+    data.loadDatabase();
 
+    if (!context.mounted) {
+      await data.close();
+      return;
+    }
+
+    // Load data into the current session
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    sessionData.setData(data);
+    sessionData.setChat(null);
+
+    if (!context.mounted) {
+      await data.close();
+      return;
+    }
+
+    // Move to the viewer page.
+    await Navigator.of(context).pushNamed("/viewer");
+
+    /*
     await showDialog(
       context: context,
 
@@ -351,25 +370,7 @@ class BodyState extends State<Body> {
             ],
           ),
     );
-
-    if (!context.mounted) return;
-
-    // Load the rem file.
-    await loadRemData(context, remFilePath, password: password);
-  }
-
-  Future<String> saveNewRemFile(String tempPath) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = path.join(directory.path, path.basename(tempPath));
-
-    final tempFile = File(tempPath);
-    await tempFile.rename(filePath);
-
-    await updateFileHistory(filePath);
-
-    setState(() {});
-
-    return filePath;
+    */
   }
 
   Future<void> deleteLoadedFile(String filePath) async {
@@ -449,18 +450,44 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
 
   BackgroundIsolateBinaryMessenger.ensureInitialized(rootToken);
 
+  // Create the rem file
   String? outputPath = await createRemFile(
     archivePath: filePath,
     password: password,
     rootToken: rootToken,
     sendPort: sendPort,
+    progressValue: 0.99,
   );
 
-  sendPort.send({
-    "type": "result",
-    "result": outputPath,
-    "success": outputPath != null,
-  });
+  if (outputPath == null) {
+    // If the rem generation failed, send a failure result to the loading screen.
+    sendPort.send({
+        "type": "result",
+        "result": null,
+        "success": false,
+      });
+  
+  } else {
+    // Save the file in my applications directory.
+    final remFilePath = await saveNewRemFile(outputPath);
+
+    // Load the rem file.
+    ReminiscenceData? data = await loadRemFile(
+      filePath: remFilePath,
+      password: password,
+      rootToken: rootToken,
+      sendPort: sendPort,
+      progressStart: 0.99,
+      progressValue: 0.01,
+    );
+
+    // Push the result out of the loading screen.
+    sendPort.send({
+      "type": "result",
+      "result": data?.map,
+      "success": data != null,
+    });
+  }
 }
 
 Future<void> loadRemFileForIsolate(List<dynamic> args) async {
@@ -487,4 +514,16 @@ Future<void> loadRemFileForIsolate(List<dynamic> args) async {
     "result": data?.map,
     "success": data != null,
   });
+}
+
+Future<String> saveNewRemFile(String tempPath) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = path.join(directory.path, path.basename(tempPath));
+
+    final tempFile = File(tempPath);
+    await tempFile.rename(filePath);
+
+    await updateFileHistory(filePath);
+
+    return filePath;
 }
