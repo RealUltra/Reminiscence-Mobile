@@ -9,11 +9,13 @@ import 'package:reminiscence/ui/pages/loading_screen/progress.dart';
 class LoadingScreen<T> extends StatefulWidget {
   final Function(List<dynamic>) operation;
   final List<dynamic> operationParams;
+  final bool showProgress;
 
   const LoadingScreen({
     super.key,
     required this.operation,
     required this.operationParams,
+    required this.showProgress,
   });
 
   @override
@@ -45,12 +47,15 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
       },
       child: Scaffold(
         appBar: null,
+
         body: SafeArea(
           child: Container(
             padding: EdgeInsets.only(bottom: 20),
+
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+
                 children: [
                   RotatingImage(
                     image: Image.asset(
@@ -59,23 +64,29 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
                       fit: BoxFit.cover,
                     ),
                   ),
+
                   const SizedBox(height: 24),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 100),
-                    child: LinearProgressIndicator(
-                      value: progress.value,
-                      color: Theme.of(context).colorScheme.primary,
+
+                  if (widget.showProgress) ...{
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 100),
+                      child: LinearProgressIndicator(
+                        value: progress.value,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 80),
-                    child: Text(
-                      (progress.label ?? "Loading, please wait..."),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(height: 1.8),
+
+                    const SizedBox(height: 24),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 80),
+                      child: Text(
+                        (progress.label ?? "Loading, please wait..."),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(height: 1.8),
+                      ),
                     ),
-                  ),
+                  },
                 ],
               ),
             ),

@@ -85,6 +85,7 @@ class App extends StatelessWidget {
             (_) => LoadingScreen(
               operation: args.operation,
               operationParams: args.operationParams,
+              showProgress: args.showProgress,
             ),
       );
     }
