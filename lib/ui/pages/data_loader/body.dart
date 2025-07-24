@@ -84,9 +84,11 @@ class BodyState extends State<Body> {
                   return recentFiles.isNotEmpty
                       ? FilesList(
                         recentFiles: recentFiles,
-                        onClick: (String filePath) => loadData(context, filePath),
+                        onClick:
+                            (String filePath) => loadData(context, filePath),
                         onShare: (String filePath) => shareRemFile(filePath),
-                        onDelete: (String filePath) => deleteLoadedFile(filePath),
+                        onDelete:
+                            (String filePath) => deleteLoadedFile(filePath),
                       )
                       : const NoFilesWidget();
                 } else {
@@ -130,7 +132,11 @@ class BodyState extends State<Body> {
     }
     */
 
-    final result = await FilePicker.platform.pickFiles(type: FileType.any);
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: "Choose one or multiple zip/rem files to load",
+      type: FileType.any,
+      allowMultiple: true,
+    );
 
     if (result != null) {
       final file = result.files.single;

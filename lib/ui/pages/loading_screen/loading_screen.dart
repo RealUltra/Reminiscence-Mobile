@@ -71,9 +71,7 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 80),
                     child: Text(
-                      isLoading
-                          ? (progress.label ?? "Loading, please wait...")
-                          : "Completed in $duration seconds.",
+                      (progress.label ?? "Loading, please wait..."),
                       textAlign: TextAlign.center,
                       style: TextStyle(height: 1.8),
                     ),
@@ -121,17 +119,17 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
           });
         }
 
-        Future.delayed(Duration(seconds: success ? 3 : 0)).then((_) {
-          if (mounted) {
-            Navigator.pop(context, result);
-          }
-        });
+        if (mounted) {
+          Navigator.pop(context, result);
+        }
+
       } else if (message["type"] == "progress") {
         if (mounted) {
           setState(() {
             progress = Progress.fromMap(message["progress"]);
           });
         }
+
       } else if (message["type"] == "sendPort") {
         sendPort = message["sendPort"];
       }
