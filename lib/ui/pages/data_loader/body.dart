@@ -298,6 +298,7 @@ class BodyState extends State<Body> {
               arguments: LoadingScreenArgs(
                 operation: createRemFileForIsolate,
                 operationParams: <dynamic>[filePath, password],
+                tooltip: "ℹ️ Do not close the app.\n⏳ This can take some time.\n✅ Only happens once per file.\n🚀 Instant access afterward.",
               ),
             )
             as String?;

@@ -86,6 +86,7 @@ class App extends StatelessWidget {
               operation: args.operation,
               operationParams: args.operationParams,
               showProgress: args.showProgress,
+              tooltip: args.tooltip,
             ),
       );
     }

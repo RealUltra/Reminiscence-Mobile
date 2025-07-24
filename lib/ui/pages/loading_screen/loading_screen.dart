@@ -10,12 +10,14 @@ class LoadingScreen<T> extends StatefulWidget {
   final Function(List<dynamic>) operation;
   final List<dynamic> operationParams;
   final bool showProgress;
+  final String? tooltip;
 
   const LoadingScreen({
     super.key,
     required this.operation,
     required this.operationParams,
     required this.showProgress,
+    required this.tooltip,
   });
 
   @override
@@ -51,42 +53,64 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
         body: SafeArea(
           child: Container(
             padding: EdgeInsets.only(bottom: 20),
+            color: Theme.of(context).colorScheme.surfaceContainer,
 
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-
+              child: Stack(
                 children: [
-                  RotatingImage(
-                    image: Image.asset(
-                      'assets/icon.png',
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      RotatingImage(
+                        image: Image.asset(
+                          'assets/icon.png',
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      if (widget.showProgress) ...{
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 100),
+                          child: LinearProgressIndicator(
+                            value: progress.value,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 80),
+                          child: Text(
+                            (progress.label ?? "Loading, please wait..."),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(height: 1.8),
+                          ),
+                        ),
+                      },
+                    ],
                   ),
 
-                  const SizedBox(height: 24),
+                  if (widget.tooltip != null)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
 
-                  if (widget.showProgress) ...{
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 100),
-                      child: LinearProgressIndicator(
-                        value: progress.value,
-                        color: Theme.of(context).colorScheme.primary,
+                      child: Center(
+                        child: Text(
+                          widget.tooltip!,
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            height: 1.5,
+                          ),
+                        ),
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 80),
-                      child: Text(
-                        (progress.label ?? "Loading, please wait..."),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(height: 1.8),
-                      ),
-                    ),
-                  },
                 ],
               ),
             ),
@@ -133,14 +157,12 @@ class _LoadingScreenState<T> extends State<LoadingScreen> {
         if (mounted) {
           Navigator.pop(context, result);
         }
-
       } else if (message["type"] == "progress") {
         if (mounted) {
           setState(() {
             progress = Progress.fromMap(message["progress"]);
           });
         }
-
       } else if (message["type"] == "sendPort") {
         sendPort = message["sendPort"];
       }
