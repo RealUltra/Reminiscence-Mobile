@@ -15,3 +15,9 @@ Future<void> markAsOpened(String filename) async {
   final key = getKey(filename);
   await prefs.setBool(key, true);
 }
+
+Future<void> markAsNotOpened(String filename) async {
+  final prefs = await SharedPreferences.getInstance();
+  final key = getKey(filename);
+  await prefs.setBool(key, false);
+}

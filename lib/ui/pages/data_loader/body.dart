@@ -16,6 +16,9 @@ import 'package:reminiscence/features/data_loader/rem_generator.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/file_history.dart';
+import 'package:reminiscence/features/data_storage/file_opened.dart';
+import 'package:reminiscence/features/data_storage/legal.dart';
+import 'package:reminiscence/ui/components/info_box.dart';
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry/password_entry_dialog.dart';
@@ -38,19 +41,54 @@ class BodyState extends State<Body> {
   void initState() {
     super.initState();
 
-    listener(value) {
-      if (value.isNotEmpty) {
-        if (mounted) {
-          loadData(context, value.first.path);
-        }
-      }
+    // Set up the "Open with Reminiscence" listener.
+    ReceiveSharingIntent.instance.getInitialMedia().then(_fileListener);
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      _fileListener,
+    );
+
+    // Show privacy policy and terms of service
+    initLegal();
+  }
+
+  Future<void> initLegal() async {
+    final privacyPolicy = await getPrivacyPolicy();
+    final termsOfService = await getTermsOfService();
+
+    final showPrivacyPolicy = !(await privacyPolicyShown()) || true;
+    final showTermsOfService = !(await termsOfServiceShown()) || true;
+
+    if (showPrivacyPolicy && mounted) {
+      // Show privacy policy
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return InfoBox(
+            title: "Privacy Policy",
+            body: privacyPolicy,
+            actions: [InfoBoxButton("Agree")],
+          );
+        },
+      );
+
+      //await markPrivacyPolicyAsShown();
     }
 
-    ReceiveSharingIntent.instance.getInitialMedia().then(listener);
+    if (showTermsOfService && mounted) {
+      // Show terms of service
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return InfoBox(
+            title: "Terms Of Service",
+            body: termsOfService,
+            actions: [InfoBoxButton("Agree")],
+          );
+        },
+      );
 
-    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
-      listener,
-    );
+      //await markTermsOfServiceAsShown();
+    }
   }
 
   @override
@@ -291,14 +329,17 @@ class BodyState extends State<Body> {
     if (!context.mounted) return;
 
     // Create a rem file with a loading screen and load it.
-    final dataMap = await Navigator.of(context).pushNamed(
-        "/loading",
-        arguments: LoadingScreenArgs(
-          operation: createRemFileForIsolate,
-          operationParams: <dynamic>[filePath, password],
-          tooltip: "ℹ️ Do not close the app.\n⏳ This can take some time.\n✅ Only happens once per file.\n🚀 Instant access afterward.",
-        ),
-      ) as Map<String, dynamic>?;
+    final dataMap =
+        await Navigator.of(context).pushNamed(
+              "/loading",
+              arguments: LoadingScreenArgs(
+                operation: createRemFileForIsolate,
+                operationParams: <dynamic>[filePath, password],
+                tooltip:
+                    "ℹ️ Do not close the app.\n⏳ This can take some time.\n✅ Only happens once per file.\n🚀 Instant access afterward.",
+              ),
+            )
+            as Map<String, dynamic>?;
 
     // Update the files list in case a new rem file was successfully generated.
     setState(() {});
@@ -327,50 +368,6 @@ class BodyState extends State<Body> {
 
     // Move to the viewer page.
     await Navigator.of(context).pushNamed("/viewer");
-
-    /*
-    await showDialog(
-      context: context,
-
-      builder:
-          (context) => AlertDialog(
-            title: Text('Disclaimer'),
-
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                BulletPoint(
-                  "A .rem file has been created using your instagram data.",
-                ),
-
-                const SizedBox(height: 8),
-
-                BulletPoint(
-                  "Please delete the zip file containing your instagram data as it poses security risks.",
-                  textStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
-
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-
-                child: Text(
-                  'OK',
-
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ],
-          ),
-    );
-    */
   }
 
   Future<void> deleteLoadedFile(String filePath) async {
@@ -436,6 +433,14 @@ class BodyState extends State<Body> {
 
     return sortedRecentFiles;
   }
+
+  void _fileListener(List<SharedMediaFile> value) {
+    if (value.isNotEmpty) {
+      if (mounted) {
+        loadData(context, value.first.path);
+      }
+    }
+  }
 }
 
 Future<void> createRemFileForIsolate(List<dynamic> args) async {
@@ -461,15 +466,13 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
 
   if (outputPath == null) {
     // If the rem generation failed, send a failure result to the loading screen.
-    sendPort.send({
-        "type": "result",
-        "result": null,
-        "success": false,
-      });
-  
+    sendPort.send({"type": "result", "result": null, "success": false});
   } else {
     // Save the file in my applications directory.
     final remFilePath = await saveNewRemFile(outputPath);
+
+    // Since this file has just been generated, mark it as not yet opened.
+    await markAsNotOpened(p.basename(remFilePath));
 
     // Load the rem file.
     ReminiscenceData? data = await loadRemFile(
@@ -517,13 +520,13 @@ Future<void> loadRemFileForIsolate(List<dynamic> args) async {
 }
 
 Future<String> saveNewRemFile(String tempPath) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = path.join(directory.path, path.basename(tempPath));
+  final directory = await getApplicationDocumentsDirectory();
+  final filePath = path.join(directory.path, path.basename(tempPath));
 
-    final tempFile = File(tempPath);
-    await tempFile.rename(filePath);
+  final tempFile = File(tempPath);
+  await tempFile.rename(filePath);
 
-    await updateFileHistory(filePath);
+  await updateFileHistory(filePath);
 
-    return filePath;
+  return filePath;
 }
