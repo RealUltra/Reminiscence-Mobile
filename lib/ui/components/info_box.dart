@@ -20,7 +20,7 @@ class InfoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(horizontal: 0.0),
+      insetPadding: EdgeInsets.symmetric(horizontal: 16.0),
       elevation: 2.0,
       surfaceTintColor: Theme.of(context).colorScheme.surfaceContainerHighest,
 

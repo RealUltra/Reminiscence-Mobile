@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
+import 'package:reminiscence/features/data_storage/file_opened.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/components/info_box.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/data_viewer/navigation_bar.dart';
 import 'package:reminiscence/ui/components/value_controller.dart';
@@ -17,6 +20,8 @@ import 'package:reminiscence/ui/pages/chat/body.dart' as chat_page;
 
 import 'package:reminiscence/ui/pages/settings/app_bar.dart' as settings_page;
 import 'package:reminiscence/ui/pages/settings/body.dart' as settings_page;
+
+const privacyAlert = "A .rem file has been created using your instagram data. Please delete the zip file containing your instagram data as it poses security risks.";
 
 class DataViewerPage extends StatefulWidget {
   const DataViewerPage({super.key});
@@ -58,6 +63,8 @@ class _DataViewerPageState extends State<DataViewerPage> {
     final sessionData = Provider.of<SessionData>(context, listen: false);
     await sessionData.loadChats();
     setState(() => chatsListReady = true);
+    
+    await sendPrivacyAlert();
   }
 
   Future<void> initMessages() async {
@@ -69,6 +76,34 @@ class _DataViewerPageState extends State<DataViewerPage> {
       await sessionData.loadMessageReader();
       setState(() {});
     }
+  }
+
+  Future<void> sendPrivacyAlert() async {
+    // Get the filename of the loaded file.
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    final filePath = sessionData.data!.file.name;
+    final filename = p.basename(filePath);
+
+    // Check if the file has been opened before.
+    final opened = await hasBeenOpened(filename);
+
+    // If this isn't the first time the file is being opened, don't send the privacy alert.
+    if (opened) return;
+
+    // Mark the file as opened.
+    await markAsOpened(filename);
+
+    // Make sure the context is still mounted.
+    if (!mounted) return;
+
+    // Show the privacy alert.
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return InfoBox(title: "Privacy Alert", body: privacyAlert);
+      },
+    );
   }
 
   @override
