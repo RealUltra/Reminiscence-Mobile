@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/pages/settings/appearance/appearance_tile.dart';
 import 'package:reminiscence/ui/pages/settings/backup_and_sync/backup_and_sync_tile.dart';
+import 'package:reminiscence/ui/pages/settings/legal/legal_tile.dart';
 import 'package:reminiscence/ui/pages/settings/system_messages/system_messages_tile.dart';
 
 class Body extends StatefulWidget {
@@ -24,6 +25,8 @@ class _BodyState extends State<Body> {
           SystemMessagesTile(),
           const Divider(),
           BackupAndSyncTile(),
+          const Divider(),
+          LegalTile(),
         ],
       ),
     );
