@@ -5,15 +5,15 @@ class InfoBox extends StatelessWidget {
   final Widget body;
   final List<Widget> actions;
   final double maxTextHeight;
+  final Axis actionsAxis;
 
   const InfoBox({
     super.key,
     required this.title,
     this.body = const Text(""),
-    this.actions = const [
-      InfoBoxButton("OK", highlighted: true),
-    ],
+    this.actions = const [InfoBoxButton("OK", highlighted: true)],
     this.maxTextHeight = 400.0,
+    this.actionsAxis = Axis.vertical,
   });
 
   @override
@@ -26,7 +26,7 @@ class InfoBox extends StatelessWidget {
 
       child: Container(
         padding: EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 24.0),
-        
+
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
 
@@ -60,18 +60,21 @@ class InfoBox extends StatelessWidget {
 
                 child: Padding(
                   padding: EdgeInsets.only(right: 24.0),
-                  child: SingleChildScrollView(
-                    child: body,
-                  ),
+                  child: SingleChildScrollView(child: body),
                 ),
               ),
             ),
 
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 8.0,
-              children: actions,
-            ),
+            (actionsAxis == Axis.horizontal)
+                ? Row(
+                  spacing: 16.0,
+                  children: actions.map((w) => Expanded(child: w)).toList(),
+                )
+                : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 8.0,
+                  children: actions,
+                ),
           ],
         ),
       ),
@@ -113,7 +116,6 @@ class InfoBoxButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           border: BoxBorder.all(color: foregroundColor),
-          borderRadius: BorderRadius.circular(8.0),
         ),
 
         child: Center(
