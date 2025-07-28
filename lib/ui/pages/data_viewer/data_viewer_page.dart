@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_storage/file_opened.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
-import 'package:reminiscence/ui/components/info_box.dart';
+import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/data_viewer/navigation_bar.dart';
 import 'package:reminiscence/ui/components/value_controller.dart';
@@ -21,7 +21,8 @@ import 'package:reminiscence/ui/pages/chat/body.dart' as chat_page;
 import 'package:reminiscence/ui/pages/settings/app_bar.dart' as settings_page;
 import 'package:reminiscence/ui/pages/settings/body.dart' as settings_page;
 
-const privacyAlert = "A .rem file has been created using your instagram data. Please delete the zip file containing your instagram data as it poses security risks.";
+const privacyAlert =
+    "A .rem file has been created using your instagram data. Please delete the zip file containing your instagram data as it poses security risks.";
 
 class DataViewerPage extends StatefulWidget {
   const DataViewerPage({super.key});
@@ -63,7 +64,7 @@ class _DataViewerPageState extends State<DataViewerPage> {
     final sessionData = Provider.of<SessionData>(context, listen: false);
     await sessionData.loadChats();
     setState(() => chatsListReady = true);
-    
+
     await sendPrivacyAlert();
   }
 
@@ -101,7 +102,10 @@ class _DataViewerPageState extends State<DataViewerPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return InfoBox(title: "Privacy Alert", body: Text(privacyAlert, textAlign: TextAlign.center,));
+        return MessageBox(
+          title: "Privacy Alert",
+          body: Text(privacyAlert, textAlign: TextAlign.center),
+        );
       },
     );
   }
@@ -196,21 +200,13 @@ class _DataViewerPageState extends State<DataViewerPage> {
           context: context,
 
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Exit?'),
-              content: Text('Are you sure you want to exit?'),
-
-              actions: <Widget>[
-                TextButton(
-                  child: Text('No'),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-
-                TextButton(
-                  child: Text('Yes'),
-                  onPressed: () => Navigator.of(context).pop(true),
-                ),
+            return MessageBox(
+              title: 'Exit?',
+              actions: [
+                MessageBoxButton("Yes", value: true),
+                MessageBoxButton("No", highlighted: false, value: false),
               ],
+              actionsAxis: Axis.horizontal,
             );
           },
         ) ??

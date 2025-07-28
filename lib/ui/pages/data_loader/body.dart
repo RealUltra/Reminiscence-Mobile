@@ -19,7 +19,7 @@ import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/file_history.dart';
 import 'package:reminiscence/features/data_storage/file_opened.dart';
 import 'package:reminiscence/features/data_storage/legal.dart';
-import 'package:reminiscence/ui/components/info_box.dart';
+import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
 import 'package:reminiscence/ui/pages/data_loader/password_entry/password_entry_dialog.dart';
@@ -64,10 +64,10 @@ class BodyState extends State<Body> {
       await showDialog(
         context: context,
         builder: (context) {
-          return InfoBox(
+          return MessageBox(
             title: "Privacy Policy",
             body: MarkdownBlock(data: privacyPolicy),
-            actions: [InfoBoxButton("Agree")],
+            actions: [MessageBoxButton("Agree")],
           );
         },
       );
@@ -80,10 +80,10 @@ class BodyState extends State<Body> {
       await showDialog(
         context: context,
         builder: (context) {
-          return InfoBox(
+          return MessageBox(
             title: "Terms Of Service",
             body: MarkdownBlock(data: termsOfService),
-            actions: [InfoBoxButton("Agree")],
+            actions: [MessageBoxButton("Agree")],
           );
         },
       );

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-class InfoBox extends StatelessWidget {
+class MessageBox extends StatelessWidget {
   final String title;
-  final Widget body;
+  final Widget? body;
   final List<Widget> actions;
   final double maxTextHeight;
   final Axis actionsAxis;
 
-  const InfoBox({
+  const MessageBox({
     super.key,
     required this.title,
-    this.body = const Text(""),
-    this.actions = const [InfoBoxButton("OK", highlighted: true)],
+    this.body,
+    this.actions = const [MessageBoxButton("OK", highlighted: true)],
     this.maxTextHeight = 400.0,
     this.actionsAxis = Axis.vertical,
   });
@@ -21,11 +21,10 @@ class InfoBox extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 16.0),
-      elevation: 2.0,
       surfaceTintColor: Theme.of(context).colorScheme.surfaceContainerHighest,
 
       child: Container(
-        padding: EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 24.0),
+        padding: EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 32.0),
 
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
@@ -52,18 +51,19 @@ class InfoBox extends StatelessWidget {
               ),
             ),
 
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: maxTextHeight),
+            if (body != null)
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxTextHeight),
 
-              child: Scrollbar(
-                thumbVisibility: true,
+                child: Scrollbar(
+                  thumbVisibility: true,
 
-                child: Padding(
-                  padding: EdgeInsets.only(right: 24.0),
-                  child: SingleChildScrollView(child: body),
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 24.0),
+                    child: SingleChildScrollView(child: body),
+                  ),
                 ),
               ),
-            ),
 
             (actionsAxis == Axis.horizontal)
                 ? Row(
@@ -82,12 +82,12 @@ class InfoBox extends StatelessWidget {
   }
 }
 
-class InfoBoxButton extends StatelessWidget {
+class MessageBoxButton extends StatelessWidget {
   final String text;
   final bool highlighted;
   final dynamic value;
 
-  const InfoBoxButton(
+  const MessageBoxButton(
     this.text, {
     super.key,
     this.highlighted = true,
