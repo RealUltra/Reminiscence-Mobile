@@ -101,7 +101,7 @@ class _DataViewerPageState extends State<DataViewerPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return InfoBox(title: "Privacy Alert", body: privacyAlert);
+        return InfoBox(title: "Privacy Alert", body: Text(privacyAlert, textAlign: TextAlign.center,));
       },
     );
   }

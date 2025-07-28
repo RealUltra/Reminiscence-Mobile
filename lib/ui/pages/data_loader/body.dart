@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -55,8 +56,8 @@ class BodyState extends State<Body> {
     final privacyPolicy = await getPrivacyPolicy();
     final termsOfService = await getTermsOfService();
 
-    final showPrivacyPolicy = !(await privacyPolicyShown()) || true;
-    final showTermsOfService = !(await termsOfServiceShown()) || true;
+    final showPrivacyPolicy = !(await privacyPolicyShown());
+    final showTermsOfService = !(await termsOfServiceShown());
 
     if (showPrivacyPolicy && mounted) {
       // Show privacy policy
@@ -65,13 +66,13 @@ class BodyState extends State<Body> {
         builder: (context) {
           return InfoBox(
             title: "Privacy Policy",
-            body: privacyPolicy,
+            body: MarkdownBlock(data: privacyPolicy),
             actions: [InfoBoxButton("Agree")],
           );
         },
       );
 
-      //await markPrivacyPolicyAsShown();
+      await markPrivacyPolicyAsShown();
     }
 
     if (showTermsOfService && mounted) {
@@ -81,13 +82,13 @@ class BodyState extends State<Body> {
         builder: (context) {
           return InfoBox(
             title: "Terms Of Service",
-            body: termsOfService,
+            body: MarkdownBlock(data: termsOfService),
             actions: [InfoBoxButton("Agree")],
           );
         },
       );
 
-      //await markTermsOfServiceAsShown();
+      await markTermsOfServiceAsShown();
     }
   }
 

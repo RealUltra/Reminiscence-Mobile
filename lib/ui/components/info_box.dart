@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class InfoBox extends StatelessWidget {
   final String title;
-  final String body;
-  final List<InfoBoxButton> actions;
+  final Widget body;
+  final List<Widget> actions;
   final double maxTextHeight;
 
   const InfoBox({
     super.key,
     required this.title,
-    this.body = "",
+    this.body = const Text(""),
     this.actions = const [
       InfoBoxButton("OK", highlighted: true),
     ],
@@ -61,7 +61,7 @@ class InfoBox extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(right: 24.0),
                   child: SingleChildScrollView(
-                    child: Text(body, textAlign: TextAlign.center),
+                    child: body,
                   ),
                 ),
               ),
