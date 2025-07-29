@@ -312,7 +312,6 @@ class BodyState extends State<Body> {
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
-
       return;
     }
 
@@ -474,6 +473,9 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
 
     // Since this file has just been generated, mark it as not yet opened.
     await markAsNotOpened(p.basename(remFilePath));
+
+    // Update the "Last Opened".
+    await updateFileHistory(filePath);
 
     // Load the rem file.
     ReminiscenceData? data = await loadRemFile(

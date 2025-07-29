@@ -6,6 +6,7 @@ String getKey(String filename) {
 
 Future<bool> hasBeenOpened(String filename) async {
   final prefs = await SharedPreferences.getInstance();
+  await prefs.reload();
   final key = getKey(filename);
   return prefs.getBool(key) ?? false;
 }

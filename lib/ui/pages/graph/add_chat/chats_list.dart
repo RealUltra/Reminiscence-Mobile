@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/pages/graph/add_chat/chat_card.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
 
@@ -54,35 +55,27 @@ class _ChatsListState extends State<ChatsList> {
       return;
     }
 
-    final result = await showDialog<bool>(
+    final separateParticipants = await showDialog<bool?>(
       context: context,
-
       builder:
-          (context) => AlertDialog(
-            title: Text("Separate Participants?"),
-
-            content: Text(
+          (context) => MessageBox(
+            title: "Separate Participants?",
+            body: Text(
               "Would you like all the participants of this chat to be on a separate chart?",
+              textAlign: TextAlign.center,
             ),
-
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('No'),
-              ),
-
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Yes'),
-              ),
+              MessageBoxButton("Yes", highlighted: false, value: true),
+              MessageBoxButton("No", highlighted: true, value: false),
             ],
+            actionsAxis: Axis.horizontal,
           ),
-    );
+    ) ?? false;
 
     setState(() {
       widget.chartData[chat.id] = ChartInfo(
         chat: chat,
-        separateParticipants: result == true,
+        separateParticipants: separateParticipants,
       );
     });
   }

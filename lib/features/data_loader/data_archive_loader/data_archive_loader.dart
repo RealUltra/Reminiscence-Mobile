@@ -1,4 +1,3 @@
-import 'package:path/path.dart' as path;
 import 'package:archive/archive.dart';
 
 import 'package:reminiscence/features/data_loader/data_archive_loader/utils.dart';
@@ -14,17 +13,16 @@ List<Chat> getChats({String? archivePath, Archive? archive}) {
     return [];
   }
 
-  String? dataDir = getDataDir(archive);
+  final dataDir = getDataDir(archive);
 
   if (dataDir == null) {
     return [];
   }
 
-  List<Chat> chats = [];
+  final chats = <Chat>[];
 
-  for (ArchiveFile archiveFile in listArchiveDir(archive, getDmsDir(dataDir))) {
-    String folderName = path.basename(archiveFile.name);
-    Chat chat = Chat.load(folderName, archive, dataDir);
+  for (final folderName in listFolders(archive, getDmsDir(dataDir))) {
+    final chat = Chat.load(folderName, archive, dataDir);
     chat.loadMessageStacks();
     chats.add(chat);
   }
