@@ -29,33 +29,13 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
           // Display user info
         },
 
-        child: Row(
-          children: [
-            Flexible(
-              child: Text(
-                chat.title,
-
-                overflow: TextOverflow.ellipsis,
-
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 6),
-
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 12,
-
-              color:
-                  Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant, // Adjust the arrow color
-            ),
-          ],
+        child: Text(
+          chat.title,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
 
