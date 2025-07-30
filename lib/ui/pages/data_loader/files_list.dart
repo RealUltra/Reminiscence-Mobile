@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/features/data_loader/utils.dart';
+import 'package:reminiscence/ui/components/message_box.dart';
 
 import 'package:reminiscence/ui/pages/data_loader/file_card.dart';
 
@@ -88,36 +89,21 @@ class _FilesListState extends State<FilesList> {
 
   Future<void> onDelete(String filePath) async {
     final mustDelete =
-        await showDialog<bool>(
+        await showDialog<bool?>(
           context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Are you sure?'),
-              content: Text(
-                'This file is about to be permanently deleted from your device.',
+          builder:
+              (context) => MessageBox(
+                title: "Delete?",
+                body: Text(
+                  "This file is about to be permanently deleted from your device.",
+                  textAlign: TextAlign.center,
+                ),
+                actions: [
+                  MessageBoxButton("Cancel", highlighted: false, value: false),
+                  MessageBoxButton("Delete", value: true),
+                ],
+                actionsAxis: Axis.horizontal,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(
-                    'Delete',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
         ) ??
         false;
 

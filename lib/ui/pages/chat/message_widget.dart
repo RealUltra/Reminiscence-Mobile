@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
+import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
 import 'package:reminiscence/ui/pages/chat/view_reactions_widget.dart';
 import 'package:reminiscence/ui/providers/pinned_messages_provider.dart';
@@ -434,32 +435,21 @@ class _MessageWidgetState extends State<MessageWidget> {
   }
 
   Future<bool> showConfirmSystemMessageDialog(BuildContext context) async {
-    return await showDialog<bool>(
+    return await showDialog<bool?>(
           context: context,
-
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Mark as System Message?'),
-
-              content: Text(
-                'Are you sure you want to mark this message as a system message?\n\n'
-                'All such messages will no longer appear in any chat.\n\n'
-                'This can be reverted from settings.',
+          builder:
+              (context) => MessageBox(
+                title: "Mark as System Message?",
+                body: Text(
+                  'All such messages will no longer appear in any chat. This can be reverted from settings.',
+                  textAlign: TextAlign.center,
+                ),
+                actions: [
+                  MessageBoxButton("Cancel", highlighted: false, value: false),
+                  MessageBoxButton("Confirm", value: true),
+                ],
+                actionsAxis: Axis.horizontal,
               ),
-
-              actions: <Widget>[
-                TextButton(
-                  child: Text('Cancel'),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-
-                TextButton(
-                  child: Text('Confirm'),
-                  onPressed: () => Navigator.of(context).pop(true),
-                ),
-              ],
-            );
-          },
         ) ??
         false;
   }
