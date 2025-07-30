@@ -47,13 +47,15 @@ Future<void> createFreshFolder(String folderPath) async {
 }
 
 Future<String?> createRemFile({
-  required String archivePath,
+  required List<String> archivePaths,
   String? password,
   RootIsolateToken? rootToken,
   SendPort? sendPort,
   double progressStart = 0.0,
   double progressValue = 1.0,
 }) async {
+  assert(archivePaths.isNotEmpty);
+
   // Set up receive port and cancellation token
   ReceivePort? receivePort = sendPort != null ? ReceivePort() : null;
   bool isCancelled = false;
@@ -78,7 +80,7 @@ Future<String?> createRemFile({
       password != null ? await deriveKey(password: password) : null;
 
   // Initialize the .rem file encoder.
-  String fileName = path.basenameWithoutExtension(archivePath);
+  String fileName = path.basenameWithoutExtension(archivePaths[0]);
   String outputPath = path.join(tempDir.path, "$fileName.rem");
 
   final nonce = Uint8List.fromList(derivedKey?.nonce ?? []);
@@ -100,60 +102,34 @@ Future<String?> createRemFile({
     encryptedNonce: encryptedNonce,
   );
 
-  // Open the archive.
-  InputFileStream stream = InputFileStream(archivePath);
-  final archive = ZipDecoder().decodeStream(stream);
-
-  // Extract the chats from the archive.
-  final chats = getChats(archive: archive);
-
-  if (isCancelled) return null;
-
   // Create an empty database to start loading these chats into.
   final dbPath = '${tempDir.path}/database.db';
   final db = await createFreshDatabase(dbPath, password, rootToken);
 
   if (isCancelled) return null;
 
-  // Insert all the chats from the archive into the database
-  double stacksDone = 0;
-  int totalStacks = chats
-      .map((c) => c.messageStacks.length)
-      .fold(0, (sum, length) => sum + length);
-
-  final Map<String, ArchiveFile> archiveMap = getArchiveMap(archive);
-
-  final messageReader = MessageReader(chats);
-
   final stopwatch = Stopwatch()..start();
 
-  for (int i = 0; i < chats.length; i++) {
-    final chat = chats[i];
+  final archiveMap = <String, ArchiveFile>{};
 
-    await insertArchiveChat(db, chat, messageReader, (int increment) async {
-      sendPort?.send({
-        "type": "progress",
-        "progress": {
-          "value":
-              progressStart +
-              ((stacksDone + increment) / totalStacks * 0.49) *
-                  progressValue,
-          "label":
-              'Loading Chat Messages:\n${chat.title}\n(${i + 1} / ${chats.length})',
-        },
-      });
-    });
+  for (int i = 0; i < archivePaths.length; i++) {
+    final archivePath  = archivePaths[i];
 
-    stacksDone += chat.messageStacks.length;
-
-    if (isCancelled) return null;
+    await insertChatsFromArchive(
+      archivePath: archivePath,
+      db: db,
+      progressStart: (progressStart + (i / archivePaths.length * 0.49)) * progressValue,
+      progressValue: 0.49 / archivePaths.length * progressValue,
+      archiveMap: archiveMap,
+      isCancelled: () => isCancelled,
+      sendPort: sendPort,
+    );
   }
 
   stopwatch.stop();
   debugPrint(
     "Time taken to add all the chats to the database: ${stopwatch.elapsed.inSeconds} seconds",
   );
-  //
 
   stopwatch
     ..reset()
@@ -168,8 +144,7 @@ Future<String?> createRemFile({
       "progress": {
         "value":
             progressStart +
-            (0.49 + attachmentsDone / totalAttachments * 0.5) *
-                progressValue,
+            (0.49 + attachmentsDone / totalAttachments * 0.5) * progressValue,
         "label":
             'Loading Chat Media...\n($attachmentsDone / $totalAttachments)',
       },
@@ -206,6 +181,56 @@ Future<String?> createRemFile({
   return outputPath;
 }
 
+Future<void> insertChatsFromArchive({
+  required String archivePath,
+  required AppDatabase db,
+  required double progressStart,
+  required double progressValue,
+  required Map<String, ArchiveFile> archiveMap,
+  required bool Function() isCancelled,
+  required SendPort? sendPort,
+}) async {
+  // Open the archive.
+  InputFileStream stream = InputFileStream(archivePath);
+  final archive = ZipDecoder().decodeStream(stream);
+
+  // Extract the chats from the archive.
+  final chats = getChats(archive: archive);
+
+  if (isCancelled()) return;
+
+  // Insert all the chats from the archive into the database
+  double stacksDone = 0;
+  int totalStacks = chats
+      .map((c) => c.messageStacks.length)
+      .fold(0, (sum, length) => sum + length);
+
+  archiveMap.addAll(getArchiveMap(archive));
+
+  final messageReader = MessageReader(chats);
+
+  for (int i = 0; i < chats.length; i++) {
+    final chat = chats[i];
+
+    await insertArchiveChat(db, chat, messageReader, (int increment) async {
+      sendPort?.send({
+        "type": "progress",
+        "progress": {
+          "value":
+              progressStart +
+              ((stacksDone + increment) / totalStacks) * progressValue,
+          "label":
+              'Loading Chat Messages:\n${chat.title}\n(${i + 1} / ${chats.length})',
+        },
+      });
+    });
+
+    stacksDone += chat.messageStacks.length;
+
+    if (isCancelled()) return;
+  }
+}
+
 Future<void> insertArchiveChat(
   AppDatabase db,
   archive_loader.Chat archiveChat,
@@ -228,7 +253,7 @@ Future<void> insertArchiveChat(
           .toList();
 
   await db.batch((batch) {
-    batch.insert(db.chats, chat);
+    batch.insert(db.chats, chat, mode: InsertMode.insertOrIgnore);
     batch.insertAll(db.participants, participantsToInsert);
   });
 
@@ -256,7 +281,7 @@ Future<void> insertArchiveChat(
           searchContent: Value(archiveMessage.searchContent),
         );
 
-        batch.insert(db.messages, message);
+        batch.insert(db.messages, message, mode: InsertMode.insertOrIgnore);
 
         // Add attachments to database
         for (final archiveAttachment in archiveMessage.attachments) {

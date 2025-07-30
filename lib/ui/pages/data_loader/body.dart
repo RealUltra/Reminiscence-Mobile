@@ -123,7 +123,7 @@ class BodyState extends State<Body> {
                       ? FilesList(
                         recentFiles: recentFiles,
                         onClick:
-                            (String filePath) => loadData(context, filePath),
+                            (String filePath) => loadData(context, [filePath]),
                         onShare: (String filePath) => shareRemFile(filePath),
                         onDelete:
                             (String filePath) => deleteLoadedFile(filePath),
@@ -176,23 +176,22 @@ class BodyState extends State<Body> {
       allowMultiple: true,
     );
 
-    if (result != null) {
-      final file = result.files.single;
-      final filePath = file.path!;
-
-      if (context.mounted) {
-        await loadData(context, filePath);
-      }
+    if (result != null && result.files.isNotEmpty && context.mounted) {
+      await loadData(context, result.files.map((x) => x.path!).toList());
     }
   }
 
-  Future<void> loadData(BuildContext context, String filePath) async {
-    final extension = path.extension(filePath);
+  Future<void> loadData(BuildContext context, List<String> filePaths) async {
+    assert(filePaths.isNotEmpty);
+
+    final extension = path.extension(filePaths[0]);
 
     if (extension == ".rem") {
-      await loadRemData(context, filePath);
+      await loadRemData(context, filePaths[0]);
+
     } else if (extension == ".zip") {
-      await loadZipData(context, filePath);
+      await loadZipData(context, filePaths);
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -298,21 +297,23 @@ class BodyState extends State<Body> {
     await Navigator.of(context).pushNamed("/viewer");
   }
 
-  Future<void> loadZipData(BuildContext context, String filePath) async {
-    // Check if the zip file selected is valid.
-    if (!isValidArchive(archivePath: filePath)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Unrecognized zip file format.",
-            style: Theme.of(context).textTheme.labelMedium!.copyWith(
-              color: Theme.of(context).colorScheme.onError,
+  Future<void> loadZipData(BuildContext context, List<String> filePaths) async {
+    for (final filePath in filePaths) {
+      // Check if the zip file selected is valid.
+      if (!isValidArchive(archivePath: filePath)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Unrecognized zip file format.",
+              style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                color: Theme.of(context).colorScheme.onError,
+              ),
             ),
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-      return;
+        );
+        return;
+      }
     }
 
     if (!context.mounted) return;
@@ -334,7 +335,7 @@ class BodyState extends State<Body> {
               "/loading",
               arguments: LoadingScreenArgs(
                 operation: createRemFileForIsolate,
-                operationParams: <dynamic>[filePath, password],
+                operationParams: <dynamic>[filePaths, password],
                 tooltip:
                     "ℹ️ Do not close the app.\n⏳ This can take some time.\n✅ Only happens once per file.\n🚀 Instant access afterward.",
               ),
@@ -437,7 +438,7 @@ class BodyState extends State<Body> {
   void _fileListener(List<SharedMediaFile> value) {
     if (value.isNotEmpty) {
       if (mounted) {
-        loadData(context, value.first.path);
+        loadData(context, [value.first.path]);
       }
     }
   }
@@ -448,7 +449,7 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
   This function runs the `createRemFile` (See rem_generator) function but takes arguments in a way that allows `Isolate.spawn` (See LoadingScreen) to call it.
   */
 
-  final String filePath = args[0];
+  final List<String> filePaths = args[0];
   final String? password = args[1];
   final RootIsolateToken rootToken = args[2];
   final SendPort sendPort = args[3];
@@ -457,7 +458,7 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
 
   // Create the rem file
   String? outputPath = await createRemFile(
-    archivePath: filePath,
+    archivePaths: filePaths,
     password: password,
     rootToken: rootToken,
     sendPort: sendPort,
@@ -475,7 +476,7 @@ Future<void> createRemFileForIsolate(List<dynamic> args) async {
     await markAsNotOpened(p.basename(remFilePath));
 
     // Update the "Last Opened".
-    await updateFileHistory(filePath);
+    await updateFileHistory(remFilePath);
 
     // Load the rem file.
     ReminiscenceData? data = await loadRemFile(
