@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<Map<String, int>> getFileHistory() async {
   final prefs = await SharedPreferences.getInstance();
+  await prefs.reload();
   final fileHistoryJson = prefs.getString("file_history") ?? "{}";
   final Map<String, int> fileHistory =
       jsonDecode(fileHistoryJson).cast<String, int>();

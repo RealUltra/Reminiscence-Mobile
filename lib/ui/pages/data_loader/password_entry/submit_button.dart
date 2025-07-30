@@ -11,7 +11,7 @@ class SubmitButton extends StatelessWidget {
       onPressed: onClick,
 
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         elevation: 8,
@@ -25,7 +25,7 @@ class SubmitButton extends StatelessWidget {
           textAlign: TextAlign.center,
 
           style: Theme.of(context).textTheme.titleMedium!.copyWith(
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: Theme.of(context).colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),

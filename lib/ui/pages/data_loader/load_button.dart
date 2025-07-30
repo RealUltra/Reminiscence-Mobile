@@ -24,8 +24,7 @@ class _LoadDataButtonState extends State<LoadDataButton> {
 
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.0),
-          color: Theme.of(context).colorScheme.primaryContainer,
-          border: BoxBorder.all(color: Theme.of(context).colorScheme.onPrimaryContainer, width: 0.3)
+          color: Theme.of(context).colorScheme.primary,
         ),
 
         child: Padding(
@@ -34,7 +33,7 @@ class _LoadDataButtonState extends State<LoadDataButton> {
             child: Text(
               "Load New File",
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
