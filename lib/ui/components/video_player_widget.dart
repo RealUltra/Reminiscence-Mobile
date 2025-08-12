@@ -13,6 +13,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final bool allowFullScreen;
   final bool startPlaying;
   final bool alwaysShowControls;
+  final Widget placeholderWidget;
 
   const VideoPlayerWidget(
     this.videoFile, {
@@ -22,6 +23,7 @@ class VideoPlayerWidget extends StatefulWidget {
     this.allowFullScreen = true,
     this.startPlaying = false,
     this.alwaysShowControls = false,
+    this.placeholderWidget = const CircularProgressIndicator(),
   });
 
   @override
@@ -74,108 +76,101 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     if (!isReady) {
-      return CircularProgressIndicator();
+      return widget.placeholderWidget;
     }
 
     return GestureDetector(
       onTap: () => _toggleControls(),
 
-      child: SizedBox(
-        width: 300,
-        child: Stack(
-          children: [
-            Center(
-              child: AspectRatio(
-                aspectRatio: controller.value.aspectRatio,
-                child: VideoPlayer(controller),
-              ),
+      child: Stack(
+        children: [
+          Center(
+            child: AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: VideoPlayer(controller),
             ),
+          ),
 
-            (showControls ||
-                    !controller.value.isPlaying ||
-                    widget.alwaysShowControls)
-                ? Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
+          (showControls ||
+                  !controller.value.isPlaying ||
+                  widget.alwaysShowControls)
+              ? Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
 
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
 
-                    children: [
-                      SliderTheme(
-                        data: SliderThemeData(
-                          thumbShape: RoundSliderThumbShape(
-                            enabledThumbRadius: 4.0,
-                          ),
-                        ),
-                        child: Slider(
-                          value:
-                              controller.value.position.inMilliseconds
-                                  .toDouble(),
-                          max:
-                              controller.value.duration.inMilliseconds
-                                  .toDouble(),
-                          onChanged: (double value) {
-                            final newPosition = Duration(
-                              milliseconds: value.toInt(),
-                            );
-                            controller.seekTo(newPosition);
-                          },
-                          padding: EdgeInsets.zero,
+                  children: [
+                    SliderTheme(
+                      data: SliderThemeData(
+                        thumbShape: RoundSliderThumbShape(
+                          enabledThumbRadius: 4.0,
                         ),
                       ),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  controller.value.isPlaying
-                                      ? _pause()
-                                      : _play();
-                                },
-                                icon: Icon(
-                                  controller.value.isPlaying
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                ),
-                              ),
-                              Text(
-                                "${_formatDuration(controller.value.position)} / ${_formatDuration(controller.value.duration)}",
-                              ),
-                            ],
-                          ),
-
-                          Row(
-                            children: [
-                              widget.onShare != null
-                                  ? IconButton(
-                                    onPressed: widget.onShare,
-                                    icon: Icon(Icons.share),
-                                  )
-                                  : Container(),
-
-                              widget.allowFullScreen
-                                  ? IconButton(
-                                    onPressed: () => _fullScreen(),
-                                    icon: Icon(Icons.fullscreen),
-                                  )
-                                  : Container(),
-                            ],
-                          ),
-                        ],
+                      child: Slider(
+                        value:
+                            controller.value.position.inMilliseconds.toDouble(),
+                        max:
+                            controller.value.duration.inMilliseconds.toDouble(),
+                        onChanged: (double value) {
+                          final newPosition = Duration(
+                            milliseconds: value.toInt(),
+                          );
+                          controller.seekTo(newPosition);
+                        },
+                        padding: EdgeInsets.zero,
                       ),
-                    ],
-                  ),
-                )
-                : Container(),
-          ],
-        ),
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                controller.value.isPlaying ? _pause() : _play();
+                              },
+                              icon: Icon(
+                                controller.value.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                              ),
+                            ),
+                            Text(
+                              "${_formatDuration(controller.value.position)} / ${_formatDuration(controller.value.duration)}",
+                            ),
+                          ],
+                        ),
+
+                        Row(
+                          children: [
+                            widget.onShare != null
+                                ? IconButton(
+                                  onPressed: widget.onShare,
+                                  icon: Icon(Icons.share),
+                                )
+                                : Container(),
+
+                            widget.allowFullScreen
+                                ? IconButton(
+                                  onPressed: () => _fullScreen(),
+                                  icon: Icon(Icons.fullscreen),
+                                )
+                                : Container(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+              : Container(),
+        ],
       ),
     );
   }

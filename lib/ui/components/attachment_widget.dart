@@ -15,6 +15,8 @@ import 'package:reminiscence/ui/components/file_widget.dart';
 import 'package:reminiscence/ui/components/link_preview.dart';
 import 'package:reminiscence/ui/components/video_player_widget.dart';
 
+const double attachmentHeight = 300.0;
+
 class AttachmentWidget extends StatefulWidget {
   final AttachmentDto attachment;
   final ReminiscenceData data;
@@ -45,10 +47,6 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isReady) {
-      return CircularProgressIndicator();
-    }
-
     if (widget.attachment.type == AttachmentType.photo) {
       return _buildPhoto();
     } else if (widget.attachment.type == AttachmentType.audio) {
@@ -64,20 +62,27 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
   Widget _buildPhoto() {
     final imageFile = File(_getFilePath());
+    final ready = imageFile.existsSync() && imageFile.lengthSync() > 0;
 
-    if (!imageFile.existsSync()) {
-      return CircularProgressIndicator();
-    }
-
-    if (imageFile.lengthSync() <= 0) {
-      imageFile.deleteSync();
-      _prepareFile();
-      return CircularProgressIndicator();
-    }
-
-    return GestureDetector(
-      onTap: () => launchFile(),
-      child: Image.file(imageFile, width: 300, fit: BoxFit.cover),
+    return SizedBox(
+      height: attachmentHeight,
+      width: double.infinity,
+      child:
+          ready
+              ? GestureDetector(
+                key: ValueKey("image"),
+                onTap: () => launchFile(),
+                child: Image.file(
+                  imageFile,
+                  height: attachmentHeight,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              )
+              : const Center(
+                key: ValueKey("placeholder"),
+                child: CircularProgressIndicator(),
+              ),
     );
   }
 
@@ -97,26 +102,35 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   Widget _buildFile() {
     final file = File(_getFilePath());
 
-    if (!file.existsSync()) {
-      return CircularProgressIndicator();
-    }
-
     return GestureDetector(
-      onTap: () => launchFile(),
+      onTap: () {
+        if (file.existsSync()) {
+          launchFile();
+        }
+      },
       child: FileWidget(p.basename(widget.attachment.uri)),
     );
   }
 
   Widget _buildVideo() {
-    String videoPath = _getFilePath();
+    final placeholderWidget = Center(child: CircularProgressIndicator());
 
-    if (!File(videoPath).existsSync()) {
-      return CircularProgressIndicator();
-    }
+    String videoPath = _getFilePath();
+    final ready = File(videoPath).existsSync();
 
     return Container(
       margin: EdgeInsets.only(top: 8),
-      child: VideoPlayerWidget(File(videoPath), onShare: shareFile),
+      height: 300.0,
+      width: double.infinity,
+      color: Colors.black,
+      child:
+          ready
+              ? VideoPlayerWidget(
+                File(videoPath),
+                onShare: shareFile,
+                placeholderWidget: placeholderWidget,
+              )
+              : placeholderWidget,
     );
   }
 
@@ -175,10 +189,13 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
       if (widget.data.secretKey == null) {
         await remFile.writeMediaToFile(widget.attachment.id, file);
-
       } else {
         final stream = remFile.readMedia(widget.attachment.id);
-        await decryptStream(stream: stream, outputFile: file, secretKey: widget.data.secretKey!);
+        await decryptStream(
+          stream: stream,
+          outputFile: file,
+          secretKey: widget.data.secretKey!,
+        );
       }
 
       await remFile.close();
