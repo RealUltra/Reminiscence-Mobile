@@ -19,6 +19,7 @@ import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/file_history.dart';
 import 'package:reminiscence/features/data_storage/file_opened.dart';
 import 'package:reminiscence/features/data_storage/legal.dart';
+import 'package:reminiscence/ui/pages/data_loader/loading_dialog.dart';
 import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
 import 'package:reminiscence/ui/pages/data_loader/no_files_widget.dart';
@@ -170,13 +171,33 @@ class BodyState extends State<Body> {
     }
     */
 
+    Future? loadingFuture;
+    bool loadingStopped = false;
+
     final result = await FilePicker.platform.pickFiles(
       dialogTitle: "Choose one or multiple zip/rem files to load",
       type: FileType.any,
       allowMultiple: true,
+
+      onFileLoading: (status) {
+        loadingFuture ??= showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => PopScope(
+                onPopInvokedWithResult:
+                    (canPop, result) => loadingStopped = true,
+                child: LoadingDialog(),
+              ),
+        );
+      },
     );
 
-    if (result != null && result.files.isNotEmpty && context.mounted) {
+    if (!context.mounted || loadingStopped) return;
+
+    Navigator.of(context, rootNavigator: true).pop();
+
+    if (result != null && result.files.isNotEmpty) {
       await loadData(context, result.files.map((x) => x.path!).toList());
     }
   }
@@ -188,10 +209,8 @@ class BodyState extends State<Body> {
 
     if (extension == ".rem") {
       await loadRemData(context, filePaths[0]);
-
     } else if (extension == ".zip") {
       await loadZipData(context, filePaths);
-
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
