@@ -205,6 +205,34 @@ class BodyState extends State<Body> {
   Future<void> loadData(BuildContext context, List<String> filePaths) async {
     assert(filePaths.isNotEmpty);
 
+    final remFilePath = await getRemFilePath(filePaths[0]);
+
+    if (await File(remFilePath).exists()) {
+      if (!context.mounted) return;
+
+      final response =
+          await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return MessageBox(
+                title: "Overwrite?",
+                body: Text(
+                  "A `.rem` file with the same filename already exists. Would you like to overwrite it?",
+                  textAlign: TextAlign.center,
+                ),
+                actions: [
+                  MessageBoxButton("Yes", value: true),
+                  MessageBoxButton("No", highlighted: false, value: false),
+                ],
+                actionsAxis: Axis.horizontal,
+              );
+            },
+          ) ??
+          false;
+
+      if (!response) return;
+    }
+
     final extension = path.extension(filePaths[0]);
 
     if (extension == ".rem") {
@@ -543,8 +571,7 @@ Future<void> loadRemFileForIsolate(List<dynamic> args) async {
 }
 
 Future<String> saveNewRemFile(String tempPath) async {
-  final directory = await getApplicationDocumentsDirectory();
-  final filePath = path.join(directory.path, path.basename(tempPath));
+  final filePath = await getRemFilePath(tempPath);
 
   final tempFile = File(tempPath);
   await tempFile.rename(filePath);
@@ -552,4 +579,10 @@ Future<String> saveNewRemFile(String tempPath) async {
   await updateFileHistory(filePath);
 
   return filePath;
+}
+
+Future<String> getRemFilePath(String tempPath) async {
+  final filename = "${path.basenameWithoutExtension(tempPath)}.rem";
+  final directory = await getApplicationDocumentsDirectory();
+  return path.join(directory.path, filename);
 }
