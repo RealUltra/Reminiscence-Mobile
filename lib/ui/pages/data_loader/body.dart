@@ -205,34 +205,6 @@ class BodyState extends State<Body> {
   Future<void> loadData(BuildContext context, List<String> filePaths) async {
     assert(filePaths.isNotEmpty);
 
-    final remFilePath = await getRemFilePath(filePaths[0]);
-
-    if (await File(remFilePath).exists()) {
-      if (!context.mounted) return;
-
-      final response =
-          await showDialog<bool>(
-            context: context,
-            builder: (context) {
-              return MessageBox(
-                title: "Overwrite?",
-                body: Text(
-                  "A `.rem` file with the same filename already exists. Would you like to overwrite it?",
-                  textAlign: TextAlign.center,
-                ),
-                actions: [
-                  MessageBoxButton("Yes", value: true),
-                  MessageBoxButton("No", highlighted: false, value: false),
-                ],
-                actionsAxis: Axis.horizontal,
-              );
-            },
-          ) ??
-          false;
-
-      if (!response) return;
-    }
-
     final extension = path.extension(filePaths[0]);
 
     if (extension == ".rem") {
@@ -278,6 +250,14 @@ class BodyState extends State<Body> {
       );
 
       return;
+    }
+
+    // If the rem file is being loaded externally, save it in your app documents folder.
+    final remFilePath = await getRemFilePath(filePath);
+
+    if (remFilePath != filePath) {
+      await File(filePath).rename(remFilePath);
+      filePath = remFilePath;
     }
 
     final isEncrypted = await isRemFileEncrypted(filePath);
