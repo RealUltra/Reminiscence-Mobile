@@ -32,8 +32,6 @@ class AttachmentWidget extends StatefulWidget {
 }
 
 class _AttachmentWidgetState extends State<AttachmentWidget> {
-  bool isReady = false;
-
   @override
   void initState() {
     super.initState();
@@ -41,7 +39,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     if (widget.attachment.type != AttachmentType.link) {
       _prepareFile();
     } else {
-      setState(() => isReady = true);
+      setState(() {});
     }
   }
 
@@ -64,25 +62,29 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     final imageFile = File(_getFilePath());
     final ready = imageFile.existsSync() && imageFile.lengthSync() > 0;
 
-    return SizedBox(
+    return Container(
       height: attachmentHeight,
       width: double.infinity,
+      color: Colors.black,
+      
       child:
           ready
               ? GestureDetector(
-                key: ValueKey("image"),
                 onTap: () => launchFile(),
+                
                 child: Image.file(
                   imageFile,
                   height: attachmentHeight,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  
+                  errorBuilder: (context, _, _) {
+                    return const Center(child: Icon(Icons.error));
+                  },
                 ),
               )
-              : const Center(
-                key: ValueKey("placeholder"),
-                child: CircularProgressIndicator(),
-              ),
+              
+              : const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -120,7 +122,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     return Container(
       margin: EdgeInsets.only(top: 8),
-      height: 300.0,
+      height: attachmentHeight,
       width: double.infinity,
       color: Colors.black,
       child:
@@ -203,7 +205,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     // Update the widget to render the attachment
     if (mounted) {
-      setState(() => isReady = true);
+      setState(() {});
     }
   }
 }
