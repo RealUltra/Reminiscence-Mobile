@@ -9,19 +9,28 @@ class FileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 8.0),
-      padding: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(16.0),
+
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8.0),
+
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1.0,
+        ),
       ),
+
       child: Row(
+        spacing: 16.0,
+
         children: [
           Icon(
             Icons.insert_drive_file,
             color: Theme.of(context).colorScheme.primary,
-            size: 28.0,
+            size: 32.0,
           ),
-          const SizedBox(width: 10.0),
+
           Expanded(
             child: Text(
               fileName,

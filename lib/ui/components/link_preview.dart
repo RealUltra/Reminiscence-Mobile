@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:any_link_preview/any_link_preview.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LinkPreview extends StatefulWidget {
@@ -13,20 +12,10 @@ class LinkPreview extends StatefulWidget {
 }
 
 class _LinkPreviewState extends State<LinkPreview> {
-  bool canLaunch = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    canLaunchUrl(Uri.parse(widget.link)).then((value) {
-      setState(() => canLaunch = value);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final uri = Uri.parse(widget.link);
+    final double previewHeight = MediaQuery.of(context).size.height * 0.15;
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4.0),
@@ -36,6 +25,7 @@ class _LinkPreviewState extends State<LinkPreview> {
         cache: const Duration(days: 1),
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         displayDirection: UIDirection.uiDirectionHorizontal,
+        previewHeight: previewHeight,
 
         titleStyle: Theme.of(context).textTheme.titleSmall!.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
@@ -48,39 +38,58 @@ class _LinkPreviewState extends State<LinkPreview> {
 
         errorWidget: GestureDetector(
           onTap: () async {
-            if (canLaunch) {
-              launchUrl(uri);
-            } else {
-              Clipboard.setData(ClipboardData(text: widget.link));
-            }
+            await launchUrl(uri);
           },
 
           child: Container(
-            padding: const EdgeInsets.all(4.0),
+            height: previewHeight,
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
 
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(8.0),
+              borderRadius: BorderRadius.circular(12.0),
+
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
+                width: 1.0,
+              ),
             ),
 
-            child: ListTile(
-              leading: const Icon(Icons.language),
+            child: Row(
+              spacing: 24.0,
 
-              title: Text(
-                "Unable to preview link",
-
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w500,
+              children: [
+                Icon(
+                  Icons.link_off_rounded,
+                  size: previewHeight * 0.35,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              ),
-
-              subtitle: Text(
-                canLaunch
-                    ? "Click here to launch the url."
-                    : "Click here to copy the url.",
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+                
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4.0,
+                    
+                    children: [
+                      Text(
+                        "Unable to preview link",
+                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      
+                      Text(
+                        "Tap to open in browser",
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
