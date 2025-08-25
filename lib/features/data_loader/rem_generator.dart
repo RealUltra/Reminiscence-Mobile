@@ -113,18 +113,21 @@ Future<String?> createRemFile({
   final archiveMap = <String, ArchiveFile>{};
 
   for (int i = 0; i < archivePaths.length; i++) {
-    final archivePath  = archivePaths[i];
+    final archivePath = archivePaths[i];
 
     await insertChatsFromArchive(
       archivePath: archivePath,
       db: db,
-      progressStart: (progressStart + (i / archivePaths.length * 0.49)) * progressValue,
+      progressStart:
+          (progressStart + (i / archivePaths.length * 0.49)) * progressValue,
       progressValue: 0.49 / archivePaths.length * progressValue,
       archiveMap: archiveMap,
       isCancelled: () => isCancelled,
       sendPort: sendPort,
     );
   }
+
+  if (isCancelled) return null;
 
   stopwatch.stop();
   debugPrint(
@@ -135,21 +138,27 @@ Future<String?> createRemFile({
     ..reset()
     ..start();
   // Insert the media for all the attachments into the rem file
-  await insertMediaFiles(db, archiveMap, remFile, derivedKey, (
-    attachmentsDone,
-    totalAttachments,
-  ) async {
-    sendPort?.send({
-      "type": "progress",
-      "progress": {
-        "value":
-            progressStart +
-            (0.49 + attachmentsDone / totalAttachments * 0.5) * progressValue,
-        "label":
-            'Loading Chat Media...\n($attachmentsDone / $totalAttachments)',
-      },
-    });
-  });
+  await insertMediaFiles(
+    db,
+    archiveMap,
+    remFile,
+    derivedKey,
+    () => isCancelled,
+    (attachmentsDone, totalAttachments) async {
+      sendPort?.send({
+        "type": "progress",
+        "progress": {
+          "value":
+              progressStart +
+              (0.49 + attachmentsDone / totalAttachments * 0.5) * progressValue,
+          "label":
+              'Loading Chat Media...\n($attachmentsDone / $totalAttachments)',
+        },
+      });
+    },
+  );
+
+  if (isCancelled) return null;
 
   debugPrint(
     "`insertMediaFiles` Duration: ${stopwatch.elapsed.inSeconds} seconds",
@@ -307,6 +316,7 @@ Future<void> insertMediaFiles(
   Map<String, ArchiveFile> archiveMap,
   ReminiscenceFile remFile,
   DerivedKey? derivedKey,
+  bool Function() isCancelled,
   Future<void> Function(int, int) updateProgress,
 ) async {
   final results =
@@ -356,5 +366,7 @@ Future<void> insertMediaFiles(
     }
 
     attachmentsDone++;
+
+    if (isCancelled()) return;
   }
 }
