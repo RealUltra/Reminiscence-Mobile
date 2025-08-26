@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart' as p;
@@ -125,7 +126,7 @@ class BodyState extends State<Body> {
                         recentFiles: recentFiles,
                         onClick:
                             (String filePath) => loadData(context, [filePath]),
-                        onShare: (String filePath) => shareRemFile(filePath),
+                        onShare: (String filePath) => saveRemFile(filePath),
                         onDelete:
                             (String filePath) => deleteLoadedFile(filePath),
                       )
@@ -409,7 +410,30 @@ class BodyState extends State<Body> {
   }
 
   Future<void> shareRemFile(String filePath) async {
-    await SharePlus.instance.share(ShareParams(files: [XFile(filePath, mimeType: 'application/vnd.reminiscence.rem')]));
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(filePath, mimeType: 'application/vnd.reminiscence.rem')],
+      ),
+    );
+  }
+
+  Future<void> saveRemFile(String filePath) async {
+    final params = SaveFileDialogParams(sourceFilePath: filePath);
+    final savedFilePath = await FlutterFileDialog.saveFile(params: params);
+
+    if (savedFilePath != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          content: Text(
+            "File exported successfully.",
+            style: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Future<String?> _promptPassword(
@@ -464,6 +488,8 @@ class BodyState extends State<Body> {
 
   void _fileListener(List<SharedMediaFile> value) {
     if (value.isNotEmpty) {
+      print("Shared Media File MimeType: ${value.first.mimeType}");
+
       if (mounted) {
         loadData(context, [value.first.path]);
       }

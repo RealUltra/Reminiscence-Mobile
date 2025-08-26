@@ -191,6 +191,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
       if (widget.data.secretKey == null) {
         await remFile.writeMediaToFile(widget.attachment.id, file);
+
       } else {
         final stream = remFile.readMedia(widget.attachment.id);
         await decryptStream(

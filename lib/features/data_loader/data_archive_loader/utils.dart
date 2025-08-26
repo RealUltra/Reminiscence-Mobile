@@ -107,11 +107,24 @@ List<String> listFolders(Archive archive, String targetDir) {
   return folders;
 }
 
-Map<String, ArchiveFile> getArchiveMap(Archive archive) {
+Map<String, ArchiveFile> getArchiveMap(Archive archive, {String? relativeDir}) {
   Map<String, ArchiveFile> result = {};
 
   for (ArchiveFile file in archive) {
-    result[path.normalize(file.name)] = file;
+    String filePath = path.normalize(file.name);
+
+    if (relativeDir != null && relativeDir.isNotEmpty) {
+      if (filePath.startsWith(relativeDir)) {
+        filePath = filePath.substring(relativeDir.length);
+        if (filePath.startsWith("/")) {
+          filePath = filePath.substring(1);
+        }
+      } else {
+        continue;
+      }
+    }
+
+    result[filePath] = file;
   }
 
   return result;

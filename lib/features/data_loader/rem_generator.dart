@@ -214,7 +214,7 @@ Future<void> insertChatsFromArchive({
       .map((c) => c.messageStacks.length)
       .fold(0, (sum, length) => sum + length);
 
-  archiveMap.addAll(getArchiveMap(archive));
+  archiveMap.addAll(getArchiveMap(archive, relativeDir: getDataDir(archive)));
 
   final messageReader = MessageReader(chats);
 
@@ -345,6 +345,7 @@ Future<void> insertMediaFiles(
   for (final row in results) {
     final attachmentId = row.read<int>('id');
     final uri = row.read<String>('uri');
+
 
     final archiveFile = archiveMap[path.normalize(uri)];
 

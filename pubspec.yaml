@@ -49,6 +49,7 @@ dependencies:
   characters: ^1.4.0
   es_compression: ^2.0.14
   markdown_widget: ^2.3.2+8
+  flutter_file_dialog: ^3.0.2
 
 dev_dependencies:
   flutter_test:
@@ -73,4 +74,4 @@ flutter_launcher_icons:
 
   adaptive_icon_foreground: "assets/icon.png"
   adaptive_icon_background: "assets/launcher_icon_background.png"
-  adaptive_icon_foreground_inset: 25
+  adaptive_icon_foreground_inset: 27

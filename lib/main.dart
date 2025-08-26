@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
@@ -29,6 +32,8 @@ Future<void> main() async {
 
   await requestPermissions();
 
+  await clearMediaCacheOnStartup();
+
   final prefs = await SharedPreferences.getInstance();
   final themeModeProvider = ThemeModeProvider(prefs: prefs);
   final systemMessagesProvider = SystemMessagesProvider(prefs: prefs);
@@ -44,6 +49,20 @@ Future<void> main() async {
       child: App(),
     ),
   );
+}
+
+Future<void> clearMediaCacheOnStartup() async {
+  final tempDir = await getTemporaryDirectory();
+
+  for (final file in tempDir.listSync()) {
+    try {
+      if (file is File && file.path.startsWith('media_')) {
+        file.deleteSync();
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }
 }
 
 class App extends StatelessWidget {
