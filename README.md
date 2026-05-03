@@ -1,6 +1,6 @@
 # Reminiscence
 
-<a href='https://play.google.com/store/apps/details?id=com.andrerinas.headunitrevived'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200" /></a>
+<a href='https://play.google.com/store/apps/details?id=com.codealyst.reminiscence'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200" /></a>
 
 <p align="center">
     <img src="assets/icon.png"
