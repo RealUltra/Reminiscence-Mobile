@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:reminiscence/features/notifications/reminder_notifications.dart';
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
@@ -31,6 +32,9 @@ Future<void> main() async {
   ]);
 
   await requestPermissions();
+
+  await initializeReminderNotifications();
+  await refreshReminderNotifications();
 
   await clearMediaCacheOnStartup();
 

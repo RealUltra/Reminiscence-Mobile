@@ -36,8 +36,28 @@ class CreatePasswordTitle extends StatelessWidget {
 
         const SizedBox(height: 8),
 
-        BulletPoint(
-          "Leave the password field empty if you don't want to encrypt your data.",
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: Theme.of(context).colorScheme.error,
+              size: 20.0,
+            ),
+
+            const SizedBox(width: 8),
+
+            Expanded(
+              child: Text(
+                "Encryption is currently not recommended. It is very slow, and your data always stays on your device anyway.",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
         ),
 
         const SizedBox(height: 24),

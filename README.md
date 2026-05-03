@@ -1,5 +1,14 @@
 # Reminiscence
 
+<a href='https://play.google.com/store/apps/details?id=com.andrerinas.headunitrevived'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200" /></a>
+
+<p align="center">
+    <img src="assets/icon.png"
+    alt="Headunit Logo"
+    height="200">
+</p>
+
+
 **Revisit your old Instagram messages with clarity, security, and nostalgia.**
 
 Instagram lets you download an archive of all your messages. Reminiscence offers a better way to explore them by presenting your **Instagram data download** in a clean, searchable interface.
@@ -16,7 +25,9 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 🔒 Privacy & Data Tools
 
-- **Encrypted Local Storage:** Your Instagram data is secured locally using encryption, unlike the raw, unencrypted format provided by Instagram.
+- **Local Only:** Your Instagram data never leaves your device!
+
+- **Encryption (Redundant):** Your Instagram data is encrypted while stored locally. This ensures if someone accessed your phone, your data would still be inaccessible. **This is redundant because the perpetrator can just access your Instagram.**
 
 - **System Message Filtering:** Remove automated system messages like reactions or "liked a message" indicators for a cleaner viewing experience.
 
@@ -25,6 +36,25 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - **Frontend & App Logic:** Flutter
 - **Secure Local Database:** SQLCipher
 
-## 📦 Coming Soon
+## Planned
 
-- Completing the app.
+### v1.0.0
+- Generates REM files from Instagram data downloads.
+- Completed: Messages display UI — Text, photos, videos, audio, files, reactions, link previews, etc..
+- Completed: Graph UI.
+- Completed: Pinned Messages.
+- Completed: Search messages by keyword, date, chat, sender, and attachment type.
+- Filter automated system messages for cleaner conversations.
+- Mark messages as system messages manually.
+- Import/export app settings, including pinned and system-message preferences.
+- Optional password protection for .rem files, with all data kept on-device.
+- Instagram data download tutorial.
+- Reminder notifications to return to the app.
+
+## Known Issues
+
+- **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
+
+## Changelog
+
+*Nothing to see here*

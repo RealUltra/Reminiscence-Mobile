@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/pages/data_loader/full_screen_ad.dart';
+import 'package:reminiscence/features/data_storage/notifications.dart';
+import 'package:reminiscence/features/notifications/reminder_notifications.dart';
+import 'package:reminiscence/ui/pages/data_loader/download_popup.dart';
 
 class NoFilesWidget extends StatelessWidget {
   const NoFilesWidget({super.key});
@@ -23,7 +25,7 @@ class NoFilesWidget extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextButton(
-          onPressed: () => showTutorial(context),
+          onPressed: () => showDownloadPopup(context),
           style: ButtonStyle(
             overlayColor: WidgetStateProperty.all(
               Theme.of(context).colorScheme.primary.withAlpha(50),
@@ -43,12 +45,12 @@ class NoFilesWidget extends StatelessWidget {
     );
   }
 
-  void showTutorial(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => FullScreenAd(assetFilePath: "assets/tutorial-video.mp4"),
-      ),
-    );
+  Future<void> showDownloadPopup(BuildContext context) async {
+    await markDownloadPopupViewed();
+    await refreshReminderNotifications();
+
+    if (context.mounted) {
+      await showDialog(context: context, builder: (_) => DownloadPopup());
+    }
   }
 }

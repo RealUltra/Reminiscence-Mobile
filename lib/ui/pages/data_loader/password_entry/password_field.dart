@@ -4,11 +4,13 @@ import 'package:reminiscence/ui/components/switch_controller.dart';
 class PasswordField extends StatelessWidget {
   final TextEditingController textController;
   final SwitchController switchController;
+  final String labelText;
 
   const PasswordField({
     super.key,
     required this.textController,
     required this.switchController,
+    this.labelText = 'Password',
   });
 
   @override
@@ -27,7 +29,7 @@ class PasswordField extends StatelessWidget {
           ),
         ),
 
-        labelText: 'Password',
+        labelText: labelText,
 
         suffixIcon: IconButton(
           icon: Icon(showPassword ? Icons.visibility : Icons.visibility_off),

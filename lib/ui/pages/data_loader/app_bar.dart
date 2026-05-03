@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:reminiscence/ui/components/video_player_widget.dart';
+import 'package:reminiscence/features/data_storage/notifications.dart';
+import 'package:reminiscence/features/notifications/reminder_notifications.dart';
+import 'package:reminiscence/ui/pages/data_loader/download_popup.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MyAppBar({super.key});
@@ -16,7 +16,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       actions: [
         IconButton(
-          onPressed: () => showTutorial(context),
+          onPressed: () => showDownloadPopup(context),
           icon: Icon(Icons.help_outline, size: 30),
         ),
       ],
@@ -34,28 +34,12 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
-  void showTutorial(BuildContext context) {
-    /*
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => FullScreenAd(assetFilePath: "assets/tutorial-video.mp4"),
-      ),
-    );
-    */
+  Future<void> showDownloadPopup(BuildContext context) async {
+    await markDownloadPopupViewed();
+    await refreshReminderNotifications();
 
-    showDialog(
-      context: context,
-      builder:
-          (context) => Material(
-            child: VideoPlayerWidget(
-              File("assets/tutorial-video.mp4"),
-              isAssetFile: true,
-              allowFullScreen: false,
-              startPlaying: true,
-              alwaysShowControls: true,
-            ),
-          ),
-    );
+    if (context.mounted) {
+      await showDialog(context: context, builder: (_) => DownloadPopup());
+    }
   }
 }

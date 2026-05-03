@@ -15,7 +15,10 @@ class SystemMessagesProvider extends ChangeNotifier {
   }
 
   Future<void> setSystemMessages(List<String> systemMessages) async {
-    await prefs.setString("systemMessages", jsonEncode(systemMessages));
+    await prefs.setString(
+      data_storage.systemMessagesKey,
+      jsonEncode(systemMessages),
+    );
     notifyListeners();
   }
 

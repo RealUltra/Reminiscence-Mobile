@@ -20,6 +20,8 @@ import 'package:reminiscence/features/data_loader/utils.dart';
 import 'package:reminiscence/features/data_storage/file_history.dart';
 import 'package:reminiscence/features/data_storage/file_opened.dart';
 import 'package:reminiscence/features/data_storage/legal.dart';
+import 'package:reminiscence/features/data_storage/notifications.dart';
+import 'package:reminiscence/features/notifications/reminder_notifications.dart';
 import 'package:reminiscence/ui/pages/data_loader/loading_dialog.dart';
 import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/pages/data_loader/load_button.dart';
@@ -322,6 +324,9 @@ class BodyState extends State<Body> {
       return;
     }
 
+    await markDataLoaded();
+    await refreshReminderNotifications();
+
     await Navigator.of(context).pushNamed("/viewer");
   }
 
@@ -394,6 +399,9 @@ class BodyState extends State<Body> {
       await data.close();
       return;
     }
+
+    await markDataLoaded();
+    await refreshReminderNotifications();
 
     // Move to the viewer page.
     await Navigator.of(context).pushNamed("/viewer");

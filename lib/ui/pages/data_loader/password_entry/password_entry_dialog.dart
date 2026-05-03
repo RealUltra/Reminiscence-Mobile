@@ -63,6 +63,8 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
               PasswordField(
                 textController: textController,
                 switchController: switchController,
+                labelText:
+                    widget.mode == 0 ? 'Password (Optional)' : 'Password',
               ),
 
               const SizedBox(height: 8),

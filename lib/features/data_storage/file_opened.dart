@@ -1,7 +1,9 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+const _fileOpenedKeyPrefix = "file_opened";
+
 String getKey(String filename) {
-  return "file_opened_$filename";
+  return "${_fileOpenedKeyPrefix}_$filename";
 }
 
 Future<bool> hasBeenOpened(String filename) async {

@@ -15,7 +15,10 @@ class PinnedMessagesProvider extends ChangeNotifier {
   }
 
   Future<void> setPinnedMessages(List<String> pinnedMessages) async {
-    await prefs.setString("pinnedMessages", jsonEncode(pinnedMessages));
+    await prefs.setString(
+      data_storage.pinnedMessagesKey,
+      jsonEncode(pinnedMessages),
+    );
     notifyListeners();
   }
 
