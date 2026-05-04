@@ -13,6 +13,32 @@
 
 Instagram lets you download an archive of all your messages. Reminiscence offers a better way to explore them by presenting your **Instagram data download** in a clean, searchable interface.
 
+## 📸 Screenshots
+
+<p align="center">
+    <img src="assets/screenshots/screenshot_a.jpg"
+    alt="Home screen showing loaded Instagram chats with search and sorting controls"
+    width="360">
+</p>
+
+<p align="center">
+    <img src="assets/screenshots/screenshot_b.jpg"
+    alt="Conversation view showing imported Instagram messages and quick actions"
+    width="360">
+</p>
+
+<p align="center">
+    <img src="assets/screenshots/screenshot_c.jpg"
+    alt="Search results filtered by attachment type and sender"
+    width="360">
+</p>
+
+<p align="center">
+    <img src="assets/screenshots/screenshot_d.jpg"
+    alt="Monthly message analytics graph for an Instagram conversation"
+    width="360">
+</p>
+
 ## ✨ Features
 
 - **Clean UI for Instagram Data:** Load your Instagram data download and explore messages through a beautiful interface.
@@ -36,25 +62,27 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - **Frontend & App Logic:** Flutter
 - **Secure Local Database:** SQLCipher
 
-## Planned
+## 🗓️ Planned
+
+### v1.1.0
+- Fixed: Reminiscence is no longer capable of opening ANY file type. This means `.rem` files can also no longer be opened through clicking on them (they must be loaded through the app).
+- Added: Reminder notifications to return to the app.
+- Updated: Instagram data download tutorial made simpler.
+
+## 🐛 Known Issues
+
+- **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
+
+## 📝 Changelog
 
 ### v1.0.0
-- Generates REM files from Instagram data downloads.
+- Added: Generates REM files from Instagram data downloads.
 - Completed: Messages display UI — Text, photos, videos, audio, files, reactions, link previews, etc..
 - Completed: Graph UI.
 - Completed: Pinned Messages.
 - Completed: Search messages by keyword, date, chat, sender, and attachment type.
-- Filter automated system messages for cleaner conversations.
-- Mark messages as system messages manually.
-- Import/export app settings, including pinned and system-message preferences.
-- Optional password protection for .rem files, with all data kept on-device.
-- Instagram data download tutorial.
-- Reminder notifications to return to the app.
-
-## Known Issues
-
-- **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
-
-## Changelog
-
-*Nothing to see here*
+- Added: Filter automated system messages for cleaner conversations.
+- Added: Mark messages as system messages manually.
+- Added: Import/export app settings, including pinned and system-message preferences.
+- Added: Optional password protection for .rem files, with all data kept on-device.
+- Added: Instagram data download tutorial video.
