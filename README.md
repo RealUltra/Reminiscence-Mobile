@@ -15,29 +15,10 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 📸 Screenshots
 
-<p align="center">
-    <img src="assets/screenshots/screenshot_a.jpg"
-    alt="Home screen showing loaded Instagram chats with search and sorting controls"
-    width="360">
-</p>
-
-<p align="center">
-    <img src="assets/screenshots/screenshot_b.jpg"
-    alt="Conversation view showing imported Instagram messages and quick actions"
-    width="360">
-</p>
-
-<p align="center">
-    <img src="assets/screenshots/screenshot_c.jpg"
-    alt="Search results filtered by attachment type and sender"
-    width="360">
-</p>
-
-<p align="center">
-    <img src="assets/screenshots/screenshot_d.jpg"
-    alt="Monthly message analytics graph for an Instagram conversation"
-    width="360">
-</p>
+| | |
+|---|---|
+| <img src="assets/screenshots/screenshot_a.jpg" alt="Home screen showing loaded Instagram chats with search and sorting controls" width="320"> | <img src="assets/screenshots/screenshot_b.jpg" alt="Conversation view showing imported Instagram messages and quick actions" width="320"> |
+| <img src="assets/screenshots/screenshot_c.jpg" alt="Search results filtered by attachment type and sender" width="320"> | <img src="assets/screenshots/screenshot_d.jpg" alt="Monthly message analytics graph for an Instagram conversation" width="320"> |
 
 ## ✨ Features
 
