@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const _privacyPolicyAssetPath = "assets/legal/privacy_policy.txt";
-const _termsOfServiceAssetPath = "assets/legal/terms_of_service.txt";
+const _privacyPolicyAssetPath = "assets/legal/privacy_policy.md";
+const _termsOfServiceAssetPath = "assets/legal/terms_of_service.md";
 const _privacyPolicyKeyPrefix = "privacy_policy";
 const _termsOfServiceKeyPrefix = "terms_of_service";
 const _shownKeySuffix = "shown";
