@@ -45,16 +45,18 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 🗓️ Planned
 
-### v1.1.0
-- Fixed: Reminiscence is no longer capable of opening ANY file type. This means `.rem` files can also no longer be opened through clicking on them (they must be loaded through the app).
-- Added: Reminder notifications to return to the app.
-- Updated: Instagram data download tutorial made simpler.
+*Nothing to see here.*
 
 ## 🐛 Known Issues
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
 
 ## 📝 Changelog
+
+### v1.1.0
+- Fixed: Reminiscence is no longer capable of opening ANY file type. This means `.rem` files can also no longer be opened through clicking on them (they must be loaded through the app).
+- Added: Reminder notifications to return to the app.
+- Updated: Instagram data download tutorial made simpler.
 
 ### v1.0.0
 - Added: Generates REM files from Instagram data downloads.
