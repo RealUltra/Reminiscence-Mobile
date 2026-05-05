@@ -52,3 +52,4 @@ app.*.map.json
 # My own
 /lib/file hierarchy viewer.py
 /experiment/
+/_assets/

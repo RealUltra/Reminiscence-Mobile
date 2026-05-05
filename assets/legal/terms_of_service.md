@@ -1,5 +1,5 @@
-**Effective Date:** 2025-08-01
-**Last Updated:** 2025-08-01
+**Effective Date:** 2026-05-05
+**Last Updated:** 2026-05-05
 
 
 Please read these Terms of Service ("Terms") carefully before using the Reminiscence mobile application ("the App").
@@ -34,8 +34,9 @@ You also agree not to reverse engineer, modify, or tamper with the App.
 
 ## 5. Intellectual Property
 
-All rights to the App, including its design, code, and branding, are owned by the developer.  
-The App is closed-source. You may not copy, modify, distribute, or reuse any part of it.
+The App's source code is made available under the Apache License 2.0. You may use, copy, modify, and distribute the source code in accordance with that license.
+
+The Reminiscence name, logo, icon, screenshots, store listing materials, and other brand assets remain owned by the developer. You may not use them to publish, promote, or distribute another app without written permission.
 
 
 ## 6. Disclaimer

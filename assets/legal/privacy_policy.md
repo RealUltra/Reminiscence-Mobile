@@ -1,5 +1,5 @@
-**Effective Date:** 2025-08-01
-**Last Updated:** 2025-08-01
+**Effective Date:** 2025-05-05
+**Last Updated:** 2026-05-05
 
 
 Welcome to **Reminiscence**. This Privacy Policy explains how we handle and protect your personal data when you use the Reminiscence mobile application ("App").
@@ -65,9 +65,9 @@ We do not knowingly collect or process data from children.
 
 ## 9. Source Code
 
-- Reminiscence is a **closed-source** application.  
-- The code is not available for use, modification, or redistribution.  
-- Future read-only access may be considered for transparency purposes.
+- Reminiscence is an **open-source** application.  
+- The App's source code is available under the Apache License 2.0.  
+- The Reminiscence name, logo, icon, screenshots, and other brand assets remain owned by the developer and are not licensed for reuse without permission.
 
 
 ## 10. Your Rights

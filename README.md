@@ -67,3 +67,11 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Added: Import/export app settings, including pinned and system-message preferences.
 - Added: Optional password protection for .rem files, with all data kept on-device.
 - Added: Instagram data download tutorial video.
+
+## License
+
+Copyright 2026 Codealyst.
+
+The Reminiscence source code is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
+
+The Reminiscence name, logo, app icon, screenshots, store listing materials, and other brand assets are not licensed for reuse without permission. Forks and redistributed builds must use different branding and clearly state that they are unofficial.
