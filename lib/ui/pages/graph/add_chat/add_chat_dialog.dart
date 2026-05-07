@@ -39,16 +39,15 @@ class _AddChatDialogState extends State<AddChatDialog> {
     final filteredChats = _getSearchResults();
     _sortChats(filteredChats);
 
-    return Material(
-      color: Colors.transparent,
-
+    return Dialog(
       child: Container(
         padding: EdgeInsets.only(top: 16.0),
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 60.0),
+        constraints: BoxConstraints(maxWidth: 400, maxHeight: 400),
 
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(color: Theme.of(context).colorScheme.secondary),
         ),
 
         child: Column(

@@ -44,44 +44,46 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
           padding: EdgeInsets.fromLTRB(12, 24, 12, 16),
 
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            color: Theme.of(context).colorScheme.surface,
 
-            border: Border.all(
-              color: Theme.of(context).colorScheme.surfaceContainerLowest,
-              width: 1,
-            ),
+            border: Border.all(color: Theme.of(context).colorScheme.secondary),
 
             borderRadius: BorderRadius.circular(16),
           ),
 
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
 
-            children: [
-              widget.mode == 0 ? CreatePasswordTitle() : EnterPasswordTitle(),
+              children: [
+                widget.mode == 0 ? CreatePasswordTitle() : EnterPasswordTitle(),
 
-              PasswordField(
-                textController: textController,
-                switchController: switchController,
-                labelText:
-                    widget.mode == 0 ? 'Password (Optional)' : 'Password',
-              ),
+                PasswordField(
+                  textController: textController,
+                  switchController: switchController,
+                  labelText:
+                      widget.mode == 0 ? 'Password (Optional)' : 'Password',
+                ),
 
-              const SizedBox(height: 8),
-
-              if (failedAttempt) ...{
                 const SizedBox(height: 8),
 
-                Text(
-                  "Incorrect Password.",
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              },
+                if (failedAttempt) ...{
+                  const SizedBox(height: 8),
 
-              const SizedBox(height: 16),
+                  Text(
+                    "Incorrect Password.",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                },
 
-              SubmitButton(onClick: submitButtonPressed),
-            ],
+                const SizedBox(height: 16),
+
+                SubmitButton(onClick: submitButtonPressed),
+              ],
+            ),
           ),
         ),
       ),

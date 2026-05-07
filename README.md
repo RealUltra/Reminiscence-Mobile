@@ -45,7 +45,19 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 🗓️ Planned
 
-*Nothing to see here.*
+### v1.1.2
+- Test on and optimize for older devices and chromebooks
+- Rework, fix and test multiple zip files being loaded.
+
+### v1.1.1
+- Re-add and test landscape mode.
+- Fixed maximum width for message boxes.
+- Make the tutorial's text more prominent (shrink images and/or enlarge text and/or move the text to the top)
+- Add separate in-app and web tutorials for the data download.
+- Mention to the user as part of the tutorial that the data download could take 24-48 hours and to check back in tomorrow.
+- Test and update reminder notification timing logic.
+- Fix reel thumbnails not loading (if possible)
+- Quick access for messages: "First message", "Random message", etc.
 
 ## 🐛 Known Issues
 

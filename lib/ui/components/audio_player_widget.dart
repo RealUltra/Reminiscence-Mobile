@@ -85,6 +85,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         ),
       ),
       padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+      constraints: BoxConstraints(maxWidth: 400),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

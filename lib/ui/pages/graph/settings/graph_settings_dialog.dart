@@ -61,63 +61,75 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
 
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        constraints: BoxConstraints(maxWidth: 400),
 
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(color: Theme.of(context).colorScheme.secondary),
+        ),
 
-          children: [
-            SeparateParticipantsSwitch(
-              controller: separateParticipantsController,
-            ),
+        child: Scrollbar(
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
 
-            const Divider(),
-            const SizedBox(height: 8.0),
-
-            GraphModeSelector(controller: graphModeController),
-
-            const SizedBox(height: 8.0),
-
-            GraphDetailsWidget(
-              graphMode: graphModeController.selected,
-              years: widget.years,
-              monthController: monthController,
-              yearController: yearController,
-              allTimeController: allTimeController,
-            ),
-
-            const Divider(),
-            const SizedBox(height: 4.0),
-
-            ChartTypeWidget(controller: chartTypeController),
-
-            const Divider(),
-            const SizedBox(height: 4.0),
-
-            ElevatedButton(
-              onPressed: close,
-
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+              children: [
+                SeparateParticipantsSwitch(
+                  controller: separateParticipantsController,
                 ),
-                elevation: 8,
-              ),
 
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  "Done",
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
+                const Divider(),
+                const SizedBox(height: 8.0),
+
+                GraphModeSelector(controller: graphModeController),
+
+                const SizedBox(height: 8.0),
+
+                GraphDetailsWidget(
+                  graphMode: graphModeController.selected,
+                  years: widget.years,
+                  monthController: monthController,
+                  yearController: yearController,
+                  allTimeController: allTimeController,
+                ),
+
+                const Divider(),
+                const SizedBox(height: 4.0),
+
+                ChartTypeWidget(controller: chartTypeController),
+
+                const Divider(),
+                const SizedBox(height: 4.0),
+
+                ElevatedButton(
+                  onPressed: close,
+
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 8,
+                  ),
+
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      "Done",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

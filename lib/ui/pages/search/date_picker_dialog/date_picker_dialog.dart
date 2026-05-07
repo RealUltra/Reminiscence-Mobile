@@ -11,19 +11,15 @@ class MyDatePickerDialog extends StatefulWidget {
 class _MyDatePickerDialogState extends State<MyDatePickerDialog> {
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-
+    return Dialog(
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 120.0),
         padding: EdgeInsets.all(16.0),
+        constraints: BoxConstraints(maxWidth: 400, maxHeight: 400),
 
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
+          border: Border.all(color: Theme.of(context).colorScheme.secondary),
         ),
 
         child: CalendarCarousel(

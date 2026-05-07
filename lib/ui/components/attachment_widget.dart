@@ -64,26 +64,25 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
     return Container(
       height: attachmentHeight,
-      width: double.infinity,
       color: Colors.black,
-      
+      constraints: BoxConstraints(maxWidth: 400),
+
       child:
           ready
               ? GestureDetector(
                 onTap: () => launchFile(),
-                
+
                 child: Image.file(
                   imageFile,
                   height: attachmentHeight,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  
+                  fit: BoxFit.contain,
+
                   errorBuilder: (context, _, _) {
                     return const Center(child: Icon(Icons.error));
                   },
                 ),
               )
-              
               : const Center(child: CircularProgressIndicator()),
     );
   }
@@ -125,6 +124,7 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
       height: attachmentHeight,
       width: double.infinity,
       color: Colors.black,
+      constraints: BoxConstraints(maxWidth: 400),
       child:
           ready
               ? VideoPlayerWidget(
@@ -191,7 +191,6 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
       if (widget.data.secretKey == null) {
         await remFile.writeMediaToFile(widget.attachment.id, file);
-
       } else {
         final stream = remFile.readMedia(widget.attachment.id);
         await decryptStream(

@@ -28,35 +28,43 @@ class _ListDialogState extends State<ListDialog> {
     return Material(
       color: Colors.transparent,
 
-      child: Container(
-        padding: EdgeInsets.only(top: 16.0),
-        margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 120.0),
+      child: Align(
+        alignment: Alignment.center,
 
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 400.0, maxHeight: 400.0),
+
+          child: Container(
+            padding: EdgeInsets.only(top: 16.0),
+            margin: EdgeInsets.symmetric(horizontal: 20.0),
+
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
+            ),
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MySearchBar(controller: controller),
+
+                const SizedBox(height: 16.0),
+
+                Divider(
+                  height: 1.0,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                ),
+
+                OptionsList(
+                  options: filteredOptions,
+                  onClick: (option) => onClick(context, option),
+                ),
+              ],
+            ),
           ),
-        ),
-
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            MySearchBar(controller: controller),
-
-            const SizedBox(height: 16.0),
-
-            Divider(
-              height: 1.0,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            ),
-
-            OptionsList(
-              options: filteredOptions,
-              onClick: (option) => onClick(context, option),
-            ),
-          ],
         ),
       ),
     );

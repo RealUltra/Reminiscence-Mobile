@@ -15,18 +15,20 @@ class _LinkPreviewState extends State<LinkPreview> {
   @override
   Widget build(BuildContext context) {
     final uri = Uri.parse(widget.link);
-    final double previewHeight = MediaQuery.of(context).size.height * 0.15;
+    final double previewHeight = 120.0;
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4.0),
+
+      constraints: BoxConstraints(maxWidth: 400),
 
       child: AnyLinkPreview(
         link: widget.link,
         cache: const Duration(days: 1),
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         displayDirection: UIDirection.uiDirectionHorizontal,
-        previewHeight: previewHeight,
 
+        previewHeight: previewHeight,
         titleStyle: Theme.of(context).textTheme.titleSmall!.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
           fontWeight: FontWeight.bold,
@@ -64,22 +66,24 @@ class _LinkPreviewState extends State<LinkPreview> {
                   size: previewHeight * 0.35,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                
+
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: 4.0,
-                    
+
                     children: [
                       Text(
                         "Unable to preview link",
-                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleMedium!.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      
+
                       Text(
                         "Tap to open in browser",
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(

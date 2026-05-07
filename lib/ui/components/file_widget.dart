@@ -10,6 +10,7 @@ class FileWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 8.0),
       padding: const EdgeInsets.all(16.0),
+      constraints: BoxConstraints(maxWidth: 400),
 
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,

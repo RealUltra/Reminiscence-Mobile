@@ -16,13 +16,10 @@ class DownloadPopup extends StatelessWidget {
       body: Column(
         spacing: 16.0,
         children: [
-          Image.asset("assets/tutorial_asset_1.png", fit: BoxFit.contain),
-          Image.asset("assets/tutorial_asset_2.png", fit: BoxFit.contain),
-
           GestureDetector(
             onTap: () => launchUrl(uri),
             child: Text(
-              "Click here to request your Instagram data, then select these settings.",
+              "Click here to request your Instagram data, then select the following settings.",
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: Theme.of(context).colorScheme.primary,
@@ -31,6 +28,9 @@ class DownloadPopup extends StatelessWidget {
               ),
             ),
           ),
+
+          Image.asset("assets/tutorial_asset_1.png", fit: BoxFit.contain),
+          Image.asset("assets/tutorial_asset_2.png", fit: BoxFit.contain),
         ],
       ),
       actions: [MessageBoxButton("Done")],

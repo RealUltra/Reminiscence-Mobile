@@ -26,14 +26,12 @@ class MessageBox extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 32.0),
 
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
+        constraints: BoxConstraints(maxWidth: 400.0),
 
-          border: BoxBorder.symmetric(
-            horizontal: BorderSide(
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+
+          border: BoxBorder.all(color: Theme.of(context).colorScheme.secondary),
         ),
 
         child: Column(
@@ -52,15 +50,17 @@ class MessageBox extends StatelessWidget {
             ),
 
             if (body != null)
-              ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: maxTextHeight),
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: maxTextHeight),
 
-                child: Scrollbar(
-                  thumbVisibility: true,
+                  child: Scrollbar(
+                    thumbVisibility: true,
 
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 24.0),
-                    child: SingleChildScrollView(child: body),
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 24.0),
+                      child: SingleChildScrollView(child: body),
+                    ),
                   ),
                 ),
               ),

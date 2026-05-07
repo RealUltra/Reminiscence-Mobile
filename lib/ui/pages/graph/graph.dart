@@ -37,30 +37,42 @@ class _GraphState extends State<Graph> {
 
         final dataSources = snapshot.data!;
 
-        return RotatedBox(
-          quarterTurns: 1,
+        int quarterTurns = 0;
 
-          child: SfCartesianChart(
-            palette: DataPoint.colors,
-            margin: EdgeInsets.zero,
+        if (widget.settings.chartType == 1) {
+          quarterTurns = -1;
+        } else if (MediaQuery.orientationOf(context) == Orientation.portrait) {
+          quarterTurns = 1;
+        }
 
-            primaryXAxis: CategoryAxis(
-              labelPlacement: LabelPlacement.onTicks,
-              interval: 1,
-              majorGridLines: const MajorGridLines(width: 0),
-              labelIntersectAction: AxisLabelIntersectAction.rotate90,
-              labelStyle: Theme.of(context).textTheme.labelSmall,
+        return Container(
+          margin: EdgeInsets.all(16.0),
+
+          child: RotatedBox(
+            quarterTurns: quarterTurns,
+
+            child: SfCartesianChart(
+              palette: DataPoint.colors,
+              margin: EdgeInsets.zero,
+
+              primaryXAxis: CategoryAxis(
+                labelPlacement: LabelPlacement.betweenTicks,
+                interval: 1,
+                majorGridLines: const MajorGridLines(width: 0),
+                labelIntersectAction: AxisLabelIntersectAction.rotate90,
+                labelStyle: Theme.of(context).textTheme.labelSmall,
+              ),
+
+              trackballBehavior: TrackballBehavior(
+                enable: true,
+                activationMode: ActivationMode.singleTap,
+              ),
+
+              series:
+                  widget.settings.chartType == 0
+                      ? generateLineChart(dataSources)
+                      : generateBarChart(dataSources),
             ),
-
-            trackballBehavior: TrackballBehavior(
-              enable: true,
-              activationMode: ActivationMode.singleTap,
-            ),
-
-            series:
-                widget.settings.chartType == 0
-                    ? generateLineChart(dataSources)
-                    : generateBarChart(dataSources),
           ),
         );
       },
