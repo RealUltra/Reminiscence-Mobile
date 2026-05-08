@@ -46,7 +46,7 @@ class _GraphState extends State<Graph> {
         }
 
         return Container(
-          margin: EdgeInsets.all(16.0),
+          margin: EdgeInsets.fromLTRB(0, 16.0, 0, 0),
 
           child: RotatedBox(
             quarterTurns: quarterTurns,
@@ -61,6 +61,7 @@ class _GraphState extends State<Graph> {
                 majorGridLines: const MajorGridLines(width: 0),
                 labelIntersectAction: AxisLabelIntersectAction.rotate90,
                 labelStyle: Theme.of(context).textTheme.labelSmall,
+                isInversed: widget.settings.chartType == 1,
               ),
 
               trackballBehavior: TrackballBehavior(

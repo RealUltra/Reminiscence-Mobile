@@ -24,7 +24,7 @@ class MessageBox extends StatelessWidget {
       surfaceTintColor: Theme.of(context).colorScheme.surfaceContainerHighest,
 
       child: Container(
-        padding: EdgeInsets.fromLTRB(32.0, 48.0, 32.0, 32.0),
+        padding: EdgeInsets.fromLTRB(0.0, 48.0, 0.0, 32.0),
 
         constraints: BoxConstraints(maxWidth: 400.0),
 
@@ -39,42 +39,48 @@ class MessageBox extends StatelessWidget {
           spacing: 32.0,
 
           children: [
-            Text(
-              title.toUpperCase(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                title.toUpperCase(),
 
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
             if (body != null)
               Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: maxTextHeight),
-
-                  child: Scrollbar(
-                    thumbVisibility: true,
-
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: maxTextHeight),
                     child: Padding(
-                      padding: EdgeInsets.only(right: 24.0),
+                      padding: EdgeInsets.symmetric(horizontal: 32.0),
                       child: SingleChildScrollView(child: body),
                     ),
                   ),
                 ),
               ),
 
-            (actionsAxis == Axis.horizontal)
-                ? Row(
-                  spacing: 16.0,
-                  children: actions.map((w) => Expanded(child: w)).toList(),
-                )
-                : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 8.0,
-                  children: actions,
-                ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.0),
+              child:
+                  (actionsAxis == Axis.horizontal)
+                      ? Row(
+                        spacing: 16.0,
+                        children:
+                            actions.map((w) => Expanded(child: w)).toList(),
+                      )
+                      : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        spacing: 8.0,
+                        children: actions,
+                      ),
+            ),
           ],
         ),
       ),

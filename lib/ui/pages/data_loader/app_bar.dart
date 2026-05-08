@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/features/data_storage/notifications.dart';
 import 'package:reminiscence/features/notifications/reminder_notifications.dart';
-import 'package:reminiscence/ui/pages/data_loader/download_popup.dart';
+import 'package:reminiscence/ui/pages/data_loader/dyi_tutorial/dyi_tutorial_dialog.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MyAppBar({super.key});
@@ -39,7 +39,7 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
     await refreshReminderNotifications();
 
     if (context.mounted) {
-      await showDialog(context: context, builder: (_) => DownloadPopup());
+      await showDialog(context: context, builder: (_) => DyiTutorialDialog());
     }
   }
 }

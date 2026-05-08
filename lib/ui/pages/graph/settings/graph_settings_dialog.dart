@@ -57,20 +57,18 @@ class _GraphSettingsDialogState extends State<GraphSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: Scrollbar(
+        thumbVisibility: true,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          constraints: BoxConstraints(maxWidth: 400),
 
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-        constraints: BoxConstraints(maxWidth: 400),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12.0),
+            border: Border.all(color: Theme.of(context).colorScheme.secondary),
+          ),
 
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(color: Theme.of(context).colorScheme.secondary),
-        ),
-
-        child: Scrollbar(
-          thumbVisibility: true,
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
