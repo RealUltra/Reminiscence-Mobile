@@ -6,8 +6,10 @@ import 'package:reminiscence/ui/pages/search/messages_list.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
 import 'package:reminiscence/ui/pages/search/header.dart';
 import 'package:reminiscence/ui/components/value_controller.dart';
+import 'package:reminiscence/ui/pages/search/quick_searches/quick_search_section.dart';
 
 class Body extends StatefulWidget {
+  final TextEditingController searchController;
   final ValueController<Map<String, Filter>> filterController;
   final ScrollController scrollController;
   final bool isSearching;
@@ -15,6 +17,7 @@ class Body extends StatefulWidget {
 
   const Body({
     super.key,
+    required this.searchController,
     required this.filterController,
     required this.scrollController,
     required this.isSearching,
@@ -43,6 +46,10 @@ class _BodyState extends State<Body> {
   Widget build(BuildContext context) {
     final sortedMessages = sortMessages();
 
+    final showQuickSearches =
+        widget.searchController.text.isEmpty &&
+        widget.filterController.value.isEmpty;
+
     return SafeArea(
       child: Column(
         children: [
@@ -56,10 +63,13 @@ class _BodyState extends State<Body> {
           Expanded(
             child: Container(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: MessagesList(
-                scrollController: widget.scrollController,
-                messages: sortedMessages,
-              ),
+              child:
+                  showQuickSearches
+                      ? QuickSearchSection()
+                      : MessagesList(
+                        scrollController: widget.scrollController,
+                        messages: sortedMessages,
+                      ),
             ),
           ),
         ],

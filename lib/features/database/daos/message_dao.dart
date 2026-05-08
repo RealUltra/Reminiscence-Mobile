@@ -113,6 +113,66 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     return _getMessageDtos(rows);
   }
 
+  Future<String?> getFirstMessageId(int chatId) async {
+    final systemMessages = await getSystemMessages();
+    final placeholders = _getPlaceholders(systemMessages.length);
+
+    final variables = [
+      Variable.withInt(chatId),
+      ...systemMessages.map(Variable.withString),
+    ];
+
+    final rows =
+        await customSelect("""
+        SELECT
+          m.id
+
+        FROM
+          messages m
+
+        WHERE
+          m.chat_id = ?
+          AND m.no_emojis_content NOT IN ($placeholders)
+
+        ORDER BY 
+          m.sent_at ASC
+
+        LIMIT 1
+      """, variables: variables).get();
+
+    return rows.firstOrNull?.read<String>("id");
+  }
+
+  Future<String?> getRandomMessageId(int chatId) async {
+    final systemMessages = await getSystemMessages();
+    final placeholders = _getPlaceholders(systemMessages.length);
+
+    final variables = [
+      Variable.withInt(chatId),
+      ...systemMessages.map(Variable.withString),
+    ];
+
+    final rows =
+        await customSelect("""
+        SELECT
+          m.id
+
+        FROM
+          messages m
+
+        WHERE
+          m.chat_id = ?
+          AND m.no_emojis_content NOT IN ($placeholders)
+
+        ORDER BY
+          RANDOM()
+
+        LIMIT 1
+      """, variables: variables).get();
+
+    return rows.firstOrNull?.read<String>("id");
+  }
+
   // Used for retrieving pinned messages
   Future<List<MessageDto>> getPinned(int chatId) async {
     final allPinnedMessages = await getPinnedMessages();

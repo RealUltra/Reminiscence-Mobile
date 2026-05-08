@@ -113,43 +113,38 @@ class BodyState extends State<Body> {
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
             padding: EdgeInsets.fromLTRB(24.0, 0, 24.0, 0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 6),
-                  LoadDataButton(parent: this),
-                  const SizedBox(height: 50),
-                  FutureBuilder<Map<String, DateTime?>>(
-                    future: fetchRecentFiles(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const NoFilesWidget();
-                      } else if (snapshot.hasError) {
-                        return const NoFilesWidget();
-                      } else if (snapshot.hasData) {
-                        final Map<String, DateTime?> recentFiles =
-                            snapshot.data!;
+            child: Column(
+              children: [
+                const SizedBox(height: 6),
+                LoadDataButton(parent: this),
+                const SizedBox(height: 50),
+                FutureBuilder<Map<String, DateTime?>>(
+                  future: fetchRecentFiles(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const NoFilesWidget();
+                    } else if (snapshot.hasError) {
+                      return const NoFilesWidget();
+                    } else if (snapshot.hasData) {
+                      final Map<String, DateTime?> recentFiles = snapshot.data!;
 
-                        return recentFiles.isNotEmpty
-                            ? FilesList(
-                              recentFiles: recentFiles,
-                              onClick:
-                                  (String filePath) =>
-                                      loadData(context, [filePath]),
-                              onShare:
-                                  (String filePath) => saveRemFile(filePath),
-                              onDelete:
-                                  (String filePath) =>
-                                      deleteLoadedFile(filePath),
-                            )
-                            : const NoFilesWidget();
-                      } else {
-                        return const NoFilesWidget();
-                      }
-                    },
-                  ),
-                ],
-              ),
+                      return recentFiles.isNotEmpty
+                          ? FilesList(
+                            recentFiles: recentFiles,
+                            onClick:
+                                (String filePath) =>
+                                    loadData(context, [filePath]),
+                            onShare: (String filePath) => saveRemFile(filePath),
+                            onDelete:
+                                (String filePath) => deleteLoadedFile(filePath),
+                          )
+                          : const NoFilesWidget();
+                    } else {
+                      return const NoFilesWidget();
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ),

@@ -48,6 +48,7 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 ### v1.1.2
 - Test on and optimize for older devices and chromebooks
 - Rework, fix and test multiple zip files being loaded.
+- Fix instagram reel previews (if possible)
 
 ### v1.1.1
 - Added: Landscape mode.
@@ -55,14 +56,17 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Recolored some UI elements.
 - Added: Separate one-click and manual tutorials for the data download.
 - Added: Warning that the data download could take up to 24 hours.
+- Added: Quick searches ("First message", "Random message")
 
-- Test and update reminder notification timing logic.
-- Quick access for messages: "First message", "Random message", etc.
-- Fix reel thumbnails not loading (if possible)
+- Fixed: Reminder notifications
+- Added: Loading screen while a REM file is being exported.
 
 ## 🐛 Known Issues
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
+- **Instagram Reel Preview:** Some instagram reels aren't previewed correctly and instead the login page appears, most likely due to bot detection and rate limiting by Instagram.
+- **Multiple ZIP Files:** Combining zip files does not work correctly, can lead to missing or corrupted data in the REM file.
+- **Exporting REM Files:** REM Files take time to export. If the user leaves in between, the exported REM file is corrupted.
 
 ## 📝 Changelog
 

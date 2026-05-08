@@ -39,6 +39,7 @@ class _SearchPageState extends State<SearchPage> {
         onSearch: search,
       ),
       body: Body(
+        searchController: searchController,
         filterController: filterController,
         scrollController: scrollController,
         isSearching: isSearching,
