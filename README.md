@@ -17,8 +17,8 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 | | |
 |---|---|
-| <img src="assets/screenshots/screenshot_a.jpg" alt="Home screen showing loaded Instagram chats with search and sorting controls" width="320"> | <img src="assets/screenshots/screenshot_b.jpg" alt="Conversation view showing imported Instagram messages and quick actions" width="320"> |
-| <img src="assets/screenshots/screenshot_c.jpg" alt="Search results filtered by attachment type and sender" width="320"> | <img src="assets/screenshots/screenshot_d.jpg" alt="Monthly message analytics graph for an Instagram conversation" width="320"> |
+| <img src="screenshots/screenshot_a.jpg" alt="Home screen showing loaded Instagram chats with search and sorting controls" width="320"> | <img src="screenshots/screenshot_b.jpg" alt="Conversation view showing imported Instagram messages and quick actions" width="320"> |
+| <img src="screenshots/screenshot_c.jpg" alt="Search results filtered by attachment type and sender" width="320"> | <img src="screenshots/screenshot_d.jpg" alt="Monthly message analytics graph for an Instagram conversation" width="320"> |
 
 ## ✨ Features
 
@@ -48,18 +48,11 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 ### v1.1.2
 - Test on and optimize for older devices and chromebooks
 - Rework, fix and test multiple zip files being loaded.
+- Save scroll position when switching between the chats list & a chat page
+- Show stickers
+- Rework reminder notification timings
+- Add loading screen while a REM file is being exported.
 - Fix instagram reel previews (if possible)
-
-### v1.1.1
-- Added: Landscape mode.
-- Moved the tutorial hyperlink to the top of the dialog.
-- Recolored some UI elements.
-- Added: Separate one-click and manual tutorials for the data download.
-- Added: Warning that the data download could take up to 24 hours.
-- Added: Quick searches ("First message", "Random message")
-
-- Fixed: Reminder notifications
-- Added: Loading screen while a REM file is being exported.
 
 ## 🐛 Known Issues
 
@@ -69,6 +62,14 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - **Exporting REM Files:** REM Files take time to export. If the user leaves in between, the exported REM file is corrupted.
 
 ## 📝 Changelog
+
+### v1.1.1
+- Added: Landscape mode.
+- Moved the tutorial hyperlink to the top of the dialog.
+- Recolored some UI elements.
+- Added: Separate one-click and manual tutorials for the data download.
+- Added: Warning that the data download could take up to 24 hours.
+- Added: Quick searches ("First message", "Random message")
 
 ### v1.1.0
 - Fixed: Reminiscence is no longer capable of opening ANY file type. This means `.rem` files can also no longer be opened through clicking on them (they must be loaded through the app).
