@@ -26,6 +26,30 @@ class OneClickBody extends StatelessWidget {
           ),
         ),
 
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: Theme.of(context).colorScheme.error,
+              size: 20.0,
+            ),
+
+            const SizedBox(width: 8),
+
+            Expanded(
+              child: Text(
+                "Instagram can take up to 24 hours to provide your data.",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+
         Image.asset("assets/tutorial_asset_1.png", fit: BoxFit.contain),
         Image.asset("assets/tutorial_asset_2.png", fit: BoxFit.contain),
       ],
