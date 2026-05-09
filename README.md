@@ -46,20 +46,21 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 ## 🗓️ Planned
 
 ### v1.1.2
+- Scroll position of the chats list is saved when switching between it & a chat page.
+- Added: Loading screen while a REM file is being exported.
+- Fixed: Graph settings not fitting well in portrait mode.
+
+- Rework reminder notification timings
 - Test on and optimize for older devices and chromebooks
 - Rework, fix and test multiple zip files being loaded.
-- Save scroll position when switching between the chats list & a chat page
-- Show stickers
-- Rework reminder notification timings
-- Add loading screen while a REM file is being exported.
 - Fix instagram reel previews (if possible)
 
 ## 🐛 Known Issues
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
 - **Instagram Reel Preview:** Some instagram reels aren't previewed correctly and instead the login page appears, most likely due to bot detection and rate limiting by Instagram.
-- **Multiple ZIP Files:** Combining zip files does not work correctly, can lead to missing or corrupted data in the REM file.
-- **Exporting REM Files:** REM Files take time to export. If the user leaves in between, the exported REM file is corrupted.
+- **Multiple ZIP Files:** Combining zip files might not work correctly, can lead to missing or corrupted data in the REM file.
+- **Stickers:** Instagram DYI does provides empty messages for stickers, therefore stickers cannot be rendered by the app.
 
 ## 📝 Changelog
 

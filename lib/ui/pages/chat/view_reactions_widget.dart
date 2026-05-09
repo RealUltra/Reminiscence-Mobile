@@ -41,78 +41,82 @@ class _ViewReactionsWidgetState extends State<ViewReactionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      height: 400,
-      child: Row(
-        children: [
-          // Column of emojis (left side)
-          Container(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            width: 80,
-            child: ListView.builder(
-              itemCount: widget.tabs.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedTab = index;
-                      controller.jumpTo(0.0);
-                    });
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    color:
-                        selectedTab == index
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : Colors.transparent,
-                    child: Text(
-                      "${widget.tabs[index]['emoji']}  ${widget.tabs[index]['actors'].length}",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Content for the selected tab (right side)
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 0.0,
-                horizontal: 16.0,
-              ),
-              child:
-                  widget.tabs.isEmpty
-                      ? Text(
-                        textAlign: TextAlign.center,
-                        "No reactions here",
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                      : ListView.separated(
-                        controller: controller,
-                        itemCount: widget.tabs[selectedTab]['actors'].length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(
-                              textAlign: TextAlign.center,
-                              widget.tabs[selectedTab]['actors'][index],
-                              style: Theme.of(context).textTheme.bodyMedium!
-                                  .copyWith(fontWeight: FontWeight.w500),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (context, index) {
-                          return Divider(height: 0.0);
-                        },
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        height: 400,
+        constraints: BoxConstraints(maxWidth: 400),
+        child: Row(
+          children: [
+            // Column of emojis (left side)
+            Container(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              width: 80,
+              child: ListView.builder(
+                itemCount: widget.tabs.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedTab = index;
+                        controller.jumpTo(0.0);
+                      });
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      color:
+                          selectedTab == index
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Colors.transparent,
+                      child: Text(
+                        "${widget.tabs[index]['emoji']}  ${widget.tabs[index]['actors'].length}",
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+
+            // Content for the selected tab (right side)
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 0.0,
+                  horizontal: 16.0,
+                ),
+                child:
+                    widget.tabs.isEmpty
+                        ? Text(
+                          textAlign: TextAlign.center,
+                          "No reactions here",
+                          style: Theme.of(context).textTheme.bodyMedium!
+                              .copyWith(fontWeight: FontWeight.w500),
+                        )
+                        : ListView.separated(
+                          controller: controller,
+                          itemCount: widget.tabs[selectedTab]['actors'].length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(
+                                textAlign: TextAlign.center,
+                                widget.tabs[selectedTab]['actors'][index],
+                                style: Theme.of(context).textTheme.bodyMedium!
+                                    .copyWith(fontWeight: FontWeight.w500),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) {
+                            return Divider(height: 0.0);
+                          },
+                        ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

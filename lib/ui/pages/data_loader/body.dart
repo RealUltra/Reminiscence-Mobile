@@ -434,9 +434,31 @@ class BodyState extends State<Body> {
   }
 
   Future<void> saveRemFile(String filePath) async {
-    final params = SaveFileDialogParams(sourceFilePath: filePath);
-    final savedFilePath = await FlutterFileDialog.saveFile(params: params);
+    // Show a blocking loading dialog while the platform export operation runs.
+    unawaited(
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return PopScope(canPop: false, child: const LoadingDialog());
+        },
+      ),
+    );
 
+    String? savedFilePath;
+
+    try {
+      // Ask the platform file dialog to save a copy of the selected .rem file.
+      final params = SaveFileDialogParams(sourceFilePath: filePath);
+      savedFilePath = await FlutterFileDialog.saveFile(params: params);
+    } finally {
+      // Always dismiss the loading dialog, even if saving is cancelled or fails.
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    // Notify the user only when the export completed successfully.
     if (savedFilePath != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

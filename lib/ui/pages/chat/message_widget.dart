@@ -382,9 +382,7 @@ class _MessageWidgetState extends State<MessageWidget> {
             context: context,
             barrierDismissible: true, // Dismiss on tapping outside
             builder: (BuildContext context) {
-              return Dialog(
-                child: ViewReactionsWidget.fromData(_getReactionsList()),
-              );
+              return ViewReactionsWidget.fromData(_getReactionsList());
             },
           );
           break;

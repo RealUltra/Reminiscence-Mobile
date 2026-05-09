@@ -40,6 +40,9 @@ class _AddChatDialogState extends State<AddChatDialog> {
     _sortChats(filteredChats);
 
     return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.all(16.0),
+
       child: Container(
         padding: EdgeInsets.only(top: 16.0),
         constraints: BoxConstraints(maxWidth: 400, maxHeight: 400),

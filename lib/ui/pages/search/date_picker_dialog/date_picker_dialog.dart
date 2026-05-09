@@ -12,6 +12,8 @@ class _MyDatePickerDialogState extends State<MyDatePickerDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.all(16.0),
       child: Container(
         padding: EdgeInsets.all(16.0),
         constraints: BoxConstraints(maxWidth: 400, maxHeight: 400),

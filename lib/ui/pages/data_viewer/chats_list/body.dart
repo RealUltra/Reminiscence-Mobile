@@ -21,22 +21,42 @@ class _BodyState extends State<Body> {
   SelectionController<int> orderController = SelectionController(0);
   TextEditingController searchController = TextEditingController();
 
+  List<ChatDto> sortedChats = [];
+  List<ChatDto> filteredChats = [];
+
   @override
   void initState() {
     super.initState();
 
-    sortController.addListener(() => setState(() {}));
-    orderController.addListener(() => setState(() {}));
-    searchController.addListener(() => setState(() {}));
+    final sessionData = Provider.of<SessionData>(context, listen: false);
+    sortedChats = List.from(sessionData.chats!);
+    _sortChats();
+    filteredChats = List.from(sortedChats);
+
+    sortController.addListener(
+      () => setState(() {
+        _sortChats();
+        _scrollToTop();
+      }),
+    );
+
+    orderController.addListener(
+      () => setState(() {
+        _sortChats();
+        _scrollToTop();
+      }),
+    );
+
+    searchController.addListener(
+      () => setState(() {
+        _filterChatsBySearch();
+        _scrollToTop();
+      }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final sessionData = Provider.of<SessionData>(context);
-
-    final filteredChats = _filterChatsBySearch(sessionData.chats!);
-    _sortChats(filteredChats, scrollUp: false);
-
     return SafeArea(
       top: false,
       child: Column(
@@ -57,42 +77,39 @@ class _BodyState extends State<Body> {
     );
   }
 
-  List<ChatDto> _filterChatsBySearch(List<ChatDto> chatsToFilter) {
-    final sessionData = Provider.of<SessionData>(context, listen: false);
-    final chats = sessionData.chats!;
-
+  void _filterChatsBySearch() {
     final query = searchController.text;
 
-    chatsToFilter =
-        chats
+    filteredChats =
+        sortedChats
             .where(
               (c) => c.title.toLowerCase().trim().contains(
                 query.toLowerCase().trim(),
               ),
             )
             .toList();
-
-    _sortChats(chatsToFilter);
-
-    return chatsToFilter;
   }
 
-  void _sortChats(List<ChatDto> chats, {scrollUp = true}) {
-    chats.sort((chat1, chat2) {
-      if (orderController.selected == 1) {
-        [chat2, chat1] = [chat1, chat2];
-      }
+  void _sortChats() {
+    for (final chatsList in [sortedChats, filteredChats]) {
+      chatsList.sort((chat1, chat2) {
+        if (orderController.selected == 1) {
+          [chat2, chat1] = [chat1, chat2];
+        }
 
-      if (sortController.selected == 0) {
-        return chat1.title.toLowerCase().compareTo(chat2.title.toLowerCase());
-      } else if (sortController.selected == 1) {
-        return chat1.messageCount.compareTo(chat2.messageCount);
-      } else {
-        return chat1.lastMessageSentAt.compareTo(chat2.lastMessageSentAt);
-      }
-    });
+        if (sortController.selected == 0) {
+          return chat1.title.toLowerCase().compareTo(chat2.title.toLowerCase());
+        } else if (sortController.selected == 1) {
+          return chat1.messageCount.compareTo(chat2.messageCount);
+        } else {
+          return chat1.lastMessageSentAt.compareTo(chat2.lastMessageSentAt);
+        }
+      });
+    }
+  }
 
-    if (scrollUp && controller.hasClients) {
+  void _scrollToTop() {
+    if (controller.hasClients) {
       controller.animateTo(
         0.0,
         duration: const Duration(milliseconds: 300),
