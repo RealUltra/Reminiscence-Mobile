@@ -45,15 +45,21 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 🗓️ Planned
 
+### v1.1.3
+- For graphs, don't show people in earlier months if they have 0 messages.
+- On bigger groups, graphs with separated participants dont show all the participants because they can't fit. Show the top participants in this case.
+- For graphs, hard code the first 12 or 20 colours and the rest can be random.
+- Test on and optimize for older devices and chromebooks
+- Fix instagram reel previews (if possible)
+
 ### v1.1.2
 - Scroll position of the chats list is saved when switching between it & a chat page.
 - Added: Loading screen while a REM file is being exported.
 - Fixed: Graph settings not fitting well in portrait mode.
-
-- Rework reminder notification timings
-- Test on and optimize for older devices and chromebooks
+- Fixed: Empty chats can now be handled without throwing an error.
 - Rework, fix and test multiple zip files being loaded.
-- Fix instagram reel previews (if possible)
+- Rework reminder notification timings
+
 
 ## 🐛 Known Issues
 
@@ -61,6 +67,8 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - **Instagram Reel Preview:** Some instagram reels aren't previewed correctly and instead the login page appears, most likely due to bot detection and rate limiting by Instagram.
 - **Multiple ZIP Files:** Combining zip files might not work correctly, can lead to missing or corrupted data in the REM file.
 - **Stickers:** Instagram DYI does provides empty messages for stickers, therefore stickers cannot be rendered by the app.
+- **Graphs on Deleted Groups:** Might not render correctly and the participants won't all be shown (in separate participants mode).
+- **Reactors not showing up:** In the view reactions section, some reactions may wrongfully show 0 reactors.
 
 ## 📝 Changelog
 

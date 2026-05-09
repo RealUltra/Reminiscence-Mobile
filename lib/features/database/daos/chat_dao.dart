@@ -82,7 +82,7 @@ class ChatDao extends DatabaseAccessor<AppDatabase> with _$ChatDaoMixin {
       final title = row.read<String>('title');
       final userName = row.read<String?>('user_name');
       final messageCount = row.read<int>('message_count');
-      final lastMessageTimestamp = row.read<int>('last_message_sent_at');
+      final lastMessageTimestamp = row.read<int?>('last_message_sent_at') ?? 0;
 
       final participantNames =
           row

@@ -346,7 +346,6 @@ Future<void> insertMediaFiles(
     final attachmentId = row.read<int>('id');
     final uri = row.read<String>('uri');
 
-
     final archiveFile = archiveMap[path.normalize(uri)];
 
     updateProgress(attachmentsDone, results.length);
