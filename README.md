@@ -57,13 +57,6 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Test on older devices and optimize for lag.
 - Fix instagram reel previews (if possible)
 
-### v1.1.2
-- Scroll position of the chats list is saved when switching between it & a chat page.
-- Added: Loading screen while a REM file is being exported.
-- Fixed: Graph settings not fitting well in portrait mode.
-- Fixed: Empty chats can now be handled without throwing an error.
-- Fixed: Reminder notifications. 
-
 ## 🐛 Known Issues
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
@@ -78,6 +71,13 @@ data in the REM file.
 - **Replies:** Instagram DYI does not reveal reply associations. Replies are indistinguishable from other messages.
 
 ## 📝 Changelog
+
+### v1.1.2
+- Scroll position of the chats list is saved when switching between it & a chat page.
+- Added: Loading screen while a REM file is being exported.
+- Fixed: Graph settings not fitting well in portrait mode.
+- Fixed: Empty chats can now be handled without throwing an error.
+- Fixed: Reminder notifications. 
 
 ### v1.1.1
 - Added: Landscape mode.
