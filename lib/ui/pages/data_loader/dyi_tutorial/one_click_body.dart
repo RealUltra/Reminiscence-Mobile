@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/notifications/reminder_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OneClickBody extends StatelessWidget {
@@ -14,7 +15,7 @@ class OneClickBody extends StatelessWidget {
       spacing: 16.0,
       children: [
         GestureDetector(
-          onTap: () => launchUrl(uri),
+          onTap: () => _openDataRequestLink(uri),
           child: Text(
             "Click here to request your Instagram data, then select the following settings.",
             textAlign: TextAlign.center,
@@ -54,5 +55,11 @@ class OneClickBody extends StatelessWidget {
         Image.asset("assets/tutorial_asset_2.png", fit: BoxFit.contain),
       ],
     );
+  }
+
+  Future<void> _openDataRequestLink(Uri uri) async {
+    if (await launchUrl(uri)) {
+      await restartEmailReminderCampaign();
+    }
   }
 }

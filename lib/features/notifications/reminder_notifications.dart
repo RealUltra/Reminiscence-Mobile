@@ -1,18 +1,51 @@
-import 'dart:math';
-
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
-import "package:reminiscence/features/data_storage/notifications.dart";
-
 final reminderNotifications = FlutterLocalNotificationsPlugin();
 
-const _emailReminderBaseId = 100;
-const _emailReminderDays = 7;
-const _returnReminderId = 2;
+const notificationIdInterval = 1000;
 
-const _reminderNotificationDetails = NotificationDetails(
+const emailReminderBaseId = 1000;
+const emailReminderOffsets = [1, 3];
+// "d" for days, "h" for hours, "m" for minutes, "s" for seconds.
+const emailReminderOffsetUnits = "d";
+
+const returnReminderBaseId = 2000;
+const returnReminderCount = 8;
+const returnReminderInterval = 2;
+// "d" for days, "h" for hours, "m" for minutes, "s" for seconds.
+const returnReminderIntervalUnits = "d";
+
+const emailReminderMessages = [
+  ReminderMessage(
+    "Your Instagram data may be ready",
+    "Check your email, then bring the archive back to Reminiscence.",
+  ),
+  ReminderMessage(
+    "Quick archive check",
+    "Instagram may have sent your data download. Check your email when you can.",
+  ),
+];
+
+const returnReminderMessages = [
+  ReminderMessage(
+    "Pick up where you left off",
+    "Open Reminiscence when you have a quiet moment.",
+  ),
+  ReminderMessage(
+    "Ready for a look back?",
+    "Open Reminiscence and bring your Instagram memories with you.",
+  ),
+  ReminderMessage(
+    "Your messages can wait, but not forever",
+    "Come back to Reminiscence and continue setting things up.",
+  ),
+];
+
+const reminderNotificationDetails = NotificationDetails(
   android: AndroidNotificationDetails(
     "reminders",
     "Reminders",
@@ -22,109 +55,138 @@ const _reminderNotificationDetails = NotificationDetails(
   ),
 );
 
-Future<void> initializeReminderNotifications() async {
-  tz_data.initializeTimeZones();
+class ReminderMessage {
+  final String title;
+  final String body;
 
-  const android = AndroidInitializationSettings('@mipmap/launcher_icon');
+  const ReminderMessage(this.title, this.body);
+}
+
+Future<void> initializeReminderNotifications() async {
+  await initializeTimeZone();
 
   await reminderNotifications.initialize(
-    settings: const InitializationSettings(android: android),
+    settings: const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/launcher_icon'),
+    ),
   );
 }
 
-Future<void> refreshReminderNotifications() async {
-  final mode = await getReminderMode();
+Future<void> syncReturnReminderCampaign() async {
+  if (!await canScheduleNotifications()) return;
 
-  await reminderNotifications.cancelAll();
+  final pendingRequests =
+      await reminderNotifications.pendingNotificationRequests();
+  final pendingReturnReminders = pendingRequests.where(
+    (request) => isReturnReminderId(request.id),
+  );
 
-  switch (mode) {
-    case ReminderMode.checkEmail:
-      await scheduleEmailReminder();
-      return;
+  if (pendingReturnReminders.isNotEmpty) return;
 
-    case ReminderMode.returnToReminiscence:
-      await scheduleReturnReminder();
-      return;
+  await scheduleReturnReminderBatch();
+}
+
+Future<void> restartEmailReminderCampaign() async {
+  await cancelEmailReminderCampaign();
+  if (!await canScheduleNotifications()) return;
+
+  await scheduleEmailReminderCampaign();
+}
+
+Future<void> initializeTimeZone() async {
+  tz_data.initializeTimeZones();
+
+  try {
+    final localTimeZone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(localTimeZone.identifier));
+  } catch (_) {
+    // If timezone lookup fails, keep the timezone package's fallback location.
   }
 }
 
-Future<void> scheduleEmailReminder() async {
-  for (int i = 0; i < _emailReminderDays; i++) {
+Future<bool> canScheduleNotifications() async {
+  final status = await Permission.notification.status;
+  return status.isGranted || status.isLimited || status.isProvisional;
+}
+
+Future<void> cancelEmailReminderCampaign() async {
+  for (int i = 0; i < notificationIdInterval; i++) {
+    await reminderNotifications.cancel(id: emailReminderBaseId + i);
+  }
+}
+
+Future<void> scheduleEmailReminderCampaign() async {
+  for (int i = 0; i < emailReminderOffsets.length; i++) {
+    final message = emailReminderMessages[i];
+
     await reminderNotifications.zonedSchedule(
-      id: _emailReminderBaseId + i,
-      title: "Waiting for your data?",
-      body:
-          "It may be in your email now. Come back to Reminiscence when it arrives.",
-      scheduledDate: _dailyEmailReminderDate(i + 1),
-      notificationDetails: _reminderNotificationDetails,
+      id: emailReminderBaseId + i,
+      title: message.title,
+      body: message.body,
+      scheduledDate: localReminderDate(
+        offset: emailReminderOffsets[i],
+        unit: emailReminderOffsetUnits,
+        hour: 10,
+      ),
+      notificationDetails: reminderNotificationDetails,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: "check_email",
     );
   }
 }
 
-Future<void> scheduleReturnReminder() async {
-  final scheduledDate = _randomReturnReminderDate();
-  final message = _randomReturnReminderMessage();
+Future<void> scheduleReturnReminderBatch() async {
+  for (int i = 0; i < returnReminderCount; i++) {
+    final message = returnReminderMessages[i % returnReminderMessages.length];
 
-  await reminderNotifications.zonedSchedule(
-    id: _returnReminderId,
-    title: message.title,
-    body: message.body,
-    scheduledDate: scheduledDate,
-    notificationDetails: _reminderNotificationDetails,
-    androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-    payload: "return_to_reminiscence",
-  );
+    await reminderNotifications.zonedSchedule(
+      id: returnReminderBaseId + i,
+      title: message.title,
+      body: message.body,
+      scheduledDate: localReminderDate(
+        offset: returnReminderInterval * (i + 1),
+        unit: returnReminderIntervalUnits,
+        hour: 19,
+      ),
+      notificationDetails: reminderNotificationDetails,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      payload: "return_to_reminiscence",
+    );
+  }
 }
 
-tz.TZDateTime _dailyEmailReminderDate(int daysAhead) {
+tz.TZDateTime localReminderDate({
+  required int offset,
+  required String unit,
+  required int hour,
+}) {
   final now = tz.TZDateTime.now(tz.local);
-  return tz.TZDateTime(tz.local, now.year, now.month, now.day + daysAhead, 10);
+
+  if (unit != "d") {
+    return now.add(durationFromUnit(offset, unit));
+  }
+
+  return tz.TZDateTime(tz.local, now.year, now.month, now.day + offset, hour);
 }
 
-tz.TZDateTime _randomReturnReminderDate() {
-  final random = Random();
-  final now = tz.TZDateTime.now(tz.local);
-  final daysAhead = 4 + random.nextInt(5);
-
-  // Schedule one return reminder 4-8 days from now, at a random time before 8 AM.
-  return tz.TZDateTime(
-    tz.local,
-    now.year,
-    now.month,
-    now.day + daysAhead,
-    random.nextInt(8),
-    random.nextInt(60),
-  );
+Duration durationFromUnit(int value, String unit) {
+  switch (unit) {
+    case "h":
+      return Duration(hours: value);
+    case "m":
+      return Duration(minutes: value);
+    case "s":
+      return Duration(seconds: value);
+    default:
+      throw ArgumentError.value(
+        unit,
+        "unit",
+        'Expected "d", "h", "m", or "s".',
+      );
+  }
 }
 
-_ReminderMessage _randomReturnReminderMessage() {
-  final messages = [
-    _ReminderMessage(
-      "A memory is waiting",
-      "Come back to Reminiscence and revisit an old conversation.",
-    ),
-    _ReminderMessage(
-      "Take a look back",
-      "Open Reminiscence when you have a quiet moment.",
-    ),
-    _ReminderMessage(
-      "Remember this?",
-      "Your old messages are ready whenever you are.",
-    ),
-    _ReminderMessage(
-      "Step back in",
-      "Return to Reminiscence and rediscover something familiar.",
-    ),
-  ];
-
-  return messages[Random().nextInt(messages.length)];
-}
-
-class _ReminderMessage {
-  final String title;
-  final String body;
-
-  const _ReminderMessage(this.title, this.body);
+bool isReturnReminderId(int id) {
+  return id >= returnReminderBaseId &&
+      id < returnReminderBaseId + notificationIdInterval;
 }

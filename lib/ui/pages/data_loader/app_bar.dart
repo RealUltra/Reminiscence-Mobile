@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:reminiscence/features/data_storage/notifications.dart';
-import 'package:reminiscence/features/notifications/reminder_notifications.dart';
 import 'package:reminiscence/ui/pages/data_loader/dyi_tutorial/dyi_tutorial_dialog.dart';
 
 class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -35,9 +33,6 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
 
   Future<void> showDownloadPopup(BuildContext context) async {
-    await markDownloadPopupViewed();
-    await refreshReminderNotifications();
-
     if (context.mounted) {
       await showDialog(context: context, builder: (_) => DyiTutorialDialog());
     }

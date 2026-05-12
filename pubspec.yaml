@@ -1,7 +1,7 @@
 name: reminiscence
 description: "An app to revisit old Instagram messages."
 publish_to: "none"
-version: 1.1.1+4
+version: 1.1.2+5
 
 environment:
   sdk: ^3.7.2
@@ -51,6 +51,8 @@ dependencies:
   markdown_widget: ^2.3.2+8
   flutter_file_dialog: ^3.0.2
   flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+  flutter_timezone: ^5.0.2
 
 dev_dependencies:
   flutter_test:

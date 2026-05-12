@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/features/notifications/reminder_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ManualBody extends StatelessWidget {
@@ -12,11 +13,7 @@ class ManualBody extends StatelessWidget {
       spacing: 16.0,
       children: [
         GestureDetector(
-          onTap: () async {
-            if (await canLaunchUrl(uri)) {
-              launchUrl(uri);
-            }
-          },
+          onTap: () => _openDataRequestLink(uri),
           child: Text(
             "Click here to open settings in the Instagram app, then follow these instructions.",
             textAlign: TextAlign.center,
@@ -89,5 +86,13 @@ class ManualBody extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  Future<void> _openDataRequestLink(Uri uri) async {
+    if (await canLaunchUrl(uri)) {
+      if (await launchUrl(uri)) {
+        await restartEmailReminderCampaign();
+      }
+    }
   }
 }

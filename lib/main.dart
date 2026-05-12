@@ -28,7 +28,7 @@ Future<void> main() async {
   await requestPermissions();
 
   await initializeReminderNotifications();
-  await refreshReminderNotifications();
+  await syncReturnReminderCampaign();
 
   await clearMediaCacheOnStartup();
 
