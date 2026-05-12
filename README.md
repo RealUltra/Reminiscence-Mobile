@@ -71,7 +71,6 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - **Multiple ZIP Files:** Combining zip files might not work correctly, can lead to missing or corrupted 
 data in the REM file.
 - **Graphs on Deleted Groups:** Might not render correctly and the participants won't all be shown (in separate participants mode).
-- **Reactors not showing up:** In the view reactions section, some reactions may wrongfully show 0 reactors.
 - **Wrong Attachment:** The generated REM file may misconstrue what media file corresponds to what attachment and render the wrong one.
 
 ## ⚠️ Limitations
