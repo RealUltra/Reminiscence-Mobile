@@ -17,8 +17,8 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 | | |
 |---|---|
-| <img src="screenshots/screenshot_a.jpg" alt="Home screen showing loaded Instagram chats with search and sorting controls" width="320"> | <img src="screenshots/screenshot_b.jpg" alt="Conversation view showing imported Instagram messages and quick actions" width="320"> |
-| <img src="screenshots/screenshot_c.jpg" alt="Search results filtered by attachment type and sender" width="320"> | <img src="screenshots/screenshot_d.jpg" alt="Monthly message analytics graph for an Instagram conversation" width="320"> |
+| <img src="screenshots/screenshot_a.png" alt="Home screen showing loaded Instagram chats with search and sorting controls" width="320"> | <img src="screenshots/screenshot_b.png" alt="Conversation view showing imported Instagram messages and quick actions" width="320"> |
+| <img src="screenshots/screenshot_c.png" alt="Search results filtered by attachment type and sender" width="320"> | <img src="screenshots/screenshot_d.png" alt="Monthly message analytics graph for an Instagram conversation" width="320"> |
 
 ## ✨ Features
 
@@ -45,17 +45,25 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 🗓️ Planned
 
-### v2.0.0
+### v26.07.1
 - Change `.rem` file format for faster reading & writing speeds and consistency.
 
-### v1.2.0
+### v26.05.2
+- Test on older devices and optimize for lag.
+- Fix instagram reel previews (if possible)
+
+### v26.05.1
+- Migrated from semantic versioning to calendar versioning.
+- Added: About tile in Settings for version number.
+- Added: In-app updates.
+- Added: "Leave a review" popups.
+
+- Dedicated full-screen photo widget with cycling through other photos in the same message, zooming, and a save button.
 - For graphs, don't show people in earlier months if they have 0 messages.
 - On bigger groups, graphs with separated participants dont show all the participants because they can't fit. Show the top participants in this case.
 - For graphs, hard code the first 12 or 20 colours and the rest can be random.
-- Dedicated full-screen photo widget with cycling through other photos in the same message, zooming, and a save button.
-- Fix reactions bug.
-- Test on older devices and optimize for lag.
-- Fix instagram reel previews (if possible)
+- Fix graphs on deleted groups.
+
 
 ## 🐛 Known Issues
 
