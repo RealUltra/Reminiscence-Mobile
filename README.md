@@ -49,20 +49,20 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Change `.rem` file format for faster reading & writing speeds and consistency.
 
 ### v26.05.2
-- Test on older devices and optimize for lag.
+- For graphs, don't show people in earlier months if they have 0 messages.
+- On bigger groups, graphs with separated participants dont show all the participants because they can't fit. Show the top participants in this case.
+- For graphs, hard code the first 12 or 20 colours and the rest can be random.
+- Fix graphs on deleted groups.
 - Fix instagram reel previews (if possible)
+- Test on older devices and optimize for lag.
 
 ### v26.05.1
 - Migrated from semantic versioning to calendar versioning.
 - Added: About tile in Settings for version number.
 - Added: In-app updates.
 - Added: "Leave a review" popups.
-
-- Dedicated full-screen photo widget with cycling through other photos in the same message, zooming, and a save button.
-- For graphs, don't show people in earlier months if they have 0 messages.
-- On bigger groups, graphs with separated participants dont show all the participants because they can't fit. Show the top participants in this case.
-- For graphs, hard code the first 12 or 20 colours and the rest can be random.
-- Fix graphs on deleted groups.
+- Added: Built-in full-screen photo widget combined with the video widget to make a new media widget with zooming (for photos) and cycling through media attachments in the same message.
+- Improved Quick Searches design.
 
 
 ## 🐛 Known Issues

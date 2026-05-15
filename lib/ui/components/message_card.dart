@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
+import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
 import 'package:reminiscence/ui/pages/chat/view_reactions_widget.dart';
@@ -70,7 +72,8 @@ class _MessageCardState extends State<MessageCard> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: 4),
-      child: Row(
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
             widget.message.senderName,
@@ -110,12 +113,37 @@ class _MessageCardState extends State<MessageCard> {
 
   Widget _buildAttachments(BuildContext context) {
     List<Widget> children = [];
+    final mediaAttachments =
+        widget.message.attachments.where(_isMediaAttachment).toList();
+    var mediaGroupAdded = false;
 
     for (final attachment in widget.message.attachments) {
-      children.add(AttachmentWidget(attachment: attachment, data: widget.data));
+      if (_isMediaAttachment(attachment)) {
+        if (mediaGroupAdded) {
+          continue;
+        }
+
+        children.add(
+          AttachmentWidget(
+            attachment: attachment,
+            mediaAttachments: mediaAttachments,
+            data: widget.data,
+          ),
+        );
+        mediaGroupAdded = true;
+      } else {
+        children.add(
+          AttachmentWidget(attachment: attachment, data: widget.data),
+        );
+      }
     }
 
     return Column(spacing: 4.0, children: children);
+  }
+
+  bool _isMediaAttachment(AttachmentDto attachment) {
+    return attachment.type == AttachmentType.photo ||
+        attachment.type == AttachmentType.video;
   }
 
   Widget _buildReactions() {

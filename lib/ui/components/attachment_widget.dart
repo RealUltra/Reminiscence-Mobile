@@ -13,17 +13,17 @@ import 'package:reminiscence/features/encryption/encryption.dart';
 import 'package:reminiscence/ui/components/audio_player_widget.dart';
 import 'package:reminiscence/ui/components/file_widget.dart';
 import 'package:reminiscence/ui/components/link_preview.dart';
-import 'package:reminiscence/ui/components/video_player_widget.dart';
-
-const double attachmentHeight = 300.0;
+import 'package:reminiscence/ui/components/media_widget.dart';
 
 class AttachmentWidget extends StatefulWidget {
   final AttachmentDto attachment;
+  final List<AttachmentDto>? mediaAttachments;
   final ReminiscenceData data;
 
   const AttachmentWidget({
     super.key,
     required this.attachment,
+    this.mediaAttachments,
     required this.data,
   });
 
@@ -35,55 +35,58 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   @override
   void initState() {
     super.initState();
+    _prepareAttachmentsIfNeeded();
+  }
 
+  @override
+  void didUpdateWidget(covariant AttachmentWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.attachment.id != widget.attachment.id ||
+        !_sameAttachmentIds(
+          oldWidget.mediaAttachments,
+          widget.mediaAttachments,
+        )) {
+      _prepareAttachmentsIfNeeded();
+    }
+  }
+
+  void _prepareAttachmentsIfNeeded() {
     if (widget.attachment.type != AttachmentType.link) {
-      _prepareFile();
-    } else {
-      setState(() {});
+      _prepareFiles();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.attachment.type == AttachmentType.photo) {
-      return _buildPhoto();
+    if (_isMediaAttachment(widget.attachment)) {
+      return _buildMedia();
     } else if (widget.attachment.type == AttachmentType.audio) {
       return _buildAudio();
     } else if (widget.attachment.type == AttachmentType.file) {
       return _buildFile();
-    } else if (widget.attachment.type == AttachmentType.video) {
-      return _buildVideo();
     } else {
       return _buildLink();
     }
   }
 
-  Widget _buildPhoto() {
-    final imageFile = File(_getFilePath());
-    final ready = imageFile.existsSync() && imageFile.lengthSync() > 0;
-
-    return Container(
-      height: attachmentHeight,
-      color: Colors.black,
-      constraints: BoxConstraints(maxWidth: 400),
-
-      child:
-          ready
-              ? GestureDetector(
-                onTap: () => launchFile(),
-
-                child: Image.file(
-                  imageFile,
-                  height: attachmentHeight,
-                  width: double.infinity,
-                  fit: BoxFit.contain,
-
-                  errorBuilder: (context, _, _) {
-                    return const Center(child: Icon(Icons.error));
-                  },
-                ),
-              )
-              : const Center(child: CircularProgressIndicator()),
+  Widget _buildMedia() {
+    return MediaWidget(
+      items:
+          _mediaAttachments.map((attachment) {
+            return MediaAttachmentItem(
+              type:
+                  attachment.type == AttachmentType.photo
+                      ? MediaAttachmentType.photo
+                      : MediaAttachmentType.video,
+              file: File(_getFilePath(attachment)),
+              fileName: _getExportFileName(attachment),
+              mimeType:
+                  attachment.type == AttachmentType.photo
+                      ? "image/jpeg"
+                      : "video/mp4",
+            );
+          }).toList(),
     );
   }
 
@@ -113,37 +116,15 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     );
   }
 
-  Widget _buildVideo() {
-    final placeholderWidget = Center(child: CircularProgressIndicator());
-
-    String videoPath = _getFilePath();
-    final ready = File(videoPath).existsSync();
-
-    return Container(
-      margin: EdgeInsets.only(top: 8),
-      height: attachmentHeight,
-      width: double.infinity,
-      color: Colors.black,
-      constraints: BoxConstraints(maxWidth: 400),
-      child:
-          ready
-              ? VideoPlayerWidget(
-                File(videoPath),
-                onShare: shareFile,
-                placeholderWidget: placeholderWidget,
-              )
-              : placeholderWidget,
-    );
-  }
-
   Widget _buildLink() {
     return LinkPreview(widget.attachment.uri);
   }
 
   Future<void> launchFile() async {
-    final file = File(_getFilePath());
+    final file = File(_getFilePath(widget.attachment));
 
-    String tempFilename = p.basename(widget.attachment.uri) + _getExtension();
+    String tempFilename =
+        p.basename(widget.attachment.uri) + _getExtension(widget.attachment);
 
     final tempDir = await getTemporaryDirectory();
     final tempPath = p.join(tempDir.path, tempFilename);
@@ -154,10 +135,9 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
   }
 
   Future<void> shareFile() async {
-    final file = File(_getFilePath());
+    final file = File(_getFilePath(widget.attachment));
 
-    String tempFilename =
-        p.basenameWithoutExtension(widget.attachment.uri) + _getExtension();
+    String tempFilename = _getExportFileName(widget.attachment);
 
     final tempDir = await getTemporaryDirectory();
     final tempPath = p.join(tempDir.path, tempFilename);
@@ -167,32 +147,84 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
     await SharePlus.instance.share(ShareParams(files: [XFile(tempPath)]));
   }
 
-  String _getFilePath() {
-    return p.join(widget.data.tempDir.path, "media_${widget.attachment.id}");
+  List<AttachmentDto> get _mediaAttachments {
+    if (!_isMediaAttachment(widget.attachment)) {
+      return const [];
+    }
+
+    return (widget.mediaAttachments ?? [widget.attachment])
+        .where(_isMediaAttachment)
+        .toList();
   }
 
-  String _getExtension() {
-    if (widget.attachment.type == AttachmentType.photo) {
+  List<AttachmentDto> _attachmentsToPrepare() {
+    if (_isMediaAttachment(widget.attachment)) {
+      return _mediaAttachments;
+    }
+
+    return [widget.attachment];
+  }
+
+  String _getFilePath([AttachmentDto? attachment]) {
+    final targetAttachment = attachment ?? widget.attachment;
+    return p.join(widget.data.tempDir.path, "media_${targetAttachment.id}");
+  }
+
+  String _getExtension([AttachmentDto? attachment]) {
+    final targetAttachment = attachment ?? widget.attachment;
+
+    if (targetAttachment.type == AttachmentType.photo) {
       return ".jpg";
-    } else if (widget.attachment.type == AttachmentType.audio) {
+    } else if (targetAttachment.type == AttachmentType.audio) {
       return ".mp3";
     } else {
-      return p.extension(widget.attachment.uri);
+      return p.extension(targetAttachment.uri);
     }
   }
 
-  Future<void> _prepareFile() async {
-    final file = File(_getFilePath());
+  String _getExportFileName(AttachmentDto attachment) {
+    final baseName = p.basenameWithoutExtension(attachment.uri).trim();
+    final fallbackName =
+        attachment.type == AttachmentType.video
+            ? "video_${attachment.id}"
+            : "photo_${attachment.id}";
+    return "${baseName.isEmpty ? fallbackName : baseName}${_getExtension(attachment)}";
+  }
 
-    if (!(await file.exists())) {
+  bool _isMediaAttachment(AttachmentDto attachment) {
+    return attachment.type == AttachmentType.photo ||
+        attachment.type == AttachmentType.video;
+  }
+
+  Future<void> _prepareFiles() async {
+    final preparedIds = <int>{};
+
+    for (final attachment in _attachmentsToPrepare()) {
+      if (!preparedIds.add(attachment.id)) {
+        continue;
+      }
+
+      await _prepareFile(attachment);
+
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _prepareFile(AttachmentDto attachment) async {
+    final file = File(_getFilePath(attachment));
+    final exists = await file.exists();
+
+    if (!exists || await file.length() == 0) {
       final remFile = ReminiscenceFile();
       remFile.pageHeaderCache = widget.data.file.pageHeaderCache;
       await remFile.open(widget.data.file.name);
 
       if (widget.data.secretKey == null) {
-        await remFile.writeMediaToFile(widget.attachment.id, file);
+        await remFile.writeMediaToFile(attachment.id, file);
       } else {
-        final stream = remFile.readMedia(widget.attachment.id);
+        final stream = remFile.readMedia(attachment.id);
         await decryptStream(
           stream: stream,
           outputFile: file,
@@ -202,10 +234,25 @@ class _AttachmentWidgetState extends State<AttachmentWidget> {
 
       await remFile.close();
     }
+  }
 
-    // Update the widget to render the attachment
-    if (mounted) {
-      setState(() {});
+  bool _sameAttachmentIds(
+    List<AttachmentDto>? first,
+    List<AttachmentDto>? second,
+  ) {
+    final firstIds = (first ?? const <AttachmentDto>[]).map((a) => a.id);
+    final secondIds = (second ?? const <AttachmentDto>[]).map((a) => a.id);
+
+    if (firstIds.length != secondIds.length) {
+      return false;
     }
+
+    for (final (index, id) in firstIds.indexed) {
+      if (id != secondIds.elementAt(index)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

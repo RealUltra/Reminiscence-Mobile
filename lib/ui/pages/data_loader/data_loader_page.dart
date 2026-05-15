@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:reminiscence/features/updates_and_review/app_updates.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 
 import 'package:reminiscence/ui/pages/data_loader/app_bar.dart';
@@ -27,6 +28,14 @@ class _DataLoaderPageState extends State<DataLoaderPage> {
     super.initState();
 
     pageController.addListener(() => setState(() {}));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      checkForFlexibleUpdate(context);
+    });
   }
 
   @override

@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/features/data_loader/reminiscence_data.dart';
+import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/ui/components/attachment_widget.dart';
 import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/components/reaction_widget.dart';
@@ -163,12 +165,37 @@ class _MessageWidgetState extends State<MessageWidget> {
 
   Widget _buildAttachments(BuildContext context) {
     List<Widget> children = [];
+    final mediaAttachments =
+        widget.message.attachments.where(_isMediaAttachment).toList();
+    var mediaGroupAdded = false;
 
     for (final attachment in widget.message.attachments) {
-      children.add(AttachmentWidget(attachment: attachment, data: widget.data));
+      if (_isMediaAttachment(attachment)) {
+        if (mediaGroupAdded) {
+          continue;
+        }
+
+        children.add(
+          AttachmentWidget(
+            attachment: attachment,
+            mediaAttachments: mediaAttachments,
+            data: widget.data,
+          ),
+        );
+        mediaGroupAdded = true;
+      } else {
+        children.add(
+          AttachmentWidget(attachment: attachment, data: widget.data),
+        );
+      }
     }
 
     return Column(spacing: 4.0, children: children);
+  }
+
+  bool _isMediaAttachment(AttachmentDto attachment) {
+    return attachment.type == AttachmentType.photo ||
+        attachment.type == AttachmentType.video;
   }
 
   Widget _buildDivider(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reminiscence/ui/pages/settings/about/about_tile.dart';
 import 'package:reminiscence/ui/pages/settings/appearance/appearance_tile.dart';
 import 'package:reminiscence/ui/pages/settings/backup_and_sync/backup_and_sync_tile.dart';
 import 'package:reminiscence/ui/pages/settings/legal/legal_tile.dart';
@@ -20,13 +21,15 @@ class _BodyState extends State<Body> {
 
       child: ListView(
         children: [
-          AppearanceTile(),
+          const AppearanceTile(),
           const Divider(),
-          SystemMessagesTile(),
+          const SystemMessagesTile(),
           const Divider(),
-          BackupAndSyncTile(),
+          const BackupAndSyncTile(),
           const Divider(),
-          LegalTile(),
+          const LegalTile(),
+          const Divider(),
+          const AboutTile(),
         ],
       ),
     );
