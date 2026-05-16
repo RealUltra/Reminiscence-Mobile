@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
+import 'package:reminiscence/features/data_storage/app_review.dart';
 import 'package:reminiscence/features/data_storage/file_opened.dart';
 
 import 'package:reminiscence/features/database/dtos/chat_dto.dart';
+import 'package:reminiscence/features/updates_and_review/app_review.dart';
 import 'package:reminiscence/ui/components/message_box.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
 import 'package:reminiscence/ui/pages/data_viewer/navigation_bar.dart';
@@ -57,15 +59,29 @@ class _DataViewerPageState extends State<DataViewerPage> {
 
     bodies = [chats_list_page.Body(), chat_page.Body(), settings_page.Body()];
 
+    // Initialize chats and send privacy alert
     initChats();
   }
 
   Future<void> initChats() async {
+    // Load chats
     final sessionData = Provider.of<SessionData>(context, listen: false);
     await sessionData.loadChats();
+
+    if (!mounted) return;
+
     setState(() => chatsListReady = true);
 
+    // Send privacy alert
     await sendPrivacyAlert();
+
+    if (!mounted) return;
+
+    // Increment data loads
+    await incrementDataLoads();
+
+    // Request review
+    await requestReview();
   }
 
   Future<void> initMessages() async {
