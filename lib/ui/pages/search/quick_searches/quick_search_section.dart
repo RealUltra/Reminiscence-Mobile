@@ -9,46 +9,60 @@ class QuickSearchSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20.0, 28.0, 20.0, 20.0),
+
       child: Align(
         alignment: Alignment.topCenter,
+
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520.0),
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: Text(
                   "Quick searches",
                   style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.2,
                   ),
                 ),
               ),
+
               const SizedBox(height: 10.0),
+
               Material(
-                color: colorScheme.surfaceContainerLow,
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(20.0),
                 clipBehavior: Clip.antiAlias,
+
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.0),
-                    border: Border.all(color: colorScheme.outlineVariant),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
+
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+
                     children: [
                       QuickSearchTile(
                         title: "First message",
                         onTap: () => jumpToFirstMessage(context),
                       ),
-                      Divider(height: 1.0, color: colorScheme.outlineVariant),
+
+                      Divider(
+                        height: 1.0,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+
                       QuickSearchTile(
                         title: "Random message",
                         onTap: () => jumpToRandomMessage(context),
@@ -57,22 +71,27 @@ class QuickSearchSection extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(height: 10.0),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
+
                 child: Row(
                   children: [
                     Icon(
                       Icons.keyboard_return_rounded,
-                      color: colorScheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       size: 16.0,
                     ),
+
                     const SizedBox(width: 8.0),
+
                     Expanded(
                       child: Text(
                         "Use the search bar above for anything more specific.",
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),

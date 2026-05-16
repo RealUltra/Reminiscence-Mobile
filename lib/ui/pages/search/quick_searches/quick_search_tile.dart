@@ -8,8 +8,6 @@ class QuickSearchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -21,14 +19,14 @@ class QuickSearchTile extends StatelessWidget {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: colorScheme.onSurface,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ],
         ),

@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
-const double mediaAttachmentHeight = 300.0;
+const double _mediaAttachmentHeight = 300.0;
 const double _mediaAttachmentMaxWidth = 400.0;
 const double _inlineVideoControlsHeight = 76.0;
 const double _thumbnailRailHeight = 112.0;
@@ -207,7 +207,7 @@ class MediaWidget extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: _mediaAttachmentMaxWidth),
         child: SizedBox(
-          height: mediaAttachmentHeight,
+          height: _mediaAttachmentHeight,
           width: double.infinity,
           child:
               items.length == 1

@@ -113,24 +113,23 @@ class _MessageCardState extends State<MessageCard> {
 
   Widget _buildAttachments(BuildContext context) {
     List<Widget> children = [];
+
     final mediaAttachments =
         widget.message.attachments.where(_isMediaAttachment).toList();
-    var mediaGroupAdded = false;
+    var mediaWidgetAdded = false;
 
     for (final attachment in widget.message.attachments) {
-      if (_isMediaAttachment(attachment)) {
-        if (mediaGroupAdded) {
-          continue;
+      if (!_isMediaAttachment(attachment)) {
+        if (!mediaWidgetAdded) {
+          children.add(
+            AttachmentWidget(
+              attachment: attachment,
+              mediaAttachments: mediaAttachments,
+              data: widget.data,
+            ),
+          );
+          mediaWidgetAdded = true;
         }
-
-        children.add(
-          AttachmentWidget(
-            attachment: attachment,
-            mediaAttachments: mediaAttachments,
-            data: widget.data,
-          ),
-        );
-        mediaGroupAdded = true;
       } else {
         children.add(
           AttachmentWidget(attachment: attachment, data: widget.data),

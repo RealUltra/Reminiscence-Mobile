@@ -1,7 +1,7 @@
 name: reminiscence
 description: "An app to revisit old Instagram messages."
 publish_to: "none"
-version: 1.1.2+5
+version: 26.05.1+6
 
 environment:
   sdk: ^3.7.2
