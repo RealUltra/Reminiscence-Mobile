@@ -119,7 +119,7 @@ class _MessageCardState extends State<MessageCard> {
     var mediaWidgetAdded = false;
 
     for (final attachment in widget.message.attachments) {
-      if (!_isMediaAttachment(attachment)) {
+      if (_isMediaAttachment(attachment)) {
         if (!mediaWidgetAdded) {
           children.add(
             AttachmentWidget(
