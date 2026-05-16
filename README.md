@@ -56,15 +56,6 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Fix instagram reel previews (if possible)
 - Test on older devices and optimize for lag.
 
-### v26.05.1
-- Migrated from semantic versioning to calendar versioning.
-- Added: About tile in Settings for version number.
-- Added: In-app updates.
-- Added: "Leave a review" popups.
-- Added: Built-in full-screen photo widget combined with the video widget to make a new media widget with zooming (for photos) and cycling through media attachments in the same message.
-- Improved Quick Searches design.
-
-
 ## 🐛 Known Issues
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
@@ -79,6 +70,14 @@ data in the REM file.
 - **Replies:** Instagram DYI does not reveal reply associations. Replies are indistinguishable from other messages.
 
 ## 📝 Changelog
+
+### v26.05.1
+- Migrated from semantic versioning to calendar versioning.
+- Added: About tile in Settings for version number.
+- Added: In-app updates.
+- Added: "Leave a review" popups.
+- Added: Built-in full-screen photo widget combined with the video widget to make a new media widget with zooming (for photos) and cycling through media attachments in the same message.
+- Improved Quick Searches design.
 
 ### v1.1.2
 - Scroll position of the chats list is saved when switching between it & a chat page.
