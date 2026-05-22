@@ -49,6 +49,10 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Change `.rem` file format for faster reading & writing speeds and consistency.
 
 ### v26.05.2
+- Fix reminder notification times.
+- Fixed: Message decode issue.
+- Add a chat profile page and within it a media gallery, files gallery and links gallery.
+- Move search icon, graph icon, and pinned messages icons into the chat profile page.
 - For graphs, don't show people in earlier months if they have 0 messages.
 - On bigger groups, graphs with separated participants dont show all the participants because they can't fit. Show the top participants in this case.
 - For graphs, hard code the first 12 or 20 colours and the rest can be random.

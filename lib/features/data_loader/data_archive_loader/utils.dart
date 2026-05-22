@@ -22,31 +22,21 @@ String getDmsDir(String dataDir) {
 }
 
 String decodeData(dynamic data) {
+  if (data is! String) {
+    return data.toString();
+  }
+
   try {
-    if (data is String) {
-      String normalizedData = decodeUnicodeEscape(data);
-      List<int> byteSequence = latin1.encode(normalizedData);
-      String unicodeDecoded = utf8.decode(byteSequence);
-      return removeNonPrintableCharacters(unicodeDecoded).trim();
-    } else {
-      return data.toString();
-    }
-  } catch (e) {
-    if (data is String) {
-      return removeNonPrintableCharacters(data).trim();
-    } else {
-      return data.toString();
-    }
+    final byteSequence = latin1.encode(data);
+    final unicodeDecoded = utf8.decode(byteSequence);
+    return removeNonPrintableCharacters(unicodeDecoded).trim();
+  } catch (_) {
+    return removeNonPrintableCharacters(data).trim();
   }
 }
 
-String decodeUnicodeEscape(String input) {
-  String jsonString = '"${input.replaceAll('"', '\\"')}"';
-  return jsonDecode(jsonString);
-}
-
 String removeNonPrintableCharacters(String inputString) {
-  final nonPrintablePattern = RegExp(r'[\u200f\u200e\u200d]+');
+  final nonPrintablePattern = RegExp(r'[\u200f\u200e]+');
   return inputString.replaceAll(nonPrintablePattern, '');
 }
 
@@ -67,7 +57,8 @@ List<ArchiveFile> listArchiveDir(Archive archive, String targetDir) {
   List<ArchiveFile> archiveFiles = [];
 
   for (ArchiveFile file in archive) {
-    if (path.dirname(file.name) == targetDir && !filesAdded.contains(file.name)) {
+    if (path.dirname(file.name) == targetDir &&
+        !filesAdded.contains(file.name)) {
       archiveFiles.add(file);
       filesAdded.add(file.name);
     }
