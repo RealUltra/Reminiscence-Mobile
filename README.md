@@ -50,14 +50,6 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 - Fix instagram reel previews (if possible)
 - Fix graphs on deleted groups.
 
-### v26.05.2
-- Fixed: Message decode issue.
-- Fixed: Reminder notification times.
-- Added: Chat Details Page with media/links/files gallery and additional statistics.
-- Redesigned some UI elements.
-- Added two hard-coded list of 12 colors each for light and dark themes.
-- 0 message participants no longer show up when holding a data point on a graph.
-
 ## 🐛 Known Issues
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
@@ -72,6 +64,14 @@ data in the REM file.
 - **Replies:** Instagram DYI does not reveal reply associations. Replies are indistinguishable from other messages.
 
 ## 📝 Changelog
+
+### v26.05.2
+- Fixed: Message decode issue.
+- Fixed: Reminder notification times.
+- Added: Chat Details Page with media/links/files gallery and additional statistics.
+- Redesigned some UI elements.
+- Added two hard-coded list of 12 colors each for light and dark themes.
+- 0 message participants no longer show up when holding a data point on a graph.
 
 ### v26.05.1
 - Migrated from semantic versioning to calendar versioning.
