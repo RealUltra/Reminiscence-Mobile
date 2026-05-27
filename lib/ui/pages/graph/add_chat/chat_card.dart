@@ -14,11 +14,17 @@ class ChatCard extends StatelessWidget {
       key: ValueKey(chat.id),
       minTileHeight: 0.0,
 
-      title: Text(chat.title, style: Theme.of(context).textTheme.bodyMedium),
+      title: Text(
+        chat.title,
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(
         "${chat.messageCount} messages",
         style: Theme.of(context).textTheme.labelSmall!.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
         ),
       ),
 

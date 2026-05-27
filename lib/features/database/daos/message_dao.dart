@@ -6,6 +6,7 @@ import 'package:reminiscence/features/database/daos/message_column.dart';
 import 'package:reminiscence/features/database/database.dart';
 import 'package:reminiscence/features/database/dtos/attachment_dto.dart';
 import 'package:reminiscence/features/database/dtos/message_dto.dart';
+import 'package:reminiscence/features/database/tables/attachment_type.dart';
 import 'package:reminiscence/features/database/tables/attachments.dart';
 import 'package:reminiscence/features/database/tables/messages.dart';
 import 'package:reminiscence/ui/pages/search/filter.dart';
@@ -252,6 +253,56 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       """, variables: variables).get();
 
     return rows.map((r) => r.read<int>("sent_at")).toList();
+  }
+
+  Future<List<MessageDto>> getMessagesWithAttachments(
+    int chatId,
+    List<AttachmentType> attachmentTypes,
+  ) async {
+    if (attachmentTypes.isEmpty) {
+      return [];
+    }
+
+    final systemMessages = await getSystemMessages();
+    final systemPlaceholders = _getPlaceholders(systemMessages.length);
+    final attachmentPlaceholders = _getPlaceholders(attachmentTypes.length);
+
+    final rows =
+        await customSelect(
+          """
+        SELECT
+          m.id,
+          m.chat_id,
+          m.sent_at,
+          m.sender_name,
+
+          a.id as attachment_id,
+          a.type as attachment_type,
+          a.uri as attachment_uri
+
+        FROM
+          messages m
+
+        INNER JOIN
+          attachments a
+          ON a.message_id = m.id
+
+        WHERE
+          m.chat_id = ?
+          AND m.no_emojis_content NOT IN ($systemPlaceholders)
+          AND a.type IN ($attachmentPlaceholders)
+
+        ORDER BY
+          m.sent_at DESC
+      """,
+          variables: [
+            Variable.withInt(chatId),
+            ...systemMessages.map(Variable.withString),
+            ...attachmentTypes.map((type) => Variable.withString(type.name)),
+          ],
+        ).get();
+
+    return _getMessageDtos(rows);
   }
 
   // Used for searching wiht custom filters.

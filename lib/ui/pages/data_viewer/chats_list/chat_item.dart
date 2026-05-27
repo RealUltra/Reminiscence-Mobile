@@ -51,6 +51,7 @@ class ChatItem extends StatelessWidget {
           chat.title,
           style: Theme.of(context).textTheme.titleMedium!.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
           ),
         ),
 
@@ -60,6 +61,7 @@ class ChatItem extends StatelessWidget {
                   subtitle,
                   style: Theme.of(context).textTheme.labelMedium!.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.bold,
                   ),
                 )
                 : null,

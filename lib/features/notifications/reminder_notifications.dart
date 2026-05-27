@@ -14,8 +14,8 @@ const emailReminderOffsets = [1, 3];
 const emailReminderOffsetUnits = "d";
 
 const returnReminderBaseId = 2000;
-const returnReminderCount = 8;
-const returnReminderInterval = 2;
+const returnReminderCount = 6;
+const returnReminderInterval = 5;
 // "d" for days, "h" for hours, "m" for minutes, "s" for seconds.
 const returnReminderIntervalUnits = "d";
 

@@ -55,22 +55,24 @@ class _ChatsListState extends State<ChatsList> {
       return;
     }
 
-    final separateParticipants = await showDialog<bool?>(
-      context: context,
-      builder:
-          (context) => MessageBox(
-            title: "Separate Participants?",
-            body: Text(
-              "Would you like all the participants of this chat to be on a separate chart?",
-              textAlign: TextAlign.center,
-            ),
-            actions: [
-              MessageBoxButton("Yes", highlighted: false, value: true),
-              MessageBoxButton("No", highlighted: true, value: false),
-            ],
-            actionsAxis: Axis.horizontal,
-          ),
-    ) ?? false;
+    final separateParticipants =
+        await showDialog<bool?>(
+          context: context,
+          builder:
+              (context) => MessageBox(
+                title: "Separate Participants?",
+                body: Text(
+                  "Would you like all the participants of this chat to be on a separate chart?",
+                  textAlign: TextAlign.center,
+                ),
+                actions: [
+                  MessageBoxButton("Yes", highlighted: false, value: true),
+                  MessageBoxButton("No", highlighted: true, value: false),
+                ],
+                actionsAxis: Axis.horizontal,
+              ),
+        ) ??
+        false;
 
     setState(() {
       widget.chartData[chat.id] = ChartInfo(

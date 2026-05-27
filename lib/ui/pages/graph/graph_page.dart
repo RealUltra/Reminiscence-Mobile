@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:reminiscence/ui/pages/graph/app_bar.dart';
 import 'package:reminiscence/ui/pages/graph/body.dart';
 import 'package:reminiscence/ui/pages/graph/chart_info.dart';
-import 'package:reminiscence/ui/pages/graph/data_point.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
 
@@ -23,8 +22,6 @@ class _GraphPageState extends State<GraphPage> {
   @override
   void initState() {
     super.initState();
-
-    DataPoint.shuffleColors();
 
     initData();
   }

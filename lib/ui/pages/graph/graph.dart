@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminiscence/ui/pages/graph/data_point.dart';
+import 'package:reminiscence/ui/pages/graph/graph_colors.dart';
 import 'package:reminiscence/ui/pages/graph/graph_data_loader.dart';
 import 'package:reminiscence/ui/pages/graph/graph_settings.dart';
 import 'package:reminiscence/ui/providers/session_data.dart';
@@ -36,6 +37,7 @@ class _GraphState extends State<Graph> {
         }
 
         final dataSources = snapshot.data!;
+        final colors = GraphColors.forBrightness(Theme.of(context).brightness);
 
         int quarterTurns = 0;
 
@@ -45,6 +47,11 @@ class _GraphState extends State<Graph> {
           quarterTurns = 1;
         }
 
+        final trackballBehavior = TrackballBehavior(
+          enable: true,
+          activationMode: ActivationMode.singleTap,
+        );
+
         return Container(
           margin: EdgeInsets.fromLTRB(0, 16.0, 0, 0),
 
@@ -52,7 +59,7 @@ class _GraphState extends State<Graph> {
             quarterTurns: quarterTurns,
 
             child: SfCartesianChart(
-              palette: DataPoint.colors,
+              palette: colors,
               margin: EdgeInsets.zero,
 
               primaryXAxis: CategoryAxis(
@@ -64,10 +71,10 @@ class _GraphState extends State<Graph> {
                 isInversed: widget.settings.chartType == 1,
               ),
 
-              trackballBehavior: TrackballBehavior(
-                enable: true,
-                activationMode: ActivationMode.singleTap,
-              ),
+              trackballBehavior: trackballBehavior,
+
+              onTrackballPositionChanging:
+                  (args) => hideZeroTrackballValues(args, trackballBehavior),
 
               series:
                   widget.settings.chartType == 0
@@ -106,5 +113,26 @@ class _GraphState extends State<Graph> {
           ),
         )
         .toList();
+  }
+
+  void hideZeroTrackballValues(
+    TrackballArgs args,
+    TrackballBehavior trackballBehavior,
+  ) {
+    final allValuesAreZero =
+        trackballBehavior.chartPointInfo.isNotEmpty &&
+        trackballBehavior.chartPointInfo.every(isZeroTrackballPoint);
+
+    if (!allValuesAreZero && isZeroTrackballPoint(args.chartPointInfo)) {
+      args.chartPointInfo.label = "";
+    }
+  }
+
+  bool isZeroTrackballPoint(dynamic pointInfo) {
+    final value = pointInfo.chartPoint?.y;
+    final label = pointInfo.label?.trim() ?? "";
+    final hasZeroLabel = RegExp(r'(^|[:\s])0(\.0+)?$').hasMatch(label);
+
+    return value == 0 || hasZeroLabel;
   }
 }

@@ -47,18 +47,16 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ### v26.07.1
 - Change `.rem` file format for faster reading & writing speeds and consistency.
+- Fix instagram reel previews (if possible)
+- Fix graphs on deleted groups.
 
 ### v26.05.2
-- Fix reminder notification times.
 - Fixed: Message decode issue.
-- Add a chat profile page and within it a media gallery, files gallery and links gallery.
-- Move search icon, graph icon, and pinned messages icons into the chat profile page.
-- For graphs, don't show people in earlier months if they have 0 messages.
-- On bigger groups, graphs with separated participants dont show all the participants because they can't fit. Show the top participants in this case.
-- For graphs, hard code the first 12 or 20 colours and the rest can be random.
-- Fix graphs on deleted groups.
-- Fix instagram reel previews (if possible)
-- Test on older devices and optimize for lag.
+- Fixed: Reminder notification times.
+- Added: Chat Details Page with media/links/files gallery and additional statistics.
+- Redesigned some UI elements.
+- Added two hard-coded list of 12 colors each for light and dark themes.
+- 0 message participants no longer show up when holding a data point on a graph.
 
 ## 🐛 Known Issues
 

@@ -8,6 +8,7 @@ import 'package:reminiscence/features/notifications/reminder_notifications.dart'
 import 'package:reminiscence/features/permissions_manager/permissions_manager.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page.dart';
 import 'package:reminiscence/ui/pages/chat/chat_page_args.dart';
+import 'package:reminiscence/ui/pages/chat_details/chat_details_page.dart';
 import 'package:reminiscence/ui/pages/data_viewer/data_viewer_page.dart';
 import 'package:reminiscence/ui/pages/graph/graph_page.dart';
 import 'package:reminiscence/ui/pages/pinned_messages/pinned_messages_page.dart';
@@ -157,6 +158,15 @@ class App extends StatelessWidget {
         settings: settings,
         builder: (context) {
           return SearchPage();
+        },
+      );
+    }
+
+    if (settings.name == "/chat_details") {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (context) {
+          return ChatDetailsPage();
         },
       );
     }

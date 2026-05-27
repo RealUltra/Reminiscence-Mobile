@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reminiscence/ui/components/selection_controller.dart';
-import 'package:reminiscence/ui/pages/data_viewer/chats_list/dropdown.dart';
+import 'package:reminiscence/ui/components/toggle_button.dart';
 import 'package:reminiscence/ui/pages/data_viewer/chats_list/search_bar.dart';
 
 class Header extends StatelessWidget {
@@ -10,6 +10,12 @@ class Header extends StatelessWidget {
 
   final sortOptions = ['Title', 'Number of messages', 'Last contacted'];
   final orderOptions = ['Ascending', 'Descending'];
+  final sortIcons = [
+    Icons.sort_by_alpha_rounded,
+    Icons.message_rounded,
+    Icons.access_time_rounded,
+  ];
+  final orderIcons = [Icons.arrow_upward_rounded, Icons.arrow_downward_rounded];
 
   Header({
     super.key,
@@ -53,9 +59,18 @@ class Header extends StatelessWidget {
 
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.0),
-                    child: Dropdown(
+                    child: ToggleButton(
+                      values:
+                          sortOptions
+                              .map(
+                                (option) => ToggleButtonValue(
+                                  icon: sortIcons[sortOptions.indexOf(option)],
+                                  title: option,
+                                ),
+                              )
+                              .toList(),
                       controller: sortController,
-                      options: sortOptions,
+                      decoration: _buildToggleButtonDecoration(context),
                     ),
                   ),
                 ],
@@ -70,13 +85,33 @@ class Header extends StatelessWidget {
                     ),
                   ),
 
-                  Dropdown(controller: orderController, options: orderOptions),
+                  ToggleButton(
+                    values:
+                        orderOptions
+                            .map(
+                              (option) => ToggleButtonValue(
+                                icon: orderIcons[orderOptions.indexOf(option)],
+                                title: option,
+                              ),
+                            )
+                            .toList(),
+                    controller: orderController,
+                    decoration: _buildToggleButtonDecoration(context),
+                  ),
                 ],
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  BoxDecoration _buildToggleButtonDecoration(BuildContext context) {
+    return BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12.0),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     );
   }
 }

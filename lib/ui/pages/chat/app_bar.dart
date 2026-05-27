@@ -26,11 +26,13 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       title: GestureDetector(
         onTap: () {
-          // Display user info
+          // Display chat details page.
+          Navigator.of(context).pushNamed("/chat_details");
         },
 
         child: Text(
           chat.title,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleMedium!.copyWith(
             color: Theme.of(context).colorScheme.onSurface,

@@ -22,12 +22,14 @@ class MediaAttachmentItem {
   final File file;
   final String fileName;
   final String mimeType;
+  final Future<void> Function()? prepare;
 
   const MediaAttachmentItem({
     required this.type,
     required this.file,
     required this.fileName,
     required this.mimeType,
+    this.prepare,
   });
 
   bool get isReady => file.existsSync() && file.lengthSync() > 0;
@@ -93,18 +95,37 @@ class _SharedVideoPlayback extends ChangeNotifier {
     }
 
     if (_refCount == 0) {
+      unawaited(controller?.pause());
       _disposeTimer?.cancel();
       _disposeTimer = Timer(const Duration(seconds: 20), dispose);
     }
   }
 
   Future<void> initializeIfNeeded() async {
-    if (_isDisposed || _isInitializing || controller != null || !item.isReady) {
+    if (_isDisposed || _isInitializing || controller != null) {
       return;
     }
 
     _isInitializing = true;
     _retryTimer?.cancel();
+
+    if (!item.isReady && item.prepare != null) {
+      try {
+        await item.prepare!();
+      } catch (_) {
+        _isInitializing = false;
+        _scheduleInitializationRetry();
+        notifyListeners();
+        return;
+      }
+    }
+
+    if (_isDisposed || !item.isReady) {
+      _isInitializing = false;
+      _scheduleInitializationRetry();
+      notifyListeners();
+      return;
+    }
 
     final nextController = VideoPlayerController.file(item.file);
     controller = nextController;
@@ -805,6 +826,7 @@ class _MediaViewerState extends State<_MediaViewer> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+    _prepareCurrentItem();
   }
 
   @override
@@ -822,7 +844,10 @@ class _MediaViewerState extends State<_MediaViewer> {
           PageView.builder(
             controller: _pageController,
             itemCount: widget.items.length,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
+            onPageChanged: (index) {
+              setState(() => _currentIndex = index);
+              _prepareCurrentItem();
+            },
             itemBuilder: (context, index) {
               final item = widget.items[index];
 
@@ -873,6 +898,18 @@ class _MediaViewerState extends State<_MediaViewer> {
         ],
       ),
     );
+  }
+
+  Future<void> _prepareCurrentItem() async {
+    if (_currentItem.isReady || _currentItem.prepare == null) {
+      return;
+    }
+
+    await _currentItem.prepare!();
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
 
@@ -1423,6 +1460,14 @@ Future<void> _openViewer(
       },
     ),
   );
+}
+
+Future<void> openMediaViewer(
+  BuildContext context,
+  List<MediaAttachmentItem> items,
+  int initialIndex,
+) async {
+  await _openViewer(context, items, initialIndex);
 }
 
 Future<void> _shareMediaItem(
