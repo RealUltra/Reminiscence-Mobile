@@ -69,8 +69,8 @@ data in the REM file.
 - Fixed: Message decode issue.
 - Fixed: Reminder notification times.
 - Added: Chat Details Page with media/links/files gallery and additional statistics.
+- Added: Two hard-coded list of 12 colors each for light and dark themes.
 - Redesigned some UI elements.
-- Added two hard-coded list of 12 colors each for light and dark themes.
 - 0 message participants no longer show up when holding a data point on a graph.
 
 ### v26.05.1
