@@ -45,10 +45,11 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 ## 🗓️ Planned
 
-### v26.07.1
+### v26.11.1
 - Change `.rem` file format for faster reading & writing speeds and consistency.
 - Fix instagram reel previews (if possible)
 - Fix graphs on deleted groups.
+- Add error message if the user tries to import html data instead of json.
 
 ## 🐛 Known Issues
 
