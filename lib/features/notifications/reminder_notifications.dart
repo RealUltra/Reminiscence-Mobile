@@ -68,6 +68,7 @@ Future<void> initializeReminderNotifications() async {
   await reminderNotifications.initialize(
     settings: const InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/launcher_icon'),
+      iOS: DarwinInitializationSettings(),
     ),
   );
 }
