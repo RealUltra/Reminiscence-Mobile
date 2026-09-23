@@ -54,10 +54,15 @@ Instagram lets you download an archive of all your messages. Reminiscence offers
 
 - **Message Display:** Sometimes, messages don't appear and instead their index appears with an error.
 - **Instagram Reel Preview:** Some instagram reels aren't previewed correctly and instead the login page appears, most likely due to bot detection and rate limiting by Instagram.
-- **Multiple ZIP Files:** Combining zip files might not work correctly, can lead to missing or corrupted 
-data in the REM file.
+- **Multiple ZIP Files:** Combining zip files might not work correctly, can lead to missing or corrupted data in the REM file.
 - **Graphs on Deleted Groups:** Might not render correctly and the participants won't all be shown (in separate participants mode).
 - **Wrong Attachment:** The generated REM file may misconstrue what media file corresponds to what attachment and render the wrong one.
+
+## 🐛 Known iOS Issues
+
+- **Password Prompt:** The password prompt destroys the build context, resulting in a black background while the prompt is active and a black screen once the prompt is dismissed.
+- **REM File Generation:** Once a REM file is generated, updating the state to update the files list gives an error.
+- **Attachments:** Photos, videos and audio does not work.
 
 ## ⚠️ Limitations
 - **Stickers:** Instagram DYI does provides empty messages for stickers, therefore stickers cannot be rendered by the app.

@@ -351,7 +351,7 @@ Future<void> insertMediaFiles(
     updateProgress(attachmentsDone, results.length);
 
     if (archiveFile != null) {
-      InputStream inputStream = archiveFile.rawContent!.getStream();
+      InputStream inputStream = archiveFile.rawContent!.getStream(decompress: false);
 
       if (derivedKey != null) {
         final encryptedStream = encryptStream(

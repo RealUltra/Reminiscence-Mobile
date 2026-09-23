@@ -34,6 +34,12 @@ class _PasswordEntryDialogState extends State<PasswordEntryDialog> {
   }
 
   @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,

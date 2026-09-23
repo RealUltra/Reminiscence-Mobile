@@ -334,6 +334,9 @@ class BodyState extends State<Body> {
   }
 
   Future<void> loadZipData(BuildContext context, List<String> filePaths) async {
+    debugPrint("Just selected zip file.");
+    debugPrint("Is context lost? ${context.mounted ? "No" : "Yes"}");
+
     for (final filePath in filePaths) {
       // Check if the zip file selected is valid.
       if (!isValidArchive(archivePath: filePath)) {
@@ -355,7 +358,11 @@ class BodyState extends State<Body> {
     if (!context.mounted) return;
 
     // If no password has been given, prompt for a password.
-    String? password = await _promptPassword(context, 0);
+    //String? password = await _promptPassword(context, 0);
+    String? password = "boss man";
+
+    print("Just prompted for password");
+    debugPrint("Is context lost? ${context.mounted ? "No" : "Yes"}");
 
     // If the user closes the password prompt, exit the function.
     if (password == null) return;
@@ -363,9 +370,14 @@ class BodyState extends State<Body> {
     // If the password is an empty string, it equates to no password i.e password = null
     password = password.isEmpty ? null : password;
 
+    debugPrint("Got the password: ${password}");
+    debugPrint("Is context lost? ${context.mounted ? "No" : "Yes"}");
+
     if (!context.mounted) return;
 
     // Create a rem file with a loading screen and load it.
+    debugPrint("Right before navigation.");
+
     final dataMap =
         await Navigator.of(context).pushNamed(
               "/loading",
@@ -378,8 +390,12 @@ class BodyState extends State<Body> {
             )
             as Map<String, dynamic>?;
 
+    debugPrint("Right after navigation.");
+
     // Update the files list in case a new rem file was successfully generated.
-    setState(() {});
+    //setState(() {});
+
+    debugPrint("Right after the state update after navigation.");
 
     // Make sure the rem file was successfully generated & loaded.
     if (dataMap == null) return;
@@ -473,6 +489,7 @@ class BodyState extends State<Body> {
   }) async {
     final password = await showDialog<String?>(
       context: context,
+      useRootNavigator: false,
       builder: (context) {
         return PasswordEntryDialog(mode, checkPassword: checkPassword);
       },
